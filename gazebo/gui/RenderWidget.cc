@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Open Source Robotics Foundation
+ * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 #include <iomanip>
 
 #include "gazebo/rendering/UserCamera.hh"
-#include "gazebo/rendering/Rendering.hh"
+#include "gazebo/rendering/RenderingIface.hh"
 #include "gazebo/rendering/Scene.hh"
 
 #include "gazebo/gui/Actions.hh"
-#include "gazebo/gui/Gui.hh"
+#include "gazebo/gui/GuiIface.hh"
 #include "gazebo/gui/GLWidget.hh"
 #include "gazebo/gui/GuiEvents.hh"
 #include "gazebo/gui/TimePanel.hh"
@@ -60,10 +60,12 @@ RenderWidget::RenderWidget(QWidget *_parent)
   actionGroup->addAction(g_arrowAct);
   actionGroup->addAction(g_translateAct);
   actionGroup->addAction(g_rotateAct);
+  actionGroup->addAction(g_scaleAct);
 
   toolbar->addAction(g_arrowAct);
   toolbar->addAction(g_translateAct);
   toolbar->addAction(g_rotateAct);
+  toolbar->addAction(g_scaleAct);
 
   toolbar->addSeparator();
   toolbar->addAction(g_boxCreateAct);
@@ -97,36 +99,15 @@ RenderWidget::RenderWidget(QWidget *_parent)
 
   TimePanel *timePanel = new TimePanel(this);
 
-  QHBoxLayout *playControlLayout = new QHBoxLayout;
-  playControlLayout->setContentsMargins(0, 0, 0, 0);
-
   this->bottomFrame = new QFrame;
   this->bottomFrame->setObjectName("renderBottomFrame");
   this->bottomFrame->setSizePolicy(QSizePolicy::Expanding,
       QSizePolicy::Minimum);
 
-  QFrame *playFrame = new QFrame;
-  QToolBar *playToolbar = new QToolBar;
-  playFrame->setFrameShape(QFrame::NoFrame);
-  playFrame->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  playFrame->setFixedHeight(25);
-  playToolbar->addAction(g_playAct);
-  playToolbar->addAction(g_pauseAct);
-  playToolbar->addAction(g_stepAct);
-  playControlLayout->addWidget(playToolbar);
-  playControlLayout->setContentsMargins(0, 0, 0, 0);
-  playFrame->setLayout(playControlLayout);
-
-  bottomPanelLayout->addItem(new QSpacerItem(-1, -1, QSizePolicy::Expanding,
-                             QSizePolicy::Minimum));
-  bottomPanelLayout->addWidget(playFrame, 0);
   bottomPanelLayout->addWidget(timePanel, 0);
-  bottomPanelLayout->addItem(new QSpacerItem(-1, -1, QSizePolicy::Expanding,
-                             QSizePolicy::Minimum));
   bottomPanelLayout->setSpacing(0);
   bottomPanelLayout->setContentsMargins(0, 0, 0, 0);
   this->bottomFrame->setLayout(bottomPanelLayout);
-
 
   QFrame *render3DFrame = new QFrame;
   render3DFrame->setObjectName("render3DFrame");
@@ -164,6 +145,10 @@ RenderWidget::RenderWidget(QWidget *_parent)
   this->timer = new QTimer(this);
   connect(this->timer, SIGNAL(timeout()), this, SLOT(update()));
   this->timer->start(44);
+
+  this->connections.push_back(
+      gui::Events::ConnectFollow(
+        boost::bind(&RenderWidget::OnFollow, this, _1)));
 }
 
 /////////////////////////////////////////////////
@@ -303,4 +288,19 @@ std::string RenderWidget::GetOverlayMsg() const
 void RenderWidget::OnClearOverlayMsg()
 {
   this->DisplayOverlayMsg("");
+}
+
+/////////////////////////////////////////////////
+void RenderWidget::OnFollow(const std::string &_modelName)
+{
+  if (_modelName.empty())
+  {
+    g_translateAct->setEnabled(true);
+    g_rotateAct->setEnabled(true);
+  }
+  else
+  {
+    g_translateAct->setEnabled(false);
+    g_rotateAct->setEnabled(false);
+  }
 }

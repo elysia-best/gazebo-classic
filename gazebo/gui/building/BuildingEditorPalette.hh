@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Open Source Robotics Foundation
+ * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@
 
 #include <string>
 #include <vector>
+#include <list>
+
 #include "gazebo/gui/qt.h"
 #include "gazebo/common/Events.hh"
+#include "gazebo/util/system.hh"
 
 namespace gazebo
 {
@@ -32,7 +35,7 @@ namespace gazebo
 
     /// \class BuildingEditorPalette BuildingEditorPalette.hh
     /// \brief A palette of building items which can be added to the editor.
-    class BuildingEditorPalette : public QWidget
+    class GAZEBO_VISIBLE BuildingEditorPalette : public QWidget
     {
       Q_OBJECT
 
@@ -55,7 +58,7 @@ namespace gazebo
       private slots: void OnAddDoor();
 
       /// \brief Qt callback when the draw stairs button is pressed.
-      private slots: void OnAddStairs();
+      private slots: void OnAddStair();
 
       /// \brief Qt callback when the discard button is pressed.
       private slots: void OnDiscard();
@@ -73,6 +76,10 @@ namespace gazebo
       private: void OnSaveModel(const std::string &_saveName,
           const std::string &_saveLocation);
 
+      /// \brief Event received when an editor item is selected.
+      /// \param[in] _type Type of item to add.
+      private: void OnCreateEditorItem(const std::string &_type);
+
       /// \brief Event received when a building model has been discarded.
       private: void OnDiscardModel();
 
@@ -81,6 +88,9 @@ namespace gazebo
 
       /// \brief Save button.
       private: QPushButton *saveButton;
+
+      /// \brief All the brushes (wall, door, window, stair, etc).
+      private: std::list<QPushButton *> brushes;
 
       /// \brief Name of model.
       private: std::string modelName;

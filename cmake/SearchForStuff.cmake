@@ -1,5 +1,4 @@
 include (${gazebo_cmake_dir}/GazeboUtils.cmake)
-include (${gazebo_cmake_dir}/FindSSE.cmake)
 include (CheckCXXSourceCompiles)
 
 include (${gazebo_cmake_dir}/FindOS.cmake)
@@ -57,8 +56,22 @@ else ()
 endif ()
 
 ########################################
+include (FindOpenAL)
+if (NOT OPENAL_FOUND)
+  BUILD_WARNING ("OpenAL not found, audio support will be disabled.")
+  set (HAVE_OPENAL OFF CACHE BOOL "HAVE OpenAL" FORCE)
+else ()
+  set (HAVE_OPENAL ON CACHE BOOL "HAVE OpenAL" FORCE)
+endif ()
+
+########################################
 # Find packages
 if (PKG_CONFIG_FOUND)
+
+  pkg_check_modules(SDF sdformat>=2.0.0)
+  if (NOT SDF_FOUND)
+    BUILD_ERROR ("Missing: SDF. Required for reading and writing SDF files.")
+  endif()
 
   pkg_check_modules(CURL libcurl)
   if (NOT CURL_FOUND)
@@ -104,50 +117,81 @@ if (PKG_CONFIG_FOUND)
       BUILD_WARNING ("CEGUI-OGRE not found, opengl GUI will be disabled.")
       set (HAVE_CEGUI OFF CACHE BOOL "HAVE CEGUI" FORCE)
     else()
-      set (HAVE_CEGUI ON CACHE BOOL "HAVE CEGUI" FORCE)
+      set (HAVE_CEGUI ON CACHE BOOL "HAVE CEGUI")
       set (CEGUI_LIBRARIES "CEGUIBase;CEGUIOgreRenderer")
       message (STATUS "Looking for CEGUI-OGRE, found")
     endif()
   endif()
 
   #################################################
-  # Find bullet
-  pkg_check_modules(BULLET bullet>=2.81)
-  if (BULLET_FOUND)
-    set (HAVE_BULLET TRUE)
+  # Find Simbody
+  set(SimTK_INSTALL_DIR ${SimTK_INSTALL_PREFIX})
+  #list(APPEND CMAKE_MODULE_PATH ${SimTK_INSTALL_PREFIX}/share/cmake) 
+  find_package(Simbody)
+  if (SIMBODY_FOUND)
+    set (HAVE_SIMBODY TRUE)
   else()
-    set (HAVE_BULLET FALSE)
+    BUILD_WARNING ("Simbody not found, for simbody physics engine option, please install libsimbody-dev.")
+    set (HAVE_SIMBODY FALSE)
+  endif()
+
+  #################################################
+  # Find DART
+  find_package(DARTCore)
+  if (DARTCore_FOUND)
+    message (STATUS "Looking for DARTCore - found")
+    set (HAVE_DART TRUE)
+  else()
+    BUILD_WARNING ("DART not found, for dart physics engine option, please install libdart-core3.")
+    set (HAVE_DART FALSE)
   endif()
 
   #################################################
   # Find tinyxml. Only debian distributions package tinyxml with a pkg-config
-  find_path (tinyxml_include_dir tinyxml.h ${tinyxml_include_dirs} ENV CPATH)
-  if (NOT tinyxml_include_dir)
+  # Use pkg_check_modules and fallback to manual detection (needed, at least, for MacOS)
+  pkg_check_modules(tinyxml tinyxml)
+  if (NOT tinyxml_FOUND)
+      find_path (tinyxml_INCLUDE_DIRS tinyxml.h ${tinyxml_INCLUDE_DIRS} ENV CPATH)
+      find_library(tinyxml_LIBRARIES NAMES tinyxml)
+      set (tinyxml_FAIL False) 
+      if (NOT tinyxml_INCLUDE_DIRS)
+        message (STATUS "Looking for tinyxml headers - not found")
+        set (tinyxml_FAIL True) 
+      endif()
+      if (NOT tinyxml_LIBRARIES)
+        message (STATUS "Looking for tinyxml library - not found")
+        set (tinyxml_FAIL True) 
+      endif()
+  endif()
+        
+  if (tinyxml_FAIL)
     message (STATUS "Looking for tinyxml.h - not found")
     BUILD_ERROR("Missing: tinyxml")
-  else ()
-    message (STATUS "Looking for tinyxml.h - found")
-    set (tinyxml_include_dirs ${tinyxml_include_dir} CACHE STRING
-      "tinyxml include paths. Use this to override automatic detection.")
-    set (tinyxml_libraries "tinyxml" CACHE INTERNAL "tinyxml libraries")
-  endif ()
+  endif()
 
   #################################################
   # Find libtar.
-  find_path (libtar_include_dir libtar.h /usr/include /usr/local/include ENV CPATH)
-  if (NOT libtar_include_dir)
+  find_path (libtar_INCLUDE_DIRS libtar.h)
+  find_library(libtar_LIBRARIES tar)
+  set (LIBTAR_FOUND True)
+
+  if (NOT libtar_INCLUDE_DIRS)
     message (STATUS "Looking for libtar.h - not found")
-    BUILD_ERROR("Missing: libtar")
+    set (LIBTAR_FOUND False)
   else ()
     message (STATUS "Looking for libtar.h - found")
-    set (libtar_libraries "tar" CACHE INTERNAL "tinyxml libraries")
+    include_directories(${libtar_INCLUDE_DIRS})
+  endif ()
+  if (NOT libtar_LIBRARIES)
+    message (STATUS "Looking for libtar.so - not found")
+    set (LIBTAR_FOUND False)
+  else ()
+    message (STATUS "Looking for libtar.so - found")
   endif ()
 
-  #################################################
-  # Use internal CCD (built as libgazebo_ccd.so)
-  #
-  set(CCD_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/libccd/include")
-  set(CCD_LIBRARIES gazebo_ccd)
+  if (NOT LIBTAR_FOUND)
+     BUILD_ERROR("Missing: libtar")
+  endif()
 
   #################################################
   # Find TBB
@@ -186,18 +230,20 @@ if (PKG_CONFIG_FOUND)
   endif ()
 
   pkg_check_modules(OGRE OGRE>=${MIN_OGRE_VERSION})
+  # There are some runtime problems to solve with ogre-1.9. 
+  # Please read gazebo issues: 994, 995, 996
+  pkg_check_modules(MAX_VALID_OGRE OGRE<=1.8.9)
   if (NOT OGRE_FOUND)
     BUILD_ERROR("Missing: Ogre3d version >=${MIN_OGRE_VERSION}(http://www.orge3d.org)")
-  else (NOT OGRE_FOUND)
+  elseif (NOT MAX_VALID_OGRE_FOUND)
+    BUILD_ERROR("Bad Ogre3d version: gazebo using ${OGRE_VERSION} ogre version has known bugs in runtime (issue #996). Please use 1.7 or 1.8 series")
+  else ()
     set(ogre_ldflags ${ogre_ldflags} ${OGRE_LDFLAGS})
     set(ogre_include_dirs ${ogre_include_dirs} ${OGRE_INCLUDE_DIRS})
     set(ogre_libraries ${ogre_libraries};${OGRE_LIBRARIES})
     set(ogre_library_dirs ${ogre_library_dirs} ${OGRE_LIBRARY_DIRS})
     set(ogre_cflags ${ogre_cflags} ${OGRE_CFLAGS})
   endif ()
-
-  set (OGRE_INCLUDE_DIRS ${ogre_include_dirs}
-       CACHE INTERNAL "Ogre include path")
 
   pkg_check_modules(OGRE-Terrain OGRE-Terrain)
   if (OGRE-Terrain_FOUND)
@@ -207,6 +253,19 @@ if (PKG_CONFIG_FOUND)
     set(ogre_library_dirs ${ogre_library_dirs} ${OGRE-Terrain_LIBRARY_DIRS})
     set(ogre_cflags ${ogre_cflags} ${OGRE-Terrain_CFLAGS})
   endif()
+
+  pkg_check_modules(OGRE-Overlay OGRE-Overlay)
+  if (OGRE-Overlay_FOUND)
+    set(ogre_ldflags ${ogre_ldflags} ${OGRE-Overlay_LDFLAGS})
+    set(ogre_include_dirs ${ogre_include_dirs} ${OGRE-Overlay_INCLUDE_DIRS})
+    set(ogre_libraries ${ogre_libraries};${OGRE-Overlay_LIBRARIES})
+    set(ogre_library_dirs ${ogre_library_dirs} ${OGRE-Overlay_LIBRARY_DIRS})
+    set(ogre_cflags ${ogre_cflags} ${OGRE-Overlay_CFLAGS})
+  endif()
+
+
+  set (OGRE_INCLUDE_DIRS ${ogre_include_dirs}
+       CACHE INTERNAL "Ogre include path")
 
   # Also find OGRE's plugin directory, which is provided in its .pc file as the
   # `plugindir` variable.  We have to call pkg-config manually to get it.
@@ -220,6 +279,14 @@ if (PKG_CONFIG_FOUND)
     set (OGRE_PLUGINDIR ${_pkgconfig_invoke_result})
   endif()
 
+  ########################################
+  # Check and find libccd (if needed)
+  pkg_check_modules(CCD ccd>=1.4)
+  if (NOT CCD_FOUND)
+    message(STATUS "Using internal copy of libccd")
+    set(CCD_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/libccd/include")
+    set(CCD_LIBRARIES gazebo_ccd)
+  endif()
 
   ########################################
   # Find OpenAL
@@ -236,6 +303,9 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(libswscale libswscale)
   if (NOT libswscale_FOUND)
     BUILD_WARNING ("libswscale not found. Audio-video capabilities will be disabled.")
+  else()
+    include_directories(${libswscale_INCLUDE_DIRS})
+    link_directories(${libswscale_LIBRARY_DIRS})
   endif ()
 
   ########################################
@@ -243,6 +313,9 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(libavformat libavformat)
   if (NOT libavformat_FOUND)
     BUILD_WARNING ("libavformat not found. Audio-video capabilities will be disabled.")
+  else()
+    include_directories(${libavformat_INCLUDE_DIRS})
+    link_directories(${libavformat_LIBRARY_DIRS})
   endif ()
 
   ########################################
@@ -250,56 +323,33 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(libavcodec libavcodec)
   if (NOT libavcodec_FOUND)
     BUILD_WARNING ("libavcodec not found. Audio-video capabilities will be disabled.")
-  endif ()
-
-  if (libavformat_FOUND AND libavcodec_FOUND AND libswscale)
-    set (HAVE_FFMPEG TRUE)
+  else()
+    include_directories(${libavcodec_INCLUDE_DIRS})
+    link_directories(${libavcodec_LIBRARY_DIRS})
   endif ()
 
   ########################################
-  # Find urdfdom and urdfdom_headers
-  # look for the cmake modules first, and .pc pkg_config second
-  find_package(urdfdom_headers QUIET)
-  if (NOT urdfdom_headers_FOUND)
-    pkg_check_modules(urdfdom_headers urdfdom_headers)
-    if (NOT urdfdom_headers_FOUND)
-      BUILD_WARNING ("urdfdom_headers not found, urdf parser will not be built.")
-    endif ()
-  endif ()
-  if (urdfdom_headers_FOUND)
-    set (HAVE_URDFDOM_HEADERS TRUE)
+  # Find avutil
+  pkg_check_modules(libavutil libavutil)
+  if (NOT libavutil_FOUND)
+    BUILD_WARNING ("libavutil not found. Audio-video capabilities will be disabled.")
   endif ()
 
-  find_package(urdfdom QUIET)
-  if (NOT urdfdom_FOUND)
-    pkg_check_modules(urdfdom urdfdom)
-    if (NOT urdfdom_FOUND)
-      BUILD_WARNING ("urdfdom not found, urdf parser will not be built.")
-    endif ()
-  endif ()
-  if (urdfdom_FOUND)
-    set (HAVE_URDFDOM TRUE)
-  endif ()
 
-  find_package(console_bridge QUIET)
-  if (NOT console_bridge_FOUND)
-    pkg_check_modules(console_bridge console_bridge)
-    if (NOT console_bridge_FOUND)
-      BUILD_WARNING ("console_bridge not found, urdf parser will not be built.")
-    endif ()
-  endif ()
-  if (console_bridge_FOUND)
-    set (HAVE_CONSOLE_BRIDGE TRUE)
+  if (libavutil_FOUND AND libavformat_FOUND AND libavcodec_FOUND AND libswscale_FOUND)
+    set (HAVE_FFMPEG TRUE)
+  else ()
+    set (HAVE_FFMPEG FALSE)
   endif ()
 
   ########################################
   # Find Player
-  pkg_check_modules(PLAYER playercore>=3.0 playerc++)
+  pkg_check_modules(PLAYER playercore>=3.0 playerc++ playerwkb)
   if (NOT PLAYER_FOUND)
-    set (INCLUDE_PLAYER OFF CACHE BOOL "Build gazebo plugin for player" FORCE)
+    set (INCLUDE_PLAYER OFF CACHE BOOL "Build gazebo plugin for player")
     BUILD_WARNING ("Player not found, gazebo plugin for player will not be built.")
   else (NOT PLAYER_FOUND)
-    set (INCLUDE_PLAYER ON CACHE BOOL "Build gazebo plugin for player" FORCE)
+    set (INCLUDE_PLAYER ON CACHE BOOL "Build gazebo plugin for player")
     set (PLAYER_INCLUDE_DIRS ${PLAYER_INCLUDE_DIRS} CACHE INTERNAL
          "Player include directory")
     set (PLAYER_LINK_DIRS ${PLAYER_LINK_DIRS} CACHE INTERNAL
@@ -321,11 +371,21 @@ if (PKG_CONFIG_FOUND)
 
   #################################################
   # Find bullet
-  pkg_check_modules(BULLET bullet)
+  # First and preferred option is to look for bullet standard pkgconfig, 
+  # so check it first. if it is not present, check for the OSRF 
+  # custom bullet2.82.pc file
+  pkg_check_modules(BULLET bullet>=2.82)
+  if (NOT BULLET_FOUND)
+     pkg_check_modules(BULLET bullet2.82>=2.82)
+  endif()
+
   if (BULLET_FOUND)
     set (HAVE_BULLET TRUE)
+    add_definitions( -DLIBBULLET_VERSION=${BULLET_VERSION} )
   else()
     set (HAVE_BULLET FALSE)
+    add_definitions( -DLIBBULLET_VERSION=0.0 )
+    BUILD_WARNING ("Bullet > 2.82 not found, for bullet physics engine option, please install libbullet2.82-dev.")
   endif()
 
 else (PKG_CONFIG_FOUND)
@@ -348,137 +408,6 @@ if (NOT Boost_FOUND)
   BUILD_ERROR ("Boost not found. Please install thread signals system filesystem program_options regex date_time boost version ${MIN_BOOST_VERSION} or higher.")
 endif()
 
-########################################
-# Find urdfdom_headers
-IF (NOT HAVE_URDFDOM_HEADERS)
-  SET (urdfdom_search_path /usr/include)
-  FIND_PATH(URDFDOM_HEADERS_PATH urdf_model/model.h ${urdfdom_search_path})
-  IF (NOT URDFDOM_HEADERS_PATH)
-    MESSAGE (STATUS "Looking for urdf_model/model.h - not found")
-    BUILD_WARNING ("model.h not found. urdf parser will not be built")
-  ELSE (NOT URDFDOM_HEADERS_PATH)
-    MESSAGE (STATUS "Looking for model.h - found")
-    SET (HAVE_URDFDOM_HEADERS TRUE)
-    SET (URDFDOM_HEADERS_PATH /usr/include)
-  ENDIF (NOT URDFDOM_HEADERS_PATH)
-
-ELSE (NOT HAVE_URDFDOM_HEADERS)
-
-  SET (URDFDOM_HEADERS_PATH /usr/include)
-  MESSAGE (STATUS "found urdf_model/model.h - found")
-
-ENDIF (NOT HAVE_URDFDOM_HEADERS)
-
-########################################
-# Find urdfdom
-IF (NOT HAVE_URDFDOM)
-  SET (urdfdom_search_path
-    /usr/include /usr/local/include
-    /usr/include/urdf_parser
-  )
-
-  FIND_PATH(URDFDOM_PATH urdf_parser.h ${urdfdom_search_path})
-  IF (NOT URDFDOM_PATH)
-    MESSAGE (STATUS "Looking for urdf_parser/urdf_parser.h - not found")
-    BUILD_WARNING ("urdf_parser.h not found. urdf parser will not be built")
-    SET (URDFDOM_PATH /usr/include)
-  ELSE (NOT URDFDOM_PATH)
-    MESSAGE (STATUS "Looking for urdf_parser.h - found")
-    SET (HAVE_URDFDOM TRUE)
-    SET (URDFDOM_PATH /usr/include)
-  ENDIF (NOT URDFDOM_PATH)
-
-ELSE (NOT HAVE_URDFDOM)
-
-  MESSAGE (STATUS "found urdf_parser/urdf_parser.h - found")
-
-ENDIF (NOT HAVE_URDFDOM)
-
-########################################
-# Find console_bridge
-IF (NOT HAVE_CONSOLE_BRIDGE)
-  SET (console_bridge_search_path
-    /usr/include /usr/local/include
-  )
-
-  FIND_PATH(CONSOLE_BRIDGE_PATH console_bridge/console.h ${console_bridge_search_path})
-  IF (NOT CONSOLE_BRIDGE_PATH)
-    MESSAGE (STATUS "Looking for console_bridge/console.h - not found")
-    BUILD_WARNING ("console.h not found. urdf parser (depends on console_bridge) will not be built")
-    SET (CONSOLE_BRIDGE_PATH /usr/include)
-  ELSE (NOT CONSOLE_BRIDGE_PATH)
-    MESSAGE (STATUS "Looking for console.h - found")
-    SET (HAVE_CONSOLE_BRIDGE TRUE)
-    SET (CONSOLE_BRIDGE_PATH /usr/include)
-  ENDIF (NOT CONSOLE_BRIDGE_PATH)
-
-ELSE (NOT HAVE_CONSOLE_BRIDGE)
-
-  MESSAGE (STATUS "found console_bridge/console.h - found")
-
-ENDIF (NOT HAVE_CONSOLE_BRIDGE)
-
-
-########################################
-# Find avformat and avcodec
-IF (HAVE_FFMPEG)
-  SET (libavformat_search_path
-    /usr/include /usr/include/libavformat /usr/local/include
-    /usr/local/include/libavformat /usr/include/ffmpeg
-  )
-
-  SET (libavcodec_search_path
-    /usr/include /usr/include/libavcodec /usr/local/include
-    /usr/local/include/libavcodec /usr/include/ffmpeg
-  )
-
-  FIND_PATH(LIBAVFORMAT_PATH avformat.h ${libavformat_search_path})
-  IF (NOT LIBAVFORMAT_PATH)
-    MESSAGE (STATUS "Looking for avformat.h - not found")
-    BUILD_WARNING ("avformat.h not found. audio/video will not be built")
-    SET (LIBAVFORMAT_PATH /usr/include)
-  ELSE (NOT LIBAVFORMAT_PATH)
-    MESSAGE (STATUS "Looking for avformat.h - found")
-  ENDIF (NOT LIBAVFORMAT_PATH)
-
-  FIND_PATH(LIBAVCODEC_PATH avcodec.h ${libavcodec_search_path})
-  IF (NOT LIBAVCODEC_PATH)
-    MESSAGE (STATUS "Looking for avcodec.h - not found")
-    BUILD_WARNING ("avcodec.h not found. audio/video will not be built")
-    SET (LIBAVCODEC_PATH /usr/include)
-  ELSE (NOT LIBAVCODEC_PATH)
-    MESSAGE (STATUS "Looking for avcodec.h - found")
-  ENDIF (NOT LIBAVCODEC_PATH)
-
-ELSE (HAVE_FFMPEG)
-  SET (LIBAVFORMAT_PATH /usr/include)
-  SET (LIBAVCODEC_PATH /usr/include)
-ENDIF (HAVE_FFMPEG)
-
-########################################
-# Find libtool
-find_path(libtool_include_dir ltdl.h /usr/include /usr/local/include)
-if (NOT libtool_include_dir)
-  message (STATUS "Looking for ltdl.h - not found")
-  BUILD_WARNING ("ltdl.h not found")
-  set (libtool_include_dir /usr/include)
-else (NOT libtool_include_dir)
-  message (STATUS "Looking for ltdl.h - found")
-endif (NOT libtool_include_dir)
-
-find_library(libtool_library ltdl /usr/lib /usr/local/lib)
-if (NOT libtool_library)
-  message (STATUS "Looking for libltdl - not found")
-else (NOT libtool_library)
-  message (STATUS "Looking for libltdl - found")
-endif (NOT libtool_library)
-
-if (libtool_library AND libtool_include_dir)
-  set (HAVE_LTDL TRUE)
-else ()
-  set (HAVE_LTDL FALSE)
-  set (libtool_library "" CACHE STRING "" FORCE)
-endif ()
 
 
 ########################################
@@ -486,7 +415,7 @@ endif ()
 find_path(libdl_include_dir dlfcn.h /usr/include /usr/local/include)
 if (NOT libdl_include_dir)
   message (STATUS "Looking for dlfcn.h - not found")
-  BUILD_WARNING ("dlfcn.h not found, plugins will not be supported.")
+  BUILD_ERROR ("Missing libdl: Required for plugins.")
   set (libdl_include_dir /usr/include)
 else (NOT libdl_include_dir)
   message (STATUS "Looking for dlfcn.h - found")
@@ -495,16 +424,28 @@ endif ()
 find_library(libdl_library dl /usr/lib /usr/local/lib)
 if (NOT libdl_library)
   message (STATUS "Looking for libdl - not found")
-  BUILD_WARNING ("libdl not found, plugins will not be supported.")
+  BUILD_ERROR ("Missing libdl: Required for plugins.")
 else (NOT libdl_library)
   message (STATUS "Looking for libdl - found")
 endif ()
 
-if (libdl_library AND libdl_include_dir)
-  SET (HAVE_DL TRUE)
-else (libdl_library AND libdl_include_dir)
-  SET (HAVE_DL FALSE)
+########################################
+# Find gdal
+include (FindGDAL)
+if (NOT GDAL_FOUND)
+  message (STATUS "Looking for libgdal - not found")
+  BUILD_WARNING ("GDAL not found, Digital elevation terrains support will be disabled.")
+  set (HAVE_GDAL OFF CACHE BOOL "HAVE GDAL" FORCE)
+else ()
+  message (STATUS "Looking for libgdal - found")
+  set (HAVE_GDAL ON CACHE BOOL "HAVE GDAL" FORCE)
 endif ()
+
+########################################
+# Include man pages stuff
+include (${gazebo_cmake_dir}/Ronn2Man.cmake)
+include (${gazebo_cmake_dir}/Man.cmake)
+add_manpage_target()
 
 ########################################
 # Find QWT (QT graphing library)
