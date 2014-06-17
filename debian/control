@@ -1,37 +1,48 @@
 Source: gazebo
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
-Uploaders: Thomas Moulard <thomas.moulard@gmail.com>
+Uploaders: Jose Luis Rivero <jrivero@osrfoundation.org>
 Section: science
 Priority: extra
-Build-Depends: debhelper (>= 9),
-	       pkg-kde-tools (>= 0.6),
-               cmake,
-	       pkg-config,
-               doxygen,
-               doxygen-latex,
-	       libtinyxml-dev,
-	       libtbb-dev,
-	       libxml2-dev,
-	       libqt4-dev,
-	       libprotoc-dev,
-	       libfreeimage-dev,
-	       libprotobuf-dev,
-	       protobuf-compiler,
-	       libboost-all-dev,
-	       freeglut3-dev,
-	       libogre-1.8-dev,
-	       libtar-dev,
-	       libcurl4-openssl-dev,
-	       libcegui-mk2-dev,
-	       libgts-dev,
-	       libgoogle-perftools-dev,
-	       libode-dev
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
+Build-Depends: cmake,
+     pkg-config,
+     debhelper (>= 9),
+     bash-completion,
+     doxygen,
+     doxygen-latex,
+     texlive-fonts-recommended,
+     libfreeimage-dev,
+     libprotoc-dev,
+     libprotobuf-dev,
+     protobuf-compiler,
+     freeglut3-dev,
+     libcurl4-openssl-dev,
+     libtinyxml-dev,
+     libtar-dev,
+     libtbb-dev,
+     libogre-dev,
+     libxml2-dev,
+     libqt4-dev,
+     libltdl-dev,
+     libboost-thread-dev,
+     libboost-signals-dev,
+     libboost-system-dev,
+     libboost-filesystem-dev,
+     libboost-program-options-dev,
+     libboost-regex-dev,
+     libboost-iostreams-dev,
+     libcegui-mk2-dev,
+     libavformat-dev,
+     libavcodec-dev,
+     libswscale-dev,
+     libsdformat-dev,
+     robot-player-dev,
+     ruby-ronn
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/gazebo.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
 
-Package: gazebo-common
+Package: gazebo3-common
 Architecture: all
 Depends: ttf-dejavu-core, ${misc:Depends}
 Multi-Arch: foreign
@@ -46,23 +57,26 @@ Description: Open Source Robotics Simulator - Shared files
  This package contains shared files such as 3d models, worlds and
  robots.
 
-Package: gazebo
+Package: gazebo3
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-	 libgazebo1 (= ${binary:Version}),
-	 gazebo-common (= ${source:Version})
-Suggests: gazebo-doc
+	 libgazebo3 (= ${binary:Version}),
+	 gazebo3-common (= ${source:Version})
+Recommends: gazebo3-plugin-base
+Suggests: gazebo3-doc
 Multi-Arch: foreign
-Description: Open Source Robotics Simulator
+Description: Open Source Robotics Simulator - Binaries
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
  population of robots, sensors and objects, but does so in a
  three-dimensional world. It generates both realistic sensor feedback
  and physically plausible interactions between objects (it includes an
  accurate simulation of rigid-body physics).
+ .
+ This package contains then main application application binaries
 
-Package: libgazebo1
+Package: libgazebo3
 Section: libs
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
@@ -89,14 +103,15 @@ Depends: libtbb-dev,
 	 libprotobuf-dev,
 	 libboost-all-dev,
 	 freeglut3-dev,
-	 libogre-1.8-dev,
+	 libogre-dev,
 	 libtar-dev,
 	 libcurl4-openssl-dev,
 	 libcegui-mk2-dev,
 	 libgts-dev,
-	 libode-dev,
-	 libgazebo1 (= ${binary:Version}),
-	 gazebo-common (= ${source:Version}),
+	 libsdformat-dev,
+	 libgazebo3 (= ${binary:Version}),
+	 gazebo3-common (= ${source:Version}),
+	 gazebo3-plugin-base (= ${source:Version}),
 	 ${misc:Depends}
 Multi-Arch: same
 Description: Open Source Robotics Simulator - Development Files
@@ -110,11 +125,10 @@ Description: Open Source Robotics Simulator - Development Files
  This package contains development files (headers, shared library
  symbolic link and pkg-config file).
 
-Package: gazebo-plugin-base
+Package: gazebo3-plugin-base
 Architecture: any
 Depends: ${shlibs:Depends},
-         ${misc:Depends},
-	 gazebo (= ${binary:Version})
+         ${misc:Depends}
 Enhances: gazebo
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - base plug-ins
@@ -127,10 +141,10 @@ Description: Open Source Robotics Simulator - base plug-ins
  .
  This package gathers built-in plugins.
 
-Package: gazebo-dbg
+Package: libgazebo3-dbg
 Architecture: any
 Section: debug
-Depends: gazebo (= ${binary:Version}),
+Depends: libgazebo3 (= ${binary:Version}),
          ${misc:Depends}
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Debugging Symbols
