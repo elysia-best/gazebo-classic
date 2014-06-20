@@ -12,54 +12,46 @@ LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 CFLAGS+=$(CPPFLAGS)
 CXXFLAGS+=$(CPPFLAGS)
 
-# Multiarch.
-DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+# Multiarch (if supported).
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null)
 
 # Configuration flags.
-# Cannot build against player, disable it for now.
-CONFIGURE_ARGS= \
-	-DLIB_INSTALL_DIR=lib/${DEB_HOST_MULTIARCH} \
-	-Dfreeimage_include_dir=/usr/include \
-	-Dfreeimage_library_dir=/usr/lib \
-	-DINCLUDE_PLAYER=OFF
+CONFIGURE_ARGS=
+
+# If multiarch is supported, override CMAKE_INSTALL_LIB
+ifneq ($(DEB_HOST_MULTIARCH),)
+CONFIGURE_ARGS+=-DCMAKE_INSTALL_LIBDIR:STRING="lib/${DEB_HOST_MULTIARCH}"
+endif
 
 .PHONY: override_dh_auto_configure	\
 	override_dh_auto_build-indep	\
-	override_dh_auto_build		\
 	override_dh_install		\
 	override_dh_strip		\
 	override_dh_auto_test
 
 override_dh_auto_configure:
-	dh_auto_configure -- $(CONFIGURE_ARGS)
+	dh_auto_configure -- \
+                -DENABLE_TESTS_COMPILATION:BOOL=False \
+                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	        $(CONFIGURE_ARGS) \
 
-override_dh_auto_build-indep:
-	dh_auto_build -- doc # Generate Doxygen HTML documentation.
-
-override_dh_auto_build:
-	dh_auto_build -- # Compile the software.
+# override_dh_auto_build-indep:
+#	dh_auto_build -- doc # Generate Doxygen HTML documentation.
 
 override_dh_install:
 	dh_install -- # Install.
-
-	# Remove unwanted shell extension.
-	mv debian/gazebo/usr/bin/gzmodel_create.sh \
-	   debian/gazebo/usr/bin/gzmodel_create
 
 	# Get rid of fonts already packaged elsewhere.
 	tmp=`ls debian/gazebo-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf` \
 	&& rm $$tmp \
 	&& ln -s /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf $$tmp
 
-	# Install wrapper
-	cp debian/gazebo-wrapper debian/gazebo/usr/bin/gazebo \
-	&& chmod 755 debian/gazebo/usr/bin/gazebo
-
 
 override_dh_strip:
-	dh_strip -a --dbg-package=gazebo-dbg
+	dh_strip -a --dbg-package=libgazebo3-dbg
 
 override_dh_auto_test:
+	true
 
 %:
 	dh $@ --parallel
