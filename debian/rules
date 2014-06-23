@@ -1,5 +1,12 @@
 #!/usr/bin/make -f
 
+# SSE support enabled only for amd64
+SSE_FLAGS =
+
+ifeq ($(DEB_HOST_ARCH),amd64)
+SSE_FLAGS = -mfpmath=sse -msse -msse2 -msse3 -mssse3
+endif
+
 .PHONY: override_dh_auto_configure	\
 	override_dh_auto_build-indep	\
 	override_dh_install		\
@@ -9,11 +16,12 @@
 override_dh_auto_configure:
 	dh_auto_configure -- \
                 -DENABLE_TESTS_COMPILATION:BOOL=False \
-		-DUSE_HOST_CFLAGS:BOOL=False \
-		-DUSE_UPSTREAM_CFLAGS:BOOL=False \
-		-DCMAKE_BUILD_TYPE=RelWithDebInfo
+                -DUSE_HOST_CFLAGS:BOOL=False \
+                -DUSE_UPSTREAM_CFLAGS:BOOL=False \
+                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING="$(SSE_FLAGS)"
 
-# override_dh_auto_build-indep:
+#override_dh_auto_build-indep:
 #	dh_auto_build -- doc # Generate Doxygen HTML documentation.
 
 override_dh_install:
