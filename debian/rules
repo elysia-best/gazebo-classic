@@ -1,17 +1,5 @@
 #!/usr/bin/make -f
 
-# Hardening flags.
-export DEB_BUILD_MAINT_OPTIONS=hardening=+all,-pie
-
-CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
-CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
-CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS)
-LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
-
-# Duplicate flags as CMake is ignoring CPPFLAGS.
-CFLAGS+=$(CPPFLAGS)
-CXXFLAGS+=$(CPPFLAGS)
-
 .PHONY: override_dh_auto_configure	\
 	override_dh_auto_build-indep	\
 	override_dh_install		\
@@ -21,7 +9,9 @@ CXXFLAGS+=$(CPPFLAGS)
 override_dh_auto_configure:
 	dh_auto_configure -- \
                 -DENABLE_TESTS_COMPILATION:BOOL=False \
-                -DCMAKE_BUILD_TYPE=RelWithDebInfo
+		-DUSE_HOST_CFLAGS:BOOL=False \
+		-DUSE_UPSTREAM_CFLAGS:BOOL=False \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 # override_dh_auto_build-indep:
 #	dh_auto_build -- doc # Generate Doxygen HTML documentation.
@@ -34,6 +24,10 @@ override_dh_install:
 	&& rm $$tmp \
 	&& ln -s /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf $$tmp
 
+	# Arial is not free. Replace it by ttf-liberation
+	tmp=`ls debian/gazebo3-common/usr/share/gazebo-*/media/fonts/arial.ttf` \
+	&& rm $$tmp \
+	&& ln -s /usr/share/fonts/truetype/ttf-liberation/LiberationSans-Regular.ttf $$tmp
 
 override_dh_strip:
 	dh_strip -a --dbg-package=libgazebo3-dbg
@@ -42,4 +36,4 @@ override_dh_auto_test:
 	true
 
 %:
-	dh $@ --parallel
+	dh $@ --parallel --buildsystem=cmake
