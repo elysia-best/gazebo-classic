@@ -11,6 +11,7 @@ Build-Depends: cmake,
      doxygen,
      doxygen-latex,
      texlive-fonts-recommended,
+     ttf-liberation,
      libfreeimage-dev,
      libprotoc-dev,
      libprotobuf-dev,
@@ -62,6 +63,8 @@ Package: gazebo3
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+         ttf-liberation,
+         ruby,
 	 libgazebo3 (= ${binary:Version}),
 	 gazebo3-common (= ${source:Version})
 Recommends: gazebo3-plugin-base
@@ -75,7 +78,7 @@ Description: Open Source Robotics Simulator - Binaries
  and physically plausible interactions between objects (it includes an
  accurate simulation of rigid-body physics).
  .
- This package contains then main application application binaries
+ This package contains then main application binaries
 
 Package: libgazebo3
 Section: libs
@@ -109,10 +112,14 @@ Depends: libtbb-dev,
 	 libcurl4-openssl-dev,
 	 libcegui-mk2-dev,
 	 libgts-dev,
+	 robot-player-dev,
+	 libavformat-dev,
+	 libavcodec-dev,
+	 libswscale-dev,
 	 libsdformat-dev,
 	 libgazebo3 (= ${binary:Version}),
 	 gazebo3-common (= ${source:Version}),
-	 gazebo3-plugin-base (= ${source:Version}),
+	 gazebo3-plugin-base (= ${binary:Version}),
 	 ${misc:Depends}
 Multi-Arch: same
 Description: Open Source Robotics Simulator - Development Files
