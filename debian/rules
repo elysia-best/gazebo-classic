@@ -12,17 +12,6 @@ LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 CFLAGS+=$(CPPFLAGS)
 CXXFLAGS+=$(CPPFLAGS)
 
-# Multiarch (if supported).
-DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null)
-
-# Configuration flags.
-CONFIGURE_ARGS=
-
-# If multiarch is supported, override CMAKE_INSTALL_LIB
-ifneq ($(DEB_HOST_MULTIARCH),)
-CONFIGURE_ARGS+=-DCMAKE_INSTALL_LIBDIR:STRING="lib/${DEB_HOST_MULTIARCH}"
-endif
-
 .PHONY: override_dh_auto_configure	\
 	override_dh_auto_build-indep	\
 	override_dh_install		\
@@ -32,8 +21,7 @@ endif
 override_dh_auto_configure:
 	dh_auto_configure -- \
                 -DENABLE_TESTS_COMPILATION:BOOL=False \
-                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-	        $(CONFIGURE_ARGS) \
+                -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 # override_dh_auto_build-indep:
 #	dh_auto_build -- doc # Generate Doxygen HTML documentation.
@@ -42,7 +30,7 @@ override_dh_install:
 	dh_install -- # Install.
 
 	# Get rid of fonts already packaged elsewhere.
-	tmp=`ls debian/gazebo-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf` \
+	tmp=`ls debian/gazebo3-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf` \
 	&& rm $$tmp \
 	&& ln -s /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf $$tmp
 
