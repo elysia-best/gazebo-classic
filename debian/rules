@@ -42,7 +42,7 @@ override_dh_install:
         install -m 644 gazebo/gui/images/gazebo.svg \
             debian/gazebo3/usr/share/icons/hicolor/scalable/apps/gazebo.svg
 
-        # Install desktop file
+        # Install desktop file--with bash-completion
         mkdir -p debian/gazebo3/usr/share/applications/
         install -m 644 ./debian/gazebo.desktop \
             debian/gazebo3/usr/share/applications/
@@ -55,4 +55,4 @@ override_dh_auto_test:
 	true
 
 %:
-	dh $@ --parallel --buildsystem=cmake
+	dh $@ --parallel --buildsystem=cmake --with bash-completion
