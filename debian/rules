@@ -38,13 +38,13 @@ override_dh_install:
 	&& ln -s /usr/share/fonts/truetype/ttf-liberation/LiberationSans-Regular.ttf $$tmp
 
         # Install icon
-        mkdir -p debian/gazebo3/usr/share/icons/hicolor/scalable/apps/
-        install -m 644 gazebo/gui/images/gazebo.svg \
+	mkdir -p debian/gazebo3/usr/share/icons/hicolor/scalable/apps/
+	install -m 644 gazebo/gui/images/gazebo.svg \
             debian/gazebo3/usr/share/icons/hicolor/scalable/apps/gazebo.svg
 
         # Install desktop file--with bash-completion
-        mkdir -p debian/gazebo3/usr/share/applications/
-        install -m 644 ./debian/gazebo.desktop \
+	mkdir -p debian/gazebo3/usr/share/applications/
+	install -m 644 ./debian/gazebo.desktop \
             debian/gazebo3/usr/share/applications/
 
 
