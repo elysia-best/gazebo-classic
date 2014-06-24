@@ -4,7 +4,7 @@
 SSE_FLAGS =
 
 ifeq ($(DEB_HOST_ARCH),amd64)
-SSE_FLAGS = -mfpmath=sse -msse -msse2 -msse3 -mssse3
+SSE_FLAGS = -mfpmath=sse -msse -msse2 -msse3 -mssse3 -DSSE
 endif
 
 .PHONY: override_dh_auto_configure	\
