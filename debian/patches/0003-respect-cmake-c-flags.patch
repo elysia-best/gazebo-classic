@@ -1,0 +1,29 @@
+Description: do not unset CMAKE_C*_FLAGS
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Forwarded: no
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -174,8 +174,6 @@ endif()
+ 
+ #####################################
+ # Handle CFlags
+-unset (CMAKE_C_FLAGS_ALL CACHE)
+-unset (CMAKE_CXX_FLAGS CACHE)
+ 
+ # USE_HOST_CFLAGS (default TRUE)
+ # Will check building host machine for proper cflags 
+diff --git a/gazebo/rendering/skyx/CMakeLists.txt b/gazebo/rendering/skyx/CMakeLists.txt
+index 9be355e..7f3433b 100644
+--- a/gazebo/rendering/skyx/CMakeLists.txt
++++ b/gazebo/rendering/skyx/CMakeLists.txt
+@@ -47,9 +47,6 @@ set (VCLOUDS_SOURCE_FILES
+   src/VClouds/VClouds.cpp
+ )
+ 
+-set (CMAKE_C_FLAGS "")
+-set (CMAKE_CXX_FLAGS "")
+-
+ #set_source_files_properties(${SKYX_SOURCE_FILES} ${SKYX_HEADER_FILES}
+ #                      ${VCLOUDS_SOURCE_FILES} ${VCLOUDS_HEADER_FILES}
+ #                      PROPERTIES COMPILE_FLAGS

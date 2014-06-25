@@ -1,2 +1,3 @@
 0001-respect-linker-flags.patch
 0002-install-deprecated-manpages.patch
+0003-respect-cmake-c-flags.patch
