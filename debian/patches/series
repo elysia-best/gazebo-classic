@@ -2,3 +2,5 @@
 0002-install-deprecated-manpages.patch
 0003-respect-cmake-c-flags.patch
 0004-visibility-skyx.patch
+0005-fix-problems-on-manpage.patch
+0005-fix-problems-on-manpage.patch

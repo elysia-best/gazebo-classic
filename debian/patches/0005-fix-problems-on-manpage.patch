@@ -1,0 +1,181 @@
+Description: Remove unknown roff commands
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Forwarded: no
+
+--- gazebo-3.0.0.orig/tools/gz.1.roff
++++ gazebo-3.0.0/tools/gz.1.roff
+@@ -6,9 +6,7 @@
+ .SH "SYNPOSIS"
+ \fBgz\fR \fIcommand\fR [option]\.\.\. [argument]\.\.\.
+ .
+-.UNINDENT
+ .SH COMMANDS
+-.UNINDENT
+ .SS camera
+ .sp
+ .nf
+@@ -25,7 +23,6 @@ A camera name is required.
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -46,7 +43,6 @@ List all cameras
+ .B \-f, \-\-follow\fR=\fIarg\fR
+ .
+ Model to follow.
+-.UNINDENT
+ .SS debug
+ .sp
+ .nf
+@@ -61,7 +57,6 @@ return the completion list for a given c
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -70,7 +65,6 @@ Print this help message
+ .B \-o, \-\-option\fR=\fIarg\fR
+ .
+ Show the command options.
+-.UNINDENT
+ .SS help
+ .sp
+ .nf
+@@ -84,12 +78,10 @@ Output information about a gz command.
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+ Print this help message
+-.UNINDENT
+ .SS joint
+ .sp
+ .nf
+@@ -106,7 +98,6 @@ A model name and joint name are required
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -163,7 +154,6 @@ Velocity integral gain.
+ .B \-\-vel\-d\fR=\fIarg\fR
+ .
+ Velocity differential gain.
+-.UNINDENT
+ .SS log
+ .sp
+ .nf
+@@ -179,7 +169,6 @@ an active Gazebo server.
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -224,7 +213,6 @@ Path to a log file.
+ .B \-\-filter\fR=\fIarg\fR
+ .
+ Filter output. Valid only for the echo and step commands
+-.UNINDENT
+ .SS model
+ .sp
+ .nf
+@@ -241,7 +229,6 @@ will be used.
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -278,7 +265,6 @@ Spawn model from SDF string, pass by a p
+ .B \-P, \-\-pose\-P arg pitch in radians.
+ .TP
+ .B \-Y, \-\-pose\-Y arg yaw in radians.
+-.UNINDENT
+ .SS physics
+ .sp
+ .nf
+@@ -294,7 +280,6 @@ the first world found on the Gazebo mast
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -319,7 +304,6 @@ Number of iterations.
+ .B \-u, \-\-update\-rate\fR=\fIarg\fR
+ .
+ Target real\-time update rate.
+-.UNINDENT
+ .SS sdf
+ .sp
+ .nf
+@@ -335,7 +319,6 @@ SDF for use with other options.
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -364,7 +347,6 @@ Version of SDF to use with other options
+ .B \-p, \-\-print\fR=\fIarg\fR
+ .
+ Print arg, useful for debugging and as a conversion tool.
+-.UNINDENT
+ .SS stats
+ .sp
+ .nf
+@@ -380,7 +362,6 @@ the Gazebo master will be used.
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -397,7 +378,6 @@ Duration (seconds) to run.
+ .B \-p, \-\-plot
+ .
+ Output comma\-separated values, useful for processing and plotting.
+-.UNINDENT
+ .SS topic
+ .sp
+ .nf
+@@ -413,7 +393,6 @@ the Gazebo master will be used.
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
+@@ -454,7 +433,6 @@ Output data from echo without formatting
+ .B \-d, \-\-duration\fR=\fIarg\fR
+ .
+ Duration (seconds) to run. Applicable with echo, hz, and bw
+-.UNINDENT
+ .SS world
+ .sp
+ .nf
+@@ -470,7 +448,6 @@ the first world found on the Gazebo mast
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-h, \-\-help
+ .
