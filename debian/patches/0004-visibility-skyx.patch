@@ -1,0 +1,19 @@
+Description: skyx classes are not defined proper visiblity
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Forwarded: no
+
+--- a/gazebo/rendering/skyx/include/Prerequisites.h
++++ b/gazebo/rendering/skyx/include/Prerequisites.h
+@@ -45,7 +45,11 @@ http://www.gnu.org/copyleft/lesser.txt.
+     #define DllExport __declspec (dllimport)
+   #endif
+ #else
+-  #define DllExport
++  #if __GNUC__ >= 4
++    #define DllExport __attribute__ ((visibility ("default")))
++  #else
++    #define DllExport
++  #endif
+ #endif
+
+ /// Log macro
