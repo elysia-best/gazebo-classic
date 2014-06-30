@@ -47,12 +47,6 @@ override_dh_install:
 	install -m 644 ./debian/gazebo.desktop \
             debian/gazebo3/usr/share/applications/
 
-	# Install doxygen html documentation
-        install -D debian/gazebo3-doc/usr/share/doc/gazebo3-doc/html
-	install -m 644 -D ./debian/doxygen/html \
-            debian/gazebo3-doc/usr/share/doc/gazebo3-doc/html
-
-
 override_dh_strip:
 	dh_strip -a --dbg-package=libgazebo3-dbg
 
