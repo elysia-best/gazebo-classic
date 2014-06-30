@@ -169,7 +169,7 @@ Description: Open Source Robotics Simulator - Debugging Symbols
 Package: gazebo3-doc
 Architecture: all
 Section: doc
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, libjs-jquery 
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Documentation
  Gazebo is a multi-robot simulator for outdoor environments. Like
