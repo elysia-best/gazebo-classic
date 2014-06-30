@@ -1,0 +1,28 @@
+Description: include a manpage for gzmodel_create
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Bug: https://bitbucket.org/osrf/gazebo/pull-request/1130
+
+--- gazebo-3.0.0.orig/tools/CMakeLists.txt
++++ gazebo-3.0.0/tools/CMakeLists.txt
+@@ -60,6 +60,7 @@ target_link_libraries(gz
+ gz_install_executable(gz)
+ 
+ roffman(gz 1)
++roffman(gzmodel_create 1)
+ 
+ install (PROGRAMS gzmodel_create gzmodel_create DESTINATION ${BIN_INSTALL_DIR})
+ 
+--- /dev/null
++++ gazebo-3.0.0/tools/gzmodel_create.roff
+@@ -0,0 +1,11 @@
++.TH "GZ" "1" "June 2014" "" ""
++.
++.SH "NAME"
++\fBgzmodel_create\fR \- Gazebo command line tool to create a model template
++.
++.SH "SYNPOSIS"
++\fBgzmodel_create\fR \fIdirectory\fR
++.
++.SH DESCRIPTION
++\fBgzmodel_create\fP creates a template of model.config file. The required
++directory argument specifies where to create the model.config file.
