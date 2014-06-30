@@ -1,0 +1,2 @@
+# Arial is not free. Replace it by ttf-liberation
+/usr/share/fonts/truetype/ttf-liberation/LiberationSans-Regular.ttf usr/share/gazebo-3.0/media/fonts/arial.ttf

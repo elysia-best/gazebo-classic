@@ -32,11 +32,6 @@ override_dh_install:
 	&& rm $$tmp \
 	&& ln -s /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf $$tmp
 
-	# Arial is not free. Replace it by ttf-liberation
-	tmp=`ls debian/gazebo3-common/usr/share/gazebo-*/media/fonts/arial.ttf` \
-	&& rm $$tmp \
-	&& ln -s /usr/share/fonts/truetype/ttf-liberation/LiberationSans-Regular.ttf $$tmp
-
         # Install icon
 	mkdir -p debian/gazebo3/usr/share/icons/hicolor/scalable/apps/
 	install -m 644 gazebo/gui/images/gazebo.svg \
