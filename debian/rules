@@ -21,8 +21,8 @@ override_dh_auto_configure:
                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                 -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING="$(SSE_FLAGS)"
 
-#override_dh_auto_build-indep:
-#	dh_auto_build -- doc # Generate Doxygen HTML documentation.
+override_dh_auto_build-indep:
+	dh_auto_build -- doc # Generate Doxygen HTML documentation.
 
 override_dh_install:
 	dh_install -- # Install
@@ -46,6 +46,11 @@ override_dh_install:
 	mkdir -p debian/gazebo3/usr/share/applications/
 	install -m 644 ./debian/gazebo.desktop \
             debian/gazebo3/usr/share/applications/
+
+	# Install doxygen html documentation
+        install -D debian/gazebo3-doc/usr/share/doc/gazebo3-doc/html
+	install -m 644 -D ./debian/doxygen/html \
+            debian/gazebo3-doc/usr/share/doc/gazebo3-doc/html
 
 
 override_dh_strip:
