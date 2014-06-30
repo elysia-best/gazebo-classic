@@ -1,4 +1,4 @@
-gazebo (3.0.0-1) unstable; urgency=low
+gazebo (3.0.0+dfsg-1) unstable; urgency=medium
 
   * Initial release. (Closes: #705440)
 
