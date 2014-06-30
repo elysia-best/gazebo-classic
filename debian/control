@@ -166,7 +166,7 @@ Description: Open Source Robotics Simulator - Debugging Symbols
  .
  This package contains the debugging symbols.
 
-Package: gazebo-doc
+Package: gazebo3-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends}
