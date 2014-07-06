@@ -2,7 +2,7 @@ Source: gazebo
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Jose Luis Rivero <jrivero@osrfoundation.org>
 Section: science
-Priority: extra
+Priority: optional
 Standards-Version: 3.9.5
 Build-Depends: cmake,
      pkg-config,
@@ -153,6 +153,7 @@ Description: Open Source Robotics Simulator - base plug-ins
 Package: libgazebo3-dbg
 Architecture: any
 Section: debug
+Priority: extra
 Depends: libgazebo3 (= ${binary:Version}),
          ${misc:Depends}
 Multi-Arch: foreign
