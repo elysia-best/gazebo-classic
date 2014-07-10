@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Open Source Robotics Foundation
+ * Copyright (C) 2012-2014 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,20 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "math/Helpers.hh"
-#include "math/Angle.hh"
-#include "math/Vector2d.hh"
-#include "math/Vector3.hh"
-#include "math/Matrix4.hh"
-#include "math/Quaternion.hh"
-#include "common/Console.hh"
-#include "common/Material.hh"
-#include "common/Mesh.hh"
-#include "common/Skeleton.hh"
-#include "common/SkeletonAnimation.hh"
-#include "common/ColladaLoader.hh"
-#include "common/SystemPaths.hh"
-#include "common/Exception.hh"
+#include "gazebo/math/Helpers.hh"
+#include "gazebo/math/Angle.hh"
+#include "gazebo/math/Vector2d.hh"
+#include "gazebo/math/Vector3.hh"
+#include "gazebo/math/Matrix4.hh"
+#include "gazebo/math/Quaternion.hh"
+#include "gazebo/common/Console.hh"
+#include "gazebo/common/Material.hh"
+#include "gazebo/common/Mesh.hh"
+#include "gazebo/common/Skeleton.hh"
+#include "gazebo/common/SkeletonAnimation.hh"
+#include "gazebo/common/ColladaLoader.hh"
+#include "gazebo/common/SystemPaths.hh"
+#include "gazebo/common/Exception.hh"
 
 using namespace gazebo;
 using namespace common;
@@ -284,7 +284,7 @@ math::Matrix4 ColladaLoader::LoadNodeTransform(TiXmlElement *_elem)
 
 /////////////////////////////////////////////////
 void ColladaLoader::LoadController(TiXmlElement *_contrXml,
-      TiXmlElement *_skelXml, const math::Matrix4 _transform, Mesh *_mesh)
+      TiXmlElement *_skelXml, const math::Matrix4 &_transform, Mesh *_mesh)
 {
   Skeleton *skeleton = new Skeleton(this->LoadSkeletonNodes(_skelXml, NULL));
   _mesh->SetSkeleton(skeleton);
@@ -860,6 +860,9 @@ void ColladaLoader::LoadNormals(const std::string &_id,
     const math::Matrix4 &_transform,
     std::vector<math::Vector3> &_values)
 {
+  math::Matrix4 rotMat = _transform;
+  rotMat.SetTranslate(math::Vector3::Zero);
+
   TiXmlElement *normalsXml = this->GetElementId("source", _id);
   if (!normalsXml)
   {
@@ -882,7 +885,7 @@ void ColladaLoader::LoadNormals(const std::string &_id,
     iss >> vec.x >> vec.y >> vec.z;
     if (iss)
     {
-      vec = _transform * vec;
+      vec = rotMat * vec;
       vec.Normalize();
       _values.push_back(vec);
     }
