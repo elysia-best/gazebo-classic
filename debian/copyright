@@ -16,24 +16,24 @@ License: GPL-2
 
 Files: gazebo/rendering/skyx/*
 Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
-License: LGPLv3+
+License: LGPL-3+
  See '/usr/share/common-licenses/LGPL-3'
 
-Files:  qtbuttonpropertybrowser.cpp \
-	qtbuttonpropertybrowser.h \
-	qteditorfactory.cpp \
-	qteditorfactory.h \
-	qtgroupboxpropertybrowser.cpp \
-	qtgroupboxpropertybrowser.h \
-	qtpropertybrowser.cpp \
-	qtpropertybrowser.h \
-	qtpropertybrowserutils.cpp \
-	qtpropertybrowserutils_p.h \
-	qtpropertymanager.cpp \
-	qtpropertymanager.h \
-	qttreepropertybrowser.cpp \
-	qttreepropertybrowser.h \
-	qtvariantproperty.cpp \
+Files:  qtbuttonpropertybrowser.cpp
+	qtbuttonpropertybrowser.h
+	qteditorfactory.cpp
+	qteditorfactory.h
+	qtgroupboxpropertybrowser.cpp
+	qtgroupboxpropertybrowser.h
+	qtpropertybrowser.cpp
+	qtpropertybrowser.h
+	qtpropertybrowserutils.cpp
+	qtpropertybrowserutils_p.h
+	qtpropertymanager.cpp
+	qtpropertymanager.h
+	qttreepropertybrowser.cpp
+	qttreepropertybrowser.h
+	qtvariantproperty.cpp
 	qtvariantproperty.h
 Copyright: 2010 Nokia Corporation and/or its subsidiary(-ies)
 License: BSD-3-clause
@@ -53,7 +53,7 @@ License: LGPL-2.1 or BSD-3-clause
 
 Files: gazebo/deps/opende/ou/*
 Copyright: 2008 Oleh Derevenko
-License: LGPLv3+ or BSD-3-clause or ZLIB
+License: LGPL-3+ or BSD-3-clause or Zlib
  See '/usr/share/common-licenses/LGPL-3'
 
 Files: gazebo/deps/threadpool/*
@@ -71,6 +71,7 @@ License: MIT
 Files: gazebo/deps/ann/*
 Copyright: 1997-2005 University of Maryland and Sunil Arya and David Mount
 License: LGPL
+ See '/usr/share/common-licenses/LGPL'.
 
 Files: test/gtest/*
 Copyright: 2003, Google Inc.
