@@ -16,8 +16,8 @@ License: GPL-2
 
 Files: gazebo/rendering/skyx/*
 Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
-License: LGPL-3+
- See '/usr/share/common-licenses/LGPL-3'
+License: LGPL-2+
+ See '/usr/share/common-licenses/LGPL-2'
 
 Files:  qtbuttonpropertybrowser.cpp
 	qtbuttonpropertybrowser.h
