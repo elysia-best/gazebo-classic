@@ -73,6 +73,10 @@ Copyright: 1997-2005 University of Maryland and Sunil Arya and David Mount
 License: LGPL
  See '/usr/share/common-licenses/LGPL'.
 
+Files: gazebo/deps/fcl/*
+Copyright: 2011, Willow Garage, Inc
+License: BSD-3-clause
+
 Files: test/gtest/*
 Copyright: 2003, Google Inc.
            2005, Google Inc.
