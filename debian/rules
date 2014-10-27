@@ -29,10 +29,8 @@ override_dh_auto_build-indep:
 override_dh_install:
 	dh_install -- # Install
 
-	# Get rid of fonts already packaged elsewhere.
-	tmp=`ls debian/gazebo3-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf` \
-	&& rm $$tmp \
-	&& ln -s /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf $$tmp
+        # Get rid of fonts already packaged elsewhere.
+	rm debian/gazebo3-common/usr/share/gazebo-3.0/media/gui/fonts/DejaVuSans.ttf
 
         # Install icon
 	mkdir -p debian/gazebo3/usr/share/icons/hicolor/scalable/apps/
