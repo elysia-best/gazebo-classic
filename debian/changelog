@@ -1,3 +1,12 @@
+gazebo (3.0.0+dfsg-2) unstable; urgency=medium
+
+  * Added copyright for fcl (thanks to Thorsten Alteholz)
+  * Modify skyx copyright to be LGPLv2+
+  * Missing command to get DEB_HOST_ARCH in rules file
+  * Fix font file linking (Closes: #766303)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 27 Oct 2014 22:26:51 +0000
+
 gazebo (3.0.0+dfsg-1) unstable; urgency=medium
 
   * Initial release. (Closes: #705440)
