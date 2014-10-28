@@ -3,7 +3,7 @@ Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.
 Uploaders: Jose Luis Rivero <jrivero@osrfoundation.org>
 Section: science
 Priority: optional
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Build-Depends: cmake,
      pkg-config,
      debhelper (>= 9),
