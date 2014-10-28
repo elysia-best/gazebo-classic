@@ -1,5 +1,6 @@
 gazebo (3.0.0+dfsg-2) unstable; urgency=medium
 
+  * Update standard version to 3.9.6
   * Added copyright for fcl (thanks to Thorsten Alteholz)
   * Modify skyx copyright to be LGPLv2+
   * Missing command to get DEB_HOST_ARCH in rules file
