@@ -30,17 +30,7 @@ override_dh_install:
 	dh_install -- # Install
 
         # Get rid of fonts already packaged elsewhere.
-	rm debian/gazebo3-common/usr/share/gazebo-3.0/media/gui/fonts/DejaVuSans.ttf
-
-        # Install icon
-	mkdir -p debian/gazebo3/usr/share/icons/hicolor/scalable/apps/
-	install -m 644 gazebo/gui/images/gazebo.svg \
-            debian/gazebo3/usr/share/icons/hicolor/scalable/apps/gazebo.svg
-
-        # Install desktop file--with bash-completion
-	mkdir -p debian/gazebo3/usr/share/applications/
-	install -m 644 ./debian/gazebo.desktop \
-            debian/gazebo3/usr/share/applications/
+	rm -f debian/gazebo3-common/usr/share/gazebo-3.0/media/gui/fonts/DejaVuSans.ttf
 
 override_dh_strip:
 	dh_strip -a --dbg-package=libgazebo3-dbg
