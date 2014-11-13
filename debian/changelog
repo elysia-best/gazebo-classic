@@ -1,3 +1,10 @@
+gazebo (3.0.0+dfsg-3) unstable; urgency=medium
+
+  * Team upload.
+  * [84c0ad8] Simplify d/rules. Fix install-command. (Closes: #766303)
+
+ -- Anton Gladky <gladk@debian.org>  Thu, 13 Nov 2014 17:58:47 +0100
+
 gazebo (3.0.0+dfsg-2) unstable; urgency=medium
 
   * Enable simbody support
