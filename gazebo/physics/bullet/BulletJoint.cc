@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Open Source Robotics Foundation
+ * Copyright (C) 2012-2015 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,10 +63,6 @@ void BulletJoint::Load(sdf::ElementPtr _sdf)
     {
       sdf::ElementPtr dynamicsElem = axisElem->GetElement("dynamics");
 
-      if (dynamicsElem->HasElement("damping"))
-      {
-        this->SetDamping(0, dynamicsElem->Get<double>("damping"));
-      }
       if (dynamicsElem->HasElement("friction"))
       {
         sdf::ElementPtr frictionElem = dynamicsElem->GetElement("friction");
@@ -82,10 +78,6 @@ void BulletJoint::Load(sdf::ElementPtr _sdf)
     {
       sdf::ElementPtr dynamicsElem = axisElem->GetElement("dynamics");
 
-      if (dynamicsElem->HasElement("damping"))
-      {
-        this->SetDamping(1, dynamicsElem->Get<double>("damping"));
-      }
       if (dynamicsElem->HasElement("friction"))
       {
         sdf::ElementPtr frictionElem = dynamicsElem->GetElement("friction");
@@ -531,6 +523,52 @@ math::Vector3 BulletJoint::GetLinkTorque(unsigned int /*_index*/) const
 {
   gzerr << "Not implement in Bullet\n";
   return math::Vector3();
+}
+
+//////////////////////////////////////////////////
+bool BulletJoint::SetParam(const std::string &/*_key*/,
+    unsigned int /*_index*/,
+    const boost::any &/*_value*/)
+{
+  gzdbg << "Not implement in Bullet\n";
+  return false;
+}
+
+//////////////////////////////////////////////////
+double BulletJoint::GetParam(const std::string &_key,
+    unsigned int _index)
+{
+  if (_key == "hi_stop")
+  {
+    return this->GetHighStop(_index).Radian();
+  }
+  else if (_key == "lo_stop")
+  {
+    return this->GetLowStop(_index).Radian();
+  }
+  gzerr << "GetParam unrecognized parameter ["
+        << _key
+        << "]"
+        << std::endl;
+  return 0;
+}
+
+//////////////////////////////////////////////////
+math::Angle BulletJoint::GetHighStop(unsigned int _index)
+{
+  return this->GetUpperLimit(_index);
+}
+
+//////////////////////////////////////////////////
+math::Angle BulletJoint::GetLowStop(unsigned int _index)
+{
+  return this->GetLowerLimit(_index);
+}
+
+//////////////////////////////////////////////////
+bool BulletJoint::SetPosition(unsigned int _index, double _position)
+{
+  return Joint::SetPositionMaximal(_index, _position);
 }
 
 //////////////////////////////////////////////////

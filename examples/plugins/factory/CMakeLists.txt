@@ -19,6 +19,4 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 add_library(factory SHARED factory.cc)
 target_link_libraries(factory
   ${GAZEBO_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${PROTUBUF_LIBRARIES}
 )
