@@ -1,3 +1,14 @@
+gazebo (5.0.1+dfsg-1) unstable; urgency=medium
+
+  * [4b24607] Imported Upstream version 5.0.1
+  * [556803f] Update install files to the new version
+  * [3231500] Rename -dev file to libgazebo5-dev
+  * [b6b788a] Update control file to gazebo5
+  * [922909e] Update all references to gazebo3 to gazebo5
+  * [cb4df5e] Remove patches that are now in upstream code
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 02 Feb 2015 18:19:57 +0100
+
 gazebo (3.0.0+dfsg-3) unstable; urgency=medium
 
   * Team upload.
