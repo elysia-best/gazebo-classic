@@ -54,8 +54,7 @@ void JointVisual::Load(ConstJointPtr &_msg)
   dPtr->axisVisual->Load();
 
   this->SetPosition(msgs::Convert(_msg->pose().position()));
-  this->SetRotation(this->GetRotation() *
-      msgs::Convert(_msg->pose().orientation()));
+  this->SetRotation(msgs::Convert(_msg->pose().orientation()));
 
   if (_msg->has_axis2())
   {

@@ -22,8 +22,6 @@
 
 #include <sdf/sdf.hh>
 
-#include <sdf/sdf.hh>
-
 #include "gazebo/gazebo.hh"
 #include "gazebo/transport/transport.hh"
 

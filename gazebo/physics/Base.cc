@@ -303,12 +303,6 @@ std::string Base::GetScopedName(bool _prependWorldName) const
 //////////////////////////////////////////////////
 void Base::ComputeScopedName()
 {
-  return this->scopedName;
-}
-
-//////////////////////////////////////////////////
-void Base::ComputeScopedName()
-{
   BasePtr p = this->parent;
   this->scopedName = this->GetName();
 

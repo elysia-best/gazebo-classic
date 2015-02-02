@@ -60,15 +60,11 @@ namespace gazebo
       public: void Reset();
 
       /// \brief Set the positions of a Joint by name.
-      /// Warning: This function is disabled since collisions are not
-      /// updated correctly. See issue #1138
       /// \sa JointController::SetJointPosition(JointPtr, double)
       public: void SetJointPosition(
         const std::string &_name, double _position, int _index = 0);
 
       /// \brief Set the positions of a set of Joint's.
-      /// Warning: This function is disabled since collisions are not
-      /// updated correctly. See issue #1138
       /// \sa JointController::SetJointPosition(JointPtr, double)
       public: void SetJointPositions(
                   const std::map<std::string, double> &_jointPositions);

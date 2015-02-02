@@ -117,11 +117,6 @@ namespace gazebo
       /// \param[out] All the sensor types.
       public: void GetSensorTypes(std::vector<std::string> &_types) const;
 
-      /// \brief Deprecated.
-      public: std::string CreateSensor(sdf::ElementPtr _elem,
-                  const std::string &_worldName,
-                  const std::string &_parentName) GAZEBO_DEPRECATED(2.0);
-
       /// \brief Add a sensor from an SDF element. This function will also Load
       /// and Init the sensor.
       /// \param[in] _elem The SDF element that describes the sensor

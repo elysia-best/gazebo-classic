@@ -625,12 +625,6 @@ double ODEJoint::GetParam(const std::string &_key, unsigned int _index)
 }
 
 //////////////////////////////////////////////////
-double ODEJoint::GetAttribute(const std::string &_key, unsigned int _index)
-{
-  return this->GetParam(_key, _index);
-}
-
-//////////////////////////////////////////////////
 void ODEJoint::Reset()
 {
   if (this->jointId)
@@ -843,18 +837,6 @@ bool ODEJoint::UsesImplicitSpringDamper()
 void ODEJoint::UseImplicitSpringDamper(const bool _implicit)
 {
   this->useImplicitSpringDamper = _implicit;
-}
-
-//////////////////////////////////////////////////
-void ODEJoint::ApplyImplicitStiffnessDamping()
-{
-  this->ApplyImplicitStiffnessDamping();
-}
-
-//////////////////////////////////////////////////
-bool ODEJoint::UsesImplicitSpringDamper()
-{
-  return this->useImplicitSpringDamper;
 }
 
 //////////////////////////////////////////////////

@@ -300,9 +300,6 @@ void JointController::SetJointPosition(const std::string & _name,
 void JointController::SetJointPositions(
     const std::map<std::string, double> & _jointPositions)
 {
-  gzwarn << "Setting joint positions is disabled, see issue #1138\n";
-  return;
-
   // go through all joints in this model and update each one
   //   for each joint update, recursively update all children
   std::map<std::string, JointPtr>::iterator iter;

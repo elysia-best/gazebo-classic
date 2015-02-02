@@ -632,12 +632,6 @@ void World::Step()
 //////////////////////////////////////////////////
 void World::Step(unsigned int _steps)
 {
-  this->Step(_steps);
-}
-
-//////////////////////////////////////////////////
-void World::Step(unsigned int _steps)
-{
   if (!this->IsPaused())
   {
     gzwarn << "Calling World::Step(steps) while world is not paused\n";
@@ -825,12 +819,6 @@ PhysicsEnginePtr World::GetPhysicsEngine() const
 common::SphericalCoordinatesPtr World::GetSphericalCoordinates() const
 {
   return this->dataPtr->sphericalCoordinates;
-}
-
-//////////////////////////////////////////////////
-common::SphericalCoordinatesPtr World::GetSphericalCoordinates() const
-{
-  return this->sphericalCoordinates;
 }
 
 //////////////////////////////////////////////////
@@ -1022,9 +1010,6 @@ void World::Reset()
 
     math::Rand::SetSeed(math::Rand::GetSeed());
     this->dataPtr->physicsEngine->SetSeed(math::Rand::GetSeed());
-
-    math::Rand::SetSeed(math::Rand::GetSeed());
-    this->physicsEngine->SetSeed(math::Rand::GetSeed());
 
     this->ResetTime();
     this->ResetEntities(Base::BASE);
@@ -1472,15 +1457,6 @@ void World::ProcessRequestMsgs()
     {
       msgs::SphericalCoordinates sphereCoordMsg;
       msgs::Set(&sphereCoordMsg, *(this->dataPtr->sphericalCoordinates));
-
-      std::string *serializedData = response.mutable_serialized_data();
-      sphereCoordMsg.SerializeToString(serializedData);
-      response.set_type(sphereCoordMsg.GetTypeName());
-    }
-    else if ((*iter).request() == "spherical_coordinates_info")
-    {
-      msgs::SphericalCoordinates sphereCoordMsg;
-      msgs::Set(&sphereCoordMsg, *(this->sphericalCoordinates));
 
       std::string *serializedData = response.mutable_serialized_data();
       sphereCoordMsg.SerializeToString(serializedData);
@@ -2100,7 +2076,6 @@ void World::RemoveModel(const std::string &_name)
       }
     }
   }
-}
 
   {
     boost::recursive_mutex::scoped_lock lock(

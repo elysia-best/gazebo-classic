@@ -180,7 +180,6 @@ void TopicManager::ProcessNodes(bool _onlyOut)
 
   if (!this->pauseIncoming && !_onlyOut)
   {
-    int s = 0;
     {
       int s = 0;
       boost::recursive_mutex::scoped_lock lock(this->nodeMutex);

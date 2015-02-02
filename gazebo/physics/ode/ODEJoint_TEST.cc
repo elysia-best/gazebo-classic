@@ -84,11 +84,6 @@ TEST_F(ODEJoint_TEST, ImplicitDamping)
     EXPECT_TRUE(joint->UsesImplicitSpringDamper());
   }
 
-  EXPECT_TRUE(boost::dynamic_pointer_cast<physics::ODEJoint>(joint_0)->
-      UsesImplicitSpringDamper());
-  EXPECT_TRUE(boost::dynamic_pointer_cast<physics::ODEJoint>(joint_1)->
-      UsesImplicitSpringDamper());
-
   gzdbg << "-------------------Test 1 (y)-------------------\n";
   physics->SetGravity(math::Vector3(0, 10, 0));
   world->Step(100);

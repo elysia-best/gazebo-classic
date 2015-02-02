@@ -117,8 +117,6 @@ void Actor::Load(sdf::ElementPtr _sdf)
     this->visualName = actorLinkName + "::"
                              + actorName + "_visual";
 
-    this->visualId = gazebo::physics::getUniqueId();
-
     for (NodeMapIter iter = nodes.begin(); iter != nodes.end(); ++iter)
     {
       SkeletonNode* bone = iter->second;

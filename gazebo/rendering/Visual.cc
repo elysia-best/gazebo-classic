@@ -1421,7 +1421,6 @@ void Visual::SetHighlighted(bool _highlighted)
   {
     this->dataPtr->boundingBox->SetVisible(false);
   }
-  return false;
 }
 
 //////////////////////////////////////////////////

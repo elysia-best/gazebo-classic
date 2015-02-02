@@ -397,17 +397,3 @@ void BuildingEditorPalette::mousePressEvent(QMouseEvent * /*_event*/)
   // Cancel draw mode
   gui::editor::Events::createBuildingEditorItem(std::string());
 }
-
-/////////////////////////////////////////////////
-void BuildingEditorPalette::OnCreateEditorItem(const std::string &_type)
-{
-  if (_type.empty())
-  {
-    // Uncheck all the buttons
-    for (std::list<QPushButton *>::iterator iter = this->brushes.begin();
-        iter != this->brushes.end(); ++iter)
-    {
-      (*iter)->setChecked(false);
-    }
-  }
-}

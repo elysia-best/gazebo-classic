@@ -112,13 +112,6 @@ namespace gazebo
       /// rate.
       public: void Render(bool _force = false);
 
-      /// \brief Render the camera.
-      /// Called after the pre-render signal. This function will generate
-      /// camera images.
-      /// \param[in] _force Force camera to render. Ignore camera update
-      /// rate.
-      public: void Render(bool _force);
-
       /// \brief Post render
       ///
       /// Called afer the render signal.

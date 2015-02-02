@@ -1271,9 +1271,7 @@ bool Joint::FindAllConnectedLinks(const LinkPtr &_originalParentLink,
     _connectedLinks.clear();
     return false;
   }
-
-  // Legacy support for specifying axis in parent model frame (#494)
-  if (this->axisParentModelFrame[_index])
+  else
   {
     // add this->childLink to the list of descendent child links (should be
     // the very first one added).
