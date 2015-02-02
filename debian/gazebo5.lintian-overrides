@@ -1,12 +1,7 @@
 # There is one binary (symlink) with the plain name (no version)
 # with the corresponding manpage, that are the ones really used
 # by the users.
-binary-without-manpage usr/bin/gazebo-3.0.0
-binary-without-manpage usr/bin/gz-3.0.0
-binary-without-manpage usr/bin/gzclient-3.0.0
-binary-without-manpage usr/bin/gzfactory-3.0.0
-binary-without-manpage usr/bin/gzlog-3.0.0
-binary-without-manpage usr/bin/gzsdf-3.0.0
-binary-without-manpage usr/bin/gzserver-3.0.0
-binary-without-manpage usr/bin/gzstats-3.0.0
-binary-without-manpage usr/bin/gztopic-3.0.0
+binary-without-manpage usr/bin/gazebo-5.0.0
+binary-without-manpage usr/bin/gz-5.0.0
+binary-without-manpage usr/bin/gzclient-5.0.0
+binary-without-manpage usr/bin/gzserver-5.0.0
