@@ -30,10 +30,10 @@ override_dh_install:
 	dh_install -- # Install
 
         # Get rid of fonts already packaged elsewhere.
-	rm -f debian/gazebo3-common/usr/share/gazebo-3.0/media/gui/fonts/DejaVuSans.ttf
+	rm -f debian/gazebo5-common/usr/share/gazebo-3.0/media/gui/fonts/DejaVuSans.ttf
 
 override_dh_strip:
-	dh_strip -a --dbg-package=libgazebo3-dbg
+	dh_strip -a --dbg-package=libgazebo5-dbg
 
 override_dh_auto_test:
 	# Tests needs an X server running and GPU acceleration
