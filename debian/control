@@ -21,7 +21,7 @@ Build-Depends: cmake,
      libtinyxml-dev,
      libtar-dev,
      libtbb-dev,
-     libogre-1.8-dev,
+     libogre-1.9-dev,
      libxml2-dev,
      libqt4-dev,
      libltdl-dev,
@@ -32,14 +32,16 @@ Build-Depends: cmake,
      libboost-program-options-dev,
      libboost-regex-dev,
      libboost-iostreams-dev,
-     libcegui-mk2-dev,
      libgts-dev,
      libavformat-dev,
      libavcodec-dev,
      libswscale-dev,
-     libsdformat-dev (>= 2.0.0),
+     libusb-1.0-0-dev,
+     libspnav-dev,
+     libsdformat-dev (>= 2.1.0),
      libbullet-dev (>= 2.82),
-     libsimbody-dev,
+     libsimbody-dev (>= 3.0.0),
+     libsimbody-dev (<< 4.0.0),
      robot-player-dev,
      libgdal-dev,
      ruby-ronn
@@ -47,7 +49,7 @@ Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/gazebo.
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
 
-Package: gazebo3-common
+Package: gazebo5-common
 Architecture: all
 Depends: ttf-dejavu-core, ${misc:Depends}
 Multi-Arch: foreign
@@ -62,16 +64,16 @@ Description: Open Source Robotics Simulator - Shared files
  This package contains shared files such as 3d models, worlds and
  robots.
 
-Package: gazebo3
+Package: gazebo5
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          ttf-liberation,
          ruby,
-	 libgazebo3 (= ${binary:Version}),
-	 gazebo3-common (= ${source:Version})
-Recommends: gazebo3-plugin-base
-Suggests: gazebo3-doc
+	 libgazebo5 (= ${binary:Version}),
+	 gazebo5-common (= ${source:Version})
+Recommends: gazebo5-plugin-base
+Suggests: gazebo5-doc
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Binaries
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -83,7 +85,7 @@ Description: Open Source Robotics Simulator - Binaries
  .
  This package contains then main application binaries
 
-Package: libgazebo3
+Package: libgazebo5
 Section: libs
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
@@ -99,7 +101,7 @@ Description: Open Source Robotics Simulator - shared library
  .
  This package gathers shared libraries used
 
-Package: libgazebo-dev
+Package: libgazebo5-dev
 Architecture: any
 Section: libdevel
 Depends: libtbb-dev,
@@ -110,22 +112,22 @@ Depends: libtbb-dev,
 	 libprotobuf-dev,
 	 libboost-all-dev,
 	 freeglut3-dev,
-	 libogre-1.8-dev,
+	 libogre-1.9-dev,
 	 libtar-dev,
 	 libcurl4-openssl-dev,
-	 libcegui-mk2-dev,
 	 libgts-dev,
+         libusb-1.0-0-dev,
+         libgdal-dev,
 	 robot-player-dev,
 	 libavformat-dev,
 	 libavcodec-dev,
 	 libswscale-dev,
-	 libsdformat-dev (>= 2.0.0),
+	 libsdformat-dev (>= 2.1.0),
 	 libsimbody-dev,
 	 robot-player-dev,
-	 libgdal-dev,
-	 libgazebo3 (= ${binary:Version}),
-	 gazebo3-common (= ${source:Version}),
-	 gazebo3-plugin-base (= ${binary:Version}),
+	 libgazebo5 (= ${binary:Version}),
+	 gazebo5-common (= ${source:Version}),
+	 gazebo5-plugin-base (= ${binary:Version}),
 	 ${misc:Depends}
 Multi-Arch: same
 Description: Open Source Robotics Simulator - Development Files
@@ -139,7 +141,7 @@ Description: Open Source Robotics Simulator - Development Files
  This package contains development files (headers, shared library
  symbolic link and pkg-config file).
 
-Package: gazebo3-plugin-base
+Package: gazebo5-plugin-base
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends}
@@ -155,11 +157,11 @@ Description: Open Source Robotics Simulator - base plug-ins
  .
  This package gathers built-in plugins.
 
-Package: libgazebo3-dbg
+Package: libgazebo5-dbg
 Architecture: any
 Section: debug
 Priority: extra
-Depends: libgazebo3 (= ${binary:Version}),
+Depends: libgazebo5 (= ${binary:Version}),
          ${misc:Depends}
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Debugging Symbols
@@ -172,7 +174,7 @@ Description: Open Source Robotics Simulator - Debugging Symbols
  .
  This package contains the debugging symbols.
 
-Package: gazebo3-doc
+Package: gazebo5-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends}, libjs-jquery 
