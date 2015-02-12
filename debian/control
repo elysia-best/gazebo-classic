@@ -129,6 +129,8 @@ Depends: libtbb-dev,
 	 gazebo5-common (= ${source:Version}),
 	 gazebo5-plugin-base (= ${binary:Version}),
 	 ${misc:Depends}
+Replaces: libgazebo-dev (<< 5.0.0)
+Breaks: libgazebo-dev (<< 5.0.0)
 Multi-Arch: same
 Description: Open Source Robotics Simulator - Development Files
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -140,6 +142,14 @@ Description: Open Source Robotics Simulator - Development Files
  .
  This package contains development files (headers, shared library
  symbolic link and pkg-config file).
+
+Package: libgazebo-dev
+Depends: libgazebo5-dev, ${misc:Depends}
+Architecture: all
+Priority: extra
+Section: oldlibs
+Description: transitional dummy package to libgazebo5-dev
+ This is a transitional dummy package. It can safely be removed.
 
 Package: gazebo5-plugin-base
 Architecture: any
