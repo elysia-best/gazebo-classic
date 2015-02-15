@@ -1,11 +1,6 @@
-gazebo (5.0.1+dfsg-2) unstable; urgency=medium
-
-  * [f2a16d5] Added libgazebo5-dev transitional package
-
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 12 Feb 2015 02:39:29 +0000
-
 gazebo (5.0.1+dfsg-1) unstable; urgency=medium
 
+  * [f2a16d5] Added libgazebo5-dev transitional package
   * [4b24607] Imported Upstream version 5.0.1
   * [556803f] Update install files to the new version
   * [3231500] Rename -dev file to libgazebo5-dev
@@ -13,7 +8,7 @@ gazebo (5.0.1+dfsg-1) unstable; urgency=medium
   * [922909e] Update all references to gazebo3 to gazebo5
   * [cb4df5e] Remove patches that are now in upstream code
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 02 Feb 2015 18:19:57 +0100
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 12 Feb 2015 02:39:29 +0000
 
 gazebo (3.0.0+dfsg-3) unstable; urgency=medium
 
