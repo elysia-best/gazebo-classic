@@ -1,4 +1,4 @@
-gazebo (5.0.1+dfsg-1) unstable; urgency=medium
+gazebo (5.0.1+dfsg-1~exp1) experimental; urgency=medium
 
   * [f2a16d5] Added libgazebo5-dev transitional package
   * [4b24607] Imported Upstream version 5.0.1. (Closes: #766748)
