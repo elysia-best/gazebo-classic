@@ -21,11 +21,15 @@ License: GPL-2
  See `/usr/share/common-licenses/GPL-2'.
 
 Files: media/fonts/maiden.ttf
-Copyright: 1996, Iron Maiden TTF by LCF, Timour Jgenti
+Copyright: 1996 Iron Maiden TTF by LCF, Timour Jgenti
 
 Files: media/gui/fonts/DejaVuSans.ttf
-Copyright: 2003, Bitstream, Inc.
+Copyright: 2003 Bitstream, Inc.
 License: BITSTREAM-VERA-FONTS
+
+Files: media/rtshaderlib/*
+Copyright: 2000-2012 Torus Knot Software Ltd
+License: MIT
 
 Files: gazebo/rendering/skyx/*
 Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
