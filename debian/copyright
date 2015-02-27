@@ -11,7 +11,7 @@ License: Apache
 
 Files: debian/*
 Copyright: 2013, Thomas Moulard <thomas.moulard@gmail.com>
-           2014, Jose Luis Rivero <jrivero@osrfoundation.org>
+           2014-2015, Jose Luis Rivero <jrivero@osrfoundation.org>
 License: GPL-2
  See `/usr/share/common-licenses/GPL-2'.
 
@@ -19,9 +19,6 @@ Files: cmake/Ronn2Man.cmake
 Copyright: Emmanuel Roullit <emmanuel@netsniff-ng.org>
 License: GPL-2
  See `/usr/share/common-licenses/GPL-2'.
-
-Files: media/fonts/maiden.ttf
-Copyright: 1996 Iron Maiden TTF by LCF, Timour Jgenti
 
 Files: media/gui/fonts/DejaVuSans.ttf
 Copyright: 2003 Bitstream, Inc.
