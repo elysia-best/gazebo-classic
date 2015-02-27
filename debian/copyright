@@ -33,61 +33,61 @@ Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
 License: LGPL-2+
  See '/usr/share/common-licenses/LGPL-2'
 
-Files:  qtbuttonpropertybrowser.cpp
-	qtbuttonpropertybrowser.h
-	qteditorfactory.cpp
-	qteditorfactory.h
-	qtgroupboxpropertybrowser.cpp
-	qtgroupboxpropertybrowser.h
-	qtpropertybrowser.cpp
-	qtpropertybrowser.h
-	qtpropertybrowserutils.cpp
-	qtpropertybrowserutils_p.h
-	qtpropertymanager.cpp
-	qtpropertymanager.h
-	qttreepropertybrowser.cpp
-	qttreepropertybrowser.h
-	qtvariantproperty.cpp
-	qtvariantproperty.h
+Files:  gazebo/gui/qtpropertybrowser/qtbuttonpropertybrowser.cpp
+	gazebo/gui/qtpropertybrowser/qtbuttonpropertybrowser.h
+	gazebo/gui/qtpropertybrowser/qteditorfactory.cpp
+	gazebo/gui/qtpropertybrowser/qteditorfactory.h
+	gazebo/gui/qtpropertybrowser/qtgroupboxpropertybrowser.cpp
+	gazebo/gui/qtpropertybrowser/qtgroupboxpropertybrowser.h
+	gazebo/gui/qtpropertybrowser/qtpropertybrowser.cpp
+	gazebo/gui/qtpropertybrowser/qtpropertybrowser.h
+	gazebo/gui/qtpropertybrowser/qtpropertybrowserutils.cpp
+	gazebo/gui/qtpropertybrowser/qtpropertybrowserutils_p.h
+	gazebo/gui/qtpropertybrowser/qtpropertymanager.cpp
+	gazebo/gui/qtpropertybrowser/qtpropertymanager.h
+	gazebo/gui/qtpropertybrowser/qttreepropertybrowser.cpp
+	gazebo/gui/qtpropertybrowser/qttreepropertybrowser.h
+	gazebo/gui/qtpropertybrowser/qtvariantproperty.cpp
+	gazebo/gui/qtpropertybrowser/qtvariantproperty.h
 Copyright: 2010 Nokia Corporation and/or its subsidiary(-ies)
 License: BSD-3-clause
 
-Files: gazebo/deps/opende/*
+Files: deps/opende/*
 Copyright: 1993 by Sun Microsystems, Inc
 	   2001 Pierre Terdiman
 	   2008 Oleh Derevenko
 	   2001-2007, Russell L. Smith]
 License: BSD-3-clause, 
 
-Files: gazebo/deps/opende/GIMPACT/*
+Files: deps/opende/GIMPACT/*
 Copyright: 1991, 1999 Free Software Foundation, Inc,
 	   2006 Francisco León
 License: LGPL-2.1 or BSD-3-clause
  See '/usr/share/common-licenses/LGPL-2.1'.
 
-Files: gazebo/deps/opende/ou/*
+Files: deps/opende/ou/*
 Copyright: 2008 Oleh Derevenko
 License: LGPL-3+ or BSD-3-clause or Zlib
  See '/usr/share/common-licenses/LGPL-3'
 
-Files: gazebo/deps/threadpool/*
+Files: deps/threadpool/*
 Copyright: 2005-2007 Philipp Henkel
 License: BSL-1.0
 
-Files: gazebo/deps/libccd/*
+Files: deps/libccd/*
 Copyright: 2010-2011 Daniel Fiser <danfis@danfis.cz>
 License: BSD-2-clause
 
-Files: gazebo/deps/parallel_quickstep/CMakeModules/*
+Files: deps/parallel_quickstep/CMakeModules/*
 Copyright: 2007-2009 / 2008 - 2009 NVIDIA Corporation
 License: MIT
 
-Files: gazebo/deps/ann/*
+Files: deps/ann/*
 Copyright: 1997-2005 University of Maryland and Sunil Arya and David Mount
 License: LGPL
  See '/usr/share/common-licenses/LGPL'.
 
-Files: gazebo/deps/fcl/*
+Files: deps/fcl/*
 Copyright: 2011, Willow Garage, Inc
 License: BSD-3-clause
 
@@ -101,7 +101,6 @@ Copyright: 2003, Google Inc.
 License: BSD-3-clause
 
 Files: tools/check_test_ran.py
-       src/urdf/*
 Copyright: 2008, Willow Garage, Inc.
 License: BSD-3-clause
 
