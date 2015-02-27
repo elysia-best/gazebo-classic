@@ -1,5 +1,6 @@
 0001-remove-baemuk-license.patch
 0002-missing-license-files.patch
 0003-respect-cmake-c-flags.patch
+0004-update-ann-copyright.patch
 0005-fix-problems-on-manpage.patch
 0008-arial-font-removed-in-dfsg.patch
