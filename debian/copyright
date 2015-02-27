@@ -15,6 +15,11 @@ Copyright: 2013, Thomas Moulard <thomas.moulard@gmail.com>
 License: GPL-2
  See `/usr/share/common-licenses/GPL-2'.
 
+Files: cmake/Ronn2Man.cmake
+Copyright: Emmanuel Roullit <emmanuel@netsniff-ng.org>
+License: GPL-2
+ See `/usr/share/common-licenses/GPL-2'.
+
 Files: gazebo/rendering/skyx/*
 Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
 License: LGPL-2+
