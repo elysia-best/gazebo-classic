@@ -20,6 +20,9 @@ Copyright: Emmanuel Roullit <emmanuel@netsniff-ng.org>
 License: GPL-2
  See `/usr/share/common-licenses/GPL-2'.
 
+Files: media/fonts/maiden.ttf
+Copyright: Iron Maiden TTF by LCF, Timour Jgenti (c) Copyright 1996
+
 Files: gazebo/rendering/skyx/*
 Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
 License: LGPL-2+
