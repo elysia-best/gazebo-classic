@@ -1,11 +1,6 @@
-gazebo (5.0.1+dfsg-3~exp3) experimental; urgency=medium
+gazebo (5.0.1+dfsg-1~exp1) experimental; urgency=medium
 
   * [eacde0a] Fix patch to remove baemuk license
-
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 05 Mar 2015 11:27:37 +0000
-
-gazebo (5.0.1+dfsg-3~exp2) experimental; urgency=medium
-
   * [cb7f2a6] Added the Ronn2Man license
   * [74d51bd] Remove old baemuk license
   * [3ad9ccc] Include missing license files
@@ -18,11 +13,6 @@ gazebo (5.0.1+dfsg-3~exp2) experimental; urgency=medium
   * [969bf4c] Remove maiden.ttf font. Not in use
   * [65d716c] Remove duplicate robot-player-dev
   * [a6c50d6] Fix all lintian warnings in copyright file
-
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 05 Mar 2015 02:18:40 +0000
-
-gazebo (5.0.1+dfsg-3~exp1) experimental; urgency=medium
-
   * [f2a16d5] Added libgazebo5-dev transitional package
   * [4b24607] Imported Upstream version 5.0.1. (Closes: #766748)
   * [556803f] Update install files to the new version
