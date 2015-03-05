@@ -1,4 +1,4 @@
-gazebo (5.0.1+dfsg-1~exp2) experimental; urgency=medium
+gazebo (5.0.1+dfsg-3~exp2) experimental; urgency=medium
 
   * [cb7f2a6] Added the Ronn2Man license
   * [74d51bd] Remove old baemuk license
@@ -15,7 +15,7 @@ gazebo (5.0.1+dfsg-1~exp2) experimental; urgency=medium
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 05 Mar 2015 02:18:40 +0000
 
-gazebo (5.0.1+dfsg-1~exp1) experimental; urgency=medium
+gazebo (5.0.1+dfsg-3~exp1) experimental; urgency=medium
 
   * [f2a16d5] Added libgazebo5-dev transitional package
   * [4b24607] Imported Upstream version 5.0.1. (Closes: #766748)
