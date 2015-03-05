@@ -2,6 +2,16 @@ Description: clean up old license file
 Author: Jose Luis Rivero <jrivero@osrfoundation.org>
 Forwarded: https://bitbucket.org/osrf/gazebo/pull-request/1462 
 
+diff --git a/media/gui/fonts/CMakeLists.txt b/media/gui/fonts/CMakeLists.txt
+--- a/media/gui/fonts/CMakeLists.txt
++++ b/media/gui/fonts/CMakeLists.txt
+@@ -1,5 +1,4 @@
+ set (files Font.xsd
+-           baemuk.txt
+            DejaVuSans-10.font
+            DejaVuSans.ttf
+            FairChar-30.font
+
 diff --git a/media/gui/fonts/baemuk.txt b/media/gui/fonts/baemuk.txt
 deleted file mode 100644
 index 220407d..0000000
