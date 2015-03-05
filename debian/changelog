@@ -1,3 +1,20 @@
+gazebo (5.0.1+dfsg-1~exp2) experimental; urgency=medium
+
+  * [cb7f2a6] Added the Ronn2Man license
+  * [74d51bd] Remove old baemuk license
+  * [3ad9ccc] Include missing license files
+  * [59db7c2] Update ann files copyright
+  * [5ee8de5] Added maiden copyright
+  * [03f23fd] Update Dejavu font copyright. Include license
+  * [da384e9] Include rtshader files license
+  * [a28256d] Update OSRF copyright to 2015
+  * [2c7763e] Remove wrong included license
+  * [969bf4c] Remove maiden.ttf font. Not in use
+  * [65d716c] Remove duplicate robot-player-dev
+  * [a6c50d6] Fix all lintian warnings in copyright file
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 05 Mar 2015 02:18:40 +0000
+
 gazebo (5.0.1+dfsg-1~exp1) experimental; urgency=medium
 
   * [f2a16d5] Added libgazebo5-dev transitional package
