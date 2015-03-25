@@ -1,0 +1,18 @@
+Description: Preserve previous GAZEBO_MODEL_PATH values when sourcing setup.sh
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Forwarded: https://bitbucket.org/osrf/gazebo/pull-request/1430
+
+diff --git a/cmake/setup.sh.in b/cmake/setup.sh.in
+--- a/cmake/setup.sh.in
++++ b/cmake/setup.sh.in
+@@ -1,7 +1,7 @@
+ export GAZEBO_MASTER_URI=http://@GAZEBO_DEFAULT_MASTER_HOST@:@GAZEBO_DEFAULT_MASTER_PORT@
+ export GAZEBO_MODEL_DATABASE_URI=@GAZEBO_MODEL_DATABASE_URI@
+-export GAZEBO_RESOURCE_PATH=@GAZEBO_RESOURCE_PATH@
+-export GAZEBO_PLUGIN_PATH=@GAZEBO_PLUGIN_PATH@
+-export GAZEBO_MODEL_PATH=@GAZEBO_MODEL_PATH@
++export GAZEBO_RESOURCE_PATH=@GAZEBO_RESOURCE_PATH@:${GAZEBO_RESOURCE_PATH}
++export GAZEBO_PLUGIN_PATH=@GAZEBO_PLUGIN_PATH@:${GAZEBO_PLUGIN_PATH}
++export GAZEBO_MODEL_PATH=@GAZEBO_MODEL_PATH@:${GAZEBO_MODEL_PATH}
+ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:@GAZEBO_PLUGIN_PATH@
+ export OGRE_RESOURCE_PATH=@OGRE_RESOURCE_PATH@

@@ -5,3 +5,4 @@
 0005-fix-problems-on-manpage.patch
 0006-remove-maiden-font.patch
 0008-arial-font-removed-in-dfsg.patch
+0009-backport-model-path-fix.patch
