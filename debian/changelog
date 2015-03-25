@@ -1,3 +1,9 @@
+gazebo (5.0.1+dfsg-1~exp2) experimental; urgency=medium
+
+  * [99f894c] Backport from upstream a patch to solve GAZEBO_MODEL_PATH bug
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Wed, 25 Mar 2015 18:17:06 +0000
+
 gazebo (5.0.1+dfsg-1~exp1) experimental; urgency=medium
 
   * [eacde0a] Fix patch to remove baemuk license
