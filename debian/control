@@ -52,6 +52,8 @@ Homepage: http://gazebosim.org/
 Package: gazebo5-common
 Architecture: all
 Depends: ttf-dejavu-core, ${misc:Depends}
+Replaces: gazebo3-common
+Breaks: gazebo3-common
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Shared files
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -74,6 +76,8 @@ Depends: ${shlibs:Depends},
 	 gazebo5-common (= ${source:Version})
 Recommends: gazebo5-plugin-base
 Suggests: gazebo5-doc
+Replaces: gazebo3
+Breaks: gazebo3
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Binaries
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -187,6 +191,8 @@ Package: gazebo5-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends}, libjs-jquery 
+Replaces: gazebo3-doc
+Breaks: gazebo3-doc
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Documentation
  Gazebo is a multi-robot simulator for outdoor environments. Like
