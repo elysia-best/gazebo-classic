@@ -1,3 +1,10 @@
+gazebo (5.0.1+dfsg-2) unstable; urgency=medium
+
+  * [208ddf2] Disable robot-player-dev support (see #787007)
+    (Closes: #787007)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 29 May 2015 19:42:29 +0200
+
 gazebo (5.0.1+dfsg-1) unstable; urgency=medium
 
   * Team upload.
