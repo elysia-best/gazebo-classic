@@ -42,7 +42,6 @@ Build-Depends: cmake,
      libbullet-dev (>= 2.82),
      libsimbody-dev (>= 3.0.0),
      libsimbody-dev (<< 4.0.0),
-     robot-player-dev,
      libgdal-dev,
      ruby-ronn
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/gazebo.git
