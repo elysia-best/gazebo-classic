@@ -48,7 +48,7 @@ Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/gazebo.
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
 
-Package: gazebo5-common
+Package: gazebo6-common
 Architecture: all
 Depends: ttf-dejavu-core, ${misc:Depends}
 Replaces: gazebo3-common
@@ -65,16 +65,16 @@ Description: Open Source Robotics Simulator - Shared files
  This package contains shared files such as 3d models, worlds and
  robots.
 
-Package: gazebo5
+Package: gazebo6
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          ttf-liberation,
          ruby,
-	 libgazebo5 (= ${binary:Version}),
-	 gazebo5-common (= ${source:Version})
-Recommends: gazebo5-plugin-base
-Suggests: gazebo5-doc
+	 libgazebo6 (= ${binary:Version}),
+	 gazebo6-common (= ${source:Version})
+Recommends: gazebo6-plugin-base
+Suggests: gazebo6-doc
 Replaces: gazebo3
 Breaks: gazebo3
 Multi-Arch: foreign
@@ -88,7 +88,7 @@ Description: Open Source Robotics Simulator - Binaries
  .
  This package contains then main application binaries
 
-Package: libgazebo5
+Package: libgazebo6
 Section: libs
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
@@ -104,7 +104,7 @@ Description: Open Source Robotics Simulator - shared library
  .
  This package gathers shared libraries used
 
-Package: libgazebo5-dev
+Package: libgazebo6-dev
 Architecture: any
 Section: libdevel
 Depends: libtbb-dev,
@@ -127,9 +127,9 @@ Depends: libtbb-dev,
 	 libsdformat-dev (>= 2.1.0),
 	 libsimbody-dev,
 	 robot-player-dev,
-	 libgazebo5 (= ${binary:Version}),
-	 gazebo5-common (= ${source:Version}),
-	 gazebo5-plugin-base (= ${binary:Version}),
+	 libgazebo6 (= ${binary:Version}),
+	 gazebo6-common (= ${source:Version}),
+	 gazebo6-plugin-base (= ${binary:Version}),
 	 ${misc:Depends}
 Replaces: libgazebo-dev (<< 5.0.0)
 Breaks: libgazebo-dev (<< 5.0.0)
@@ -146,14 +146,14 @@ Description: Open Source Robotics Simulator - Development Files
  symbolic link and pkg-config file).
 
 Package: libgazebo-dev
-Depends: libgazebo5-dev, ${misc:Depends}
+Depends: libgazebo6-dev, ${misc:Depends}
 Architecture: all
 Priority: extra
 Section: oldlibs
-Description: transitional dummy package to libgazebo5-dev
+Description: transitional dummy package to libgazebo6-dev
  This is a transitional dummy package. It can safely be removed.
 
-Package: gazebo5-plugin-base
+Package: gazebo6-plugin-base
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends}
@@ -169,11 +169,11 @@ Description: Open Source Robotics Simulator - base plug-ins
  .
  This package gathers built-in plugins.
 
-Package: libgazebo5-dbg
+Package: libgazebo6-dbg
 Architecture: any
 Section: debug
 Priority: extra
-Depends: libgazebo5 (= ${binary:Version}),
+Depends: libgazebo6 (= ${binary:Version}),
          ${misc:Depends}
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Debugging Symbols
@@ -186,7 +186,7 @@ Description: Open Source Robotics Simulator - Debugging Symbols
  .
  This package contains the debugging symbols.
 
-Package: gazebo5-doc
+Package: gazebo6-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends}, libjs-jquery 
