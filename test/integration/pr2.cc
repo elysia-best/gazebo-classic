@@ -16,9 +16,9 @@
 */
 
 #include <boost/filesystem.hpp>
-#include "ServerFixture.hh"
+#include "gazebo/test/ServerFixture.hh"
 #include "gazebo/physics/physics.hh"
-#include "helper_physics_generator.hh"
+#include "gazebo/test/helper_physics_generator.hh"
 
 using namespace gazebo;
 class PR2Test : public ServerFixture,
@@ -153,8 +153,10 @@ void PR2Test::StaticPR2(std::string _physicsEngine)
 {
   if (_physicsEngine == "simbody")
   {
-    gzerr << "Abort test since simbody does not support screw joints in PR2, "
-          << "Please see issue #857.\n";
+    gzerr << "Abort test since simbody does not support static models "
+          << "with pose offsets, "
+          << "please see issue #860."
+          << std::endl;
     return;
   }
   if (_physicsEngine == "dart")

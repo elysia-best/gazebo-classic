@@ -29,6 +29,7 @@
 #include "gazebo/common/SingletonT.hh"
 #include "gazebo/common/Event.hh"
 #include "gazebo/transport/TransportTypes.hh"
+#include "gazebo/rendering/ogre_gazebo.h"
 #include "gazebo/rendering/RenderTypes.hh"
 #include "gazebo/util/system.hh"
 
@@ -52,7 +53,7 @@ namespace gazebo
     /// \brief Adaptor to Ogre3d
     ///
     /// Provides the interface to load, initialize the rendering engine.
-    class GAZEBO_VISIBLE RenderEngine : public SingletonT<RenderEngine>
+    class GZ_RENDERING_VISIBLE RenderEngine : public SingletonT<RenderEngine>
     {
       /// \enum RenderPathType
       /// \brief The type of rendering path used by the rendering engine.
