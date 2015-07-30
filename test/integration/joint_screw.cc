@@ -19,8 +19,8 @@
 #include "gazebo/physics/physics.hh"
 // #include "gazebo/physics/Joint.hh"
 // #include "gazebo/physics/ScrewJoint.hh"
-#include "ServerFixture.hh"
-#include "helper_physics_generator.hh"
+#include "gazebo/test/ServerFixture.hh"
+#include "gazebo/test/helper_physics_generator.hh"
 #include "test/integration/joint_test.hh"
 
 using namespace gazebo;
@@ -503,6 +503,16 @@ void JointTestScrew::ScrewJointLimitForce(const std::string &_physicsEngine)
   // get model, joints and get links
   physics::ModelPtr model = world->GetModel("pr2");
   physics::LinkPtr link_00 = model->GetLink("torso_lift_link");
+
+  if (_physicsEngine == "dart")
+  {
+    gzerr << _physicsEngine
+          << " is broken for this test,"
+          << " because of the pr2 gripper's closed kinematic chain,"
+          << " see issue #1435."
+          << std::endl;
+    return;
+  }
 
   // drop from some height
   model->SetWorldPose(math::Pose(0, 0, 0.5, 0, 0, 0));

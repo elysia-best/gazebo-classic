@@ -25,6 +25,21 @@ class MainWindow_TEST : public QTestFixture
 {
   Q_OBJECT
 
+  /// \brief Test the step action state when simulation is running and paused.
+  private slots: void StepState();
+
+  /// \brief Test that Actions created in MainWindow get destroyed.
+  private slots: void ActionCreationDestruction();
+
+  /// \brief Test scene destruction on shutdown
+  private slots: void SceneDestruction();
+
+  /// \brief Test user camera entity selection
+  private slots: void Selection();
+
+  /// \brief Test user camera frames per second
+  private slots: void UserCameraFPS();
+
   /// \brief Test copying and pasting a model and a light
   private slots: void CopyPaste();
 
@@ -37,6 +52,12 @@ class MainWindow_TEST : public QTestFixture
 
   /// \brief Test moving the user camera via a joystick message.
   private slots: void UserCameraJoystick();
+
+  /// \brief Test Set user camera pose via SDF
+  private slots: void SetUserCameraPoseSDF();
+
+  /// \brief Test that menus are created in the main window menu bar.
+  private slots: void MenuBar();
 };
 
 #endif

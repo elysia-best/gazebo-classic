@@ -22,7 +22,7 @@
 #include <gazebo/util/system.hh>
 
 #ifdef HAVE_GDAL
-# include <gdal/gdal_priv.h>
+# include <gdal_priv.h>
 # include <vector>
 
 namespace gazebo
@@ -34,7 +34,7 @@ namespace gazebo
 
     /// \class DemPrivate DemPrivate.hh common/common.hh
     /// \brief Private data for the Dem class.
-    class GAZEBO_VISIBLE DemPrivate
+    class GZ_COMMON_VISIBLE DemPrivate
     {
       /// \brief A set of associated raster bands.
       public: GDALDataset *dataSet;
