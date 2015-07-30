@@ -38,7 +38,7 @@ Build-Depends: cmake,
      libswscale-dev,
      libusb-1.0-0-dev,
      libspnav-dev,
-     libsdformat-dev (>= 2.1.0),
+     libsdformat3-dev,
      libbullet-dev (>= 2.82),
      libsimbody-dev (>= 3.0.0),
      libsimbody-dev (<< 4.0.0),
@@ -124,7 +124,7 @@ Depends: libtbb-dev,
 	 libavformat-dev,
 	 libavcodec-dev,
 	 libswscale-dev,
-	 libsdformat-dev (>= 2.1.0),
+	 libsdformat3-dev,
 	 libsimbody-dev,
 	 robot-player-dev,
 	 libgazebo6 (= ${binary:Version}),
@@ -144,14 +144,6 @@ Description: Open Source Robotics Simulator - Development Files
  .
  This package contains development files (headers, shared library
  symbolic link and pkg-config file).
-
-Package: libgazebo-dev
-Depends: libgazebo6-dev, ${misc:Depends}
-Architecture: all
-Priority: extra
-Section: oldlibs
-Description: transitional dummy package to libgazebo6-dev
- This is a transitional dummy package. It can safely be removed.
 
 Package: gazebo6-plugin-base
 Architecture: any
