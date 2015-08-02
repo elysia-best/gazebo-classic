@@ -43,7 +43,8 @@ Build-Depends: cmake,
      libsimbody-dev (>= 3.0.0),
      libsimbody-dev (<< 4.0.0),
      libgdal-dev,
-     ruby-ronn
+     ruby-ronn,
+     libgtest-dev,
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/gazebo.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
@@ -51,8 +52,7 @@ Homepage: http://gazebosim.org/
 Package: gazebo6-common
 Architecture: all
 Depends: ttf-dejavu-core, ${misc:Depends}
-Replaces: gazebo3-common
-Breaks: gazebo3-common
+Replaces: gazebo5-common
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Shared files
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -75,8 +75,8 @@ Depends: ${shlibs:Depends},
 	 gazebo6-common (= ${source:Version})
 Recommends: gazebo6-plugin-base
 Suggests: gazebo6-doc
-Replaces: gazebo3
-Breaks: gazebo3
+Conflicts: gazebo5
+Replaces: gazebo5
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Binaries
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -131,8 +131,10 @@ Depends: libtbb-dev,
 	 gazebo6-common (= ${source:Version}),
 	 gazebo6-plugin-base (= ${binary:Version}),
 	 ${misc:Depends}
-Replaces: libgazebo-dev (<< 5.0.0)
-Breaks: libgazebo-dev (<< 5.0.0)
+Replaces: libgazebo-dev,
+          libgazebo5-dev
+Conflicts: libgazebo-dev,
+           libgazebo5-dev
 Multi-Arch: same
 Description: Open Source Robotics Simulator - Development Files
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -149,7 +151,8 @@ Package: gazebo6-plugin-base
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends}
-Enhances: gazebo
+Enhances: gazebo6
+Replaces: gazebo5-plugin-base
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - base plug-ins
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -167,6 +170,7 @@ Section: debug
 Priority: extra
 Depends: libgazebo6 (= ${binary:Version}),
          ${misc:Depends}
+Replaces: libgazebo5-dbg
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Debugging Symbols
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -182,8 +186,8 @@ Package: gazebo6-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends}, libjs-jquery 
-Replaces: gazebo3-doc
-Breaks: gazebo3-doc
+Replaces: gazebo5-doc
+Breaks: gazebo5-doc
 Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Documentation
  Gazebo is a multi-robot simulator for outdoor environments. Like
