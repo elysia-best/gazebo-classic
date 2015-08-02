@@ -2,8 +2,10 @@ Description: Remove unknown roff commands
 Author: Jose Luis Rivero <jrivero@osrfoundation.org>
 Forwarded: no
 
---- gazebo-3.0.0.orig/tools/gz.1.roff
-+++ gazebo-3.0.0/tools/gz.1.roff
+diff --git a/tools/gz.1.roff b/tools/gz.1.roff
+index 1cfb9a4..4fc0c81 100644
+--- a/tools/gz.1.roff
++++ b/tools/gz.1.roff
 @@ -6,9 +6,7 @@
  .SH "SYNPOSIS"
  \fBgz\fR \fIcommand\fR [option]\.\.\. [argument]\.\.\.
@@ -30,7 +32,7 @@ Forwarded: no
  .SS debug
  .sp
  .nf
-@@ -61,7 +57,6 @@ return the completion list for a given c
+@@ -61,7 +57,6 @@ return the completion list for a given command.
  
  .sp
  Options:
@@ -59,7 +61,7 @@ Forwarded: no
  .SS joint
  .sp
  .nf
-@@ -106,7 +98,6 @@ A model name and joint name are required
+@@ -106,7 +98,6 @@ A model name and joint name are required.
  
  .sp
  Options:
@@ -99,7 +101,7 @@ Forwarded: no
  .TP
  .B \-h, \-\-help
  .
-@@ -278,7 +265,6 @@ Spawn model from SDF string, pass by a p
+@@ -286,7 +273,6 @@ Output model pose as a space separated 6\-tuple: x y z roll pitch yaw.
  .B \-P, \-\-pose\-P arg pitch in radians.
  .TP
  .B \-Y, \-\-pose\-Y arg yaw in radians.
@@ -107,7 +109,7 @@ Forwarded: no
  .SS physics
  .sp
  .nf
-@@ -294,7 +280,6 @@ the first world found on the Gazebo mast
+@@ -302,7 +288,6 @@ the first world found on the Gazebo master will be used.
  
  .sp
  Options:
@@ -115,15 +117,15 @@ Forwarded: no
  .TP
  .B \-h, \-\-help
  .
-@@ -319,7 +304,6 @@ Number of iterations.
- .B \-u, \-\-update\-rate\fR=\fIarg\fR
+@@ -331,7 +316,6 @@ Target real\-time update rate.
+ .B \-o, \-\-profile\fR=\fIarg\fR
  .
- Target real\-time update rate.
+ Preset physics profile.
 -.UNINDENT
  .SS sdf
  .sp
  .nf
-@@ -335,7 +319,6 @@ SDF for use with other options.
+@@ -347,7 +331,6 @@ SDF for use with other options.
  
  .sp
  Options:
@@ -131,7 +133,7 @@ Forwarded: no
  .TP
  .B \-h, \-\-help
  .
-@@ -364,7 +347,6 @@ Version of SDF to use with other options
+@@ -376,7 +359,6 @@ Version of SDF to use with other options.
  .B \-p, \-\-print\fR=\fIarg\fR
  .
  Print arg, useful for debugging and as a conversion tool.
@@ -139,7 +141,7 @@ Forwarded: no
  .SS stats
  .sp
  .nf
-@@ -380,7 +362,6 @@ the Gazebo master will be used.
+@@ -392,7 +374,6 @@ the Gazebo master will be used.
  
  .sp
  Options:
@@ -147,7 +149,7 @@ Forwarded: no
  .TP
  .B \-h, \-\-help
  .
-@@ -397,7 +378,6 @@ Duration (seconds) to run.
+@@ -409,7 +390,6 @@ Duration (seconds) to run.
  .B \-p, \-\-plot
  .
  Output comma\-separated values, useful for processing and plotting.
@@ -155,7 +157,7 @@ Forwarded: no
  .SS topic
  .sp
  .nf
-@@ -413,7 +393,6 @@ the Gazebo master will be used.
+@@ -425,7 +405,6 @@ the Gazebo master will be used.
  
  .sp
  Options:
@@ -163,7 +165,7 @@ Forwarded: no
  .TP
  .B \-h, \-\-help
  .
-@@ -454,7 +433,6 @@ Output data from echo without formatting
+@@ -466,7 +445,6 @@ Output data from echo without formatting.
  .B \-d, \-\-duration\fR=\fIarg\fR
  .
  Duration (seconds) to run. Applicable with echo, hz, and bw
@@ -171,7 +173,7 @@ Forwarded: no
  .SS world
  .sp
  .nf
-@@ -470,7 +448,6 @@ the first world found on the Gazebo mast
+@@ -482,7 +460,6 @@ the first world found on the Gazebo master will be used.
  
  .sp
  Options:
