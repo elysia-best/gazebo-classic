@@ -15,13 +15,14 @@
  *
 */
 
-#include "ServerFixture.hh"
+#include "gazebo/test/ServerFixture.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/physics/Gripper.hh"
 #include "gazebo/physics/World.hh"
 #include "gazebo/physics/Model.hh"
 #include "gazebo/physics/Joint.hh"
 
+using namespace gazebo;
 class GripperTest : public ServerFixture
 {
 };

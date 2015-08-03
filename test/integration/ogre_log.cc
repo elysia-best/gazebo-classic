@@ -17,8 +17,9 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
 
-#include "ServerFixture.hh"
+#include "gazebo/test/ServerFixture.hh"
 
+using namespace gazebo;
 class OgreLog : public ServerFixture
 {
 };
