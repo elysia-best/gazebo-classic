@@ -55,7 +55,7 @@ Copyright: 1993 by Sun Microsystems, Inc
 	   2001 Pierre Terdiman
 	   2008 Oleh Derevenko
 	   2001-2007, Russell L. Smith]
-License: BSD-3-clause,
+License: BSD-3-clause
 
 Files: deps/opende/GIMPACT/*
 Copyright: 1991, 1999 Free Software Foundation, Inc,
@@ -103,13 +103,14 @@ Copyright: 2008, Willow Garage, Inc.
 License: BSD-3-clause
 
 Files: tools/cpplint.py
-Copyright: 2009 Google Inc 
+Copyright: 2009 Google Inc.
 License: BSD-3-clause
 
 Files: doc/search.js
 Copyright: 2009, Dimitri van Heesch.
            2003-2008, Greg Valure.
 License: GPL
+ See '/usr/share/common-licenses/GPL'.
 
 License: GPL-2
  This package is free software; you can redistribute it and/or modify
