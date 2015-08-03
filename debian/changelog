@@ -1,3 +1,12 @@
+gazebo (6.0.0-1) unstable; urgency=medium
+
+  * Imported Upstream version 6.0.0
+  * Removed patches merged upstream and update the reamining ones.
+  * Change all gazebo5 package references to gazebo6
+  * Added patch to use system gtest
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 30 Jul 2015 17:14:31 +0000
+
 gazebo (5.0.1+dfsg-2) unstable; urgency=medium
 
   * [208ddf2] Disable robot-player-dev support (see #787007)
