@@ -1,4 +1,4 @@
-gazebo (6.0.0-1) unstable; urgency=medium
+gazebo (6.0.0+dfsg-1) unstable; urgency=medium
 
   * Imported Upstream version 6.0.0
   * Removed patches merged upstream and update the reamining ones.
