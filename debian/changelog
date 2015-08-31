@@ -1,3 +1,10 @@
+gazebo (6.1.0+dfsg-1) unstable; urgency=medium
+
+  * Migrate patch to use FindGtest from PCL lib
+  * Imported Upstream version 6.1.0
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 31 Aug 2015 14:23:31 +0200
+
 gazebo (6.0.0+dfsg-1) unstable; urgency=medium
 
   * Imported Upstream version 6.0.0
