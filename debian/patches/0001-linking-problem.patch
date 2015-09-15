@@ -1,0 +1,16 @@
+Description: Fix linking problem with gcc5
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Forwarded: no
+
+diff --git a/gazebo/physics/CMakeLists.txt b/gazebo/physics/CMakeLists.txt
+index ef79380..0974ac3 100644
+--- a/gazebo/physics/CMakeLists.txt
++++ b/gazebo/physics/CMakeLists.txt
+@@ -125,6 +125,7 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/physics.hh.in
+ gz_add_library(gazebo_physics ${sources})
+ 
+ target_link_libraries(gazebo_physics
++  gazebo_sensors
+   gazebo_common
+   gazebo_util
+   gazebo_physics_ode
