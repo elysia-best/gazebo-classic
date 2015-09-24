@@ -2,17 +2,19 @@ gazebo (6.1.0+dfsg-1) unstable; urgency=medium
 
   * Migrate patch to use FindGtest from PCL lib
   * Imported Upstream version 6.1.0
-
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 31 Aug 2015 14:23:31 +0200
-
-gazebo (6.0.0+dfsg-1) unstable; urgency=medium
-
-  * Imported Upstream version 6.0.0
   * Removed patches merged upstream and update the reamining ones.
   * Change all gazebo5 package references to gazebo6
   * Added patch to use system gtest
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 30 Jul 2015 17:14:31 +0000
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 31 Aug 2015 14:23:31 +0200
+
+gazebo (5.0.1+dfsg-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * debian/patches/0010-bullet-2.83.patch: Apply upstream patch to fix build
+    against bullet 2.83. (Closes: #792992)
+
+ -- Sebastian Ramacher <sramacher@debian.org>  Mon, 27 Jul 2015 18:35:36 +0200
 
 gazebo (5.0.1+dfsg-2) unstable; urgency=medium
 
