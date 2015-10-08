@@ -1,0 +1,20 @@
+Description: use no-as-needed to link gz 
+ This way circular depedency problem is not triggered while upstream
+ is working on properly fixing it via code redesign.
+Bug: https://bitbucket.org/osrf/gazebo/issues/1516/physics-classes-call-sensors-functions
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Last-Update: 2015-08-02
+Forwarded: not-needed
+
+diff -r 6f51fd02c306 tools/CMakeLists.txt
+--- a/tools/CMakeLists.txt	Sun Aug 02 12:41:12 2015 -0700
++++ b/tools/CMakeLists.txt	Thu Oct 08 00:58:15 2015 +0200
+@@ -43,6 +43,8 @@
+  gazebo_msgs gazebo_common gazebo_transport gazebo_gui gazebo_physics
+  gazebo_physics_ode gazebo_sensors ${QT_LIBRARIES} ${Boost_LIBRARIES})
+ 
++set_target_properties(gz PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
++
+ if(HAVE_BULLET)
+   target_link_libraries(gz gazebo_physics_bullet)
+ endif()
