@@ -5,8 +5,9 @@ gazebo (6.1.0+dfsg-1) unstable; urgency=medium
   * Removed patches merged upstream and update the reamining ones.
   * Change all gazebo5 package references to gazebo6
   * Added patch to use system gtest
+  * Added patch to fix ciruclar linking problem in gz
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 31 Aug 2015 14:23:31 +0200
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 08 Oct 2015 00:44:11 +0200
 
 gazebo (5.0.1+dfsg-2.1) unstable; urgency=medium
 
