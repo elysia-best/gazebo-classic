@@ -1,4 +1,4 @@
 # Arial is not free. Replace it by ttf-liberation
-/usr/share/fonts/truetype/ttf-liberation/LiberationSans-Regular.ttf usr/share/gazebo-3.0/media/fonts/arial.ttf
+/usr/share/fonts/truetype/ttf-liberation/LiberationSans-Regular.ttf usr/share/gazebo-6.5/media/fonts/arial.ttf
 # Use system wise DejavuSans
-/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf usr/share/gazebo-3.0/media/gui/fonts/DejaVuSans.ttf
+/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf usr/share/gazebo-6.5/media/gui/fonts/DejaVuSans.ttf
