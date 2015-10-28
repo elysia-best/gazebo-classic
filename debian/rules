@@ -30,7 +30,7 @@ override_dh_install:
 	dh_install -- # Install
 
         # Get rid of fonts already packaged elsewhere.
-	rm -f debian/gazebo6-common/usr/share/gazebo-6.0/media/gui/fonts/DejaVuSans.ttf
+	rm -f debian/gazebo6-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf
 
 override_dh_strip:
 	dh_strip -a --dbg-package=libgazebo6-dbg
