@@ -1,0 +1,5 @@
+# The LGPL-3 license is included in the copyright file
+# seems like lintian is not able to detect properly the
+# LGPL-3+ short name
+
+missing-license-paragraph-in-dep5-copyright lgpl-3+
