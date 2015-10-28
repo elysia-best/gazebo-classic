@@ -1,5 +1,8 @@
 # The LGPL-3 license is included in the copyright file
 # seems like lintian is not able to detect properly the
 # LGPL-3+ short name
+missing-license-paragraph-in-dep5-copyright lgpl-3+ (paragraph at line 65)
 
-missing-license-paragraph-in-dep5-copyright lgpl-3+
+# The file is really in the code just with the same
+# path. Lintian bug?
+source-is-missing doc/search.js
