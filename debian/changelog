@@ -1,8 +1,13 @@
 gazebo (6.5.0+dfsg-2) unstable; urgency=medium
 
-  * Remove player as dependency (Closes: #802032)
+  [ Jose Luis Rivero ]
+  * [7a3cc42] Remove player as dependency. (Closes: #802032)
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 10 Nov 2015 17:35:12 +0100
+  [ Anton Gladky ]
+  * [6f51db4] Replace deprecated FFmpeg API. (Closes: #803816)
+  * [7c0b8f1] Apply cme fix dpkg-control.
+
+ -- Anton Gladky <gladk@debian.org>  Tue, 10 Nov 2015 21:38:23 +0100
 
 gazebo (6.5.0+dfsg-1) unstable; urgency=medium
 
