@@ -6,8 +6,9 @@ gazebo (6.5.0+dfsg-2) unstable; urgency=medium
   [ Anton Gladky ]
   * [6f51db4] Replace deprecated FFmpeg API. (Closes: #803816)
   * [7c0b8f1] Apply cme fix dpkg-control.
+  * [37f9b28] Add myself to uploaders.
 
- -- Anton Gladky <gladk@debian.org>  Tue, 10 Nov 2015 21:38:23 +0100
+ -- Anton Gladky <gladk@debian.org>  Tue, 10 Nov 2015 21:41:54 +0100
 
 gazebo (6.5.0+dfsg-1) unstable; urgency=medium
 
