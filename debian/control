@@ -3,58 +3,59 @@ Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.
 Uploaders: Jose Luis Rivero <jrivero@osrfoundation.org>
 Section: science
 Priority: optional
-Standards-Version: 3.9.6
 Build-Depends: cmake,
-     pkg-config,
-     debhelper (>= 9),
-     bash-completion,
-     doxygen,
-     doxygen-latex,
-     texlive-fonts-recommended,
-     ttf-liberation,
-     libfreeimage-dev,
-     libprotoc-dev,
-     libprotobuf-dev,
-     protobuf-compiler,
-     freeglut3-dev,
-     libcurl4-openssl-dev,
-     libtinyxml-dev,
-     libtar-dev,
-     libtbb-dev,
-     libogre-1.9-dev,
-     libxml2-dev,
-     libqt4-dev,
-     libltdl-dev,
-     libboost-thread-dev,
-     libboost-signals-dev,
-     libboost-system-dev,
-     libboost-filesystem-dev,
-     libboost-program-options-dev,
-     libboost-regex-dev,
-     libboost-iostreams-dev,
-     libgts-dev,
-     libavformat-dev,
-     libavcodec-dev,
-     libswscale-dev,
-     libusb-1.0-0-dev,
-     libspnav-dev,
-     libsdformat3-dev,
-     libignition-math2-dev (>= 2.2.2),
-     libbullet-dev (>= 2.82),
-     libsimbody-dev (>= 3.0.0),
-     libsimbody-dev (<< 4.0.0),
-     libgdal-dev,
-     ruby-ronn,
-     libgtest-dev,
-Vcs-Browser: http://anonscm.debian.org/gitweb/?p=debian-science/packages/gazebo.git
+               pkg-config,
+               debhelper (>= 9),
+               bash-completion,
+               doxygen,
+               doxygen-latex,
+               texlive-fonts-recommended,
+               ttf-liberation,
+               libfreeimage-dev,
+               libprotoc-dev,
+               libprotobuf-dev,
+               protobuf-compiler,
+               freeglut3-dev,
+               libcurl4-openssl-dev,
+               libtinyxml-dev,
+               libtar-dev,
+               libtbb-dev,
+               libogre-1.9-dev,
+               libxml2-dev,
+               libqt4-dev,
+               libltdl-dev,
+               libboost-thread-dev,
+               libboost-signals-dev,
+               libboost-system-dev,
+               libboost-filesystem-dev,
+               libboost-program-options-dev,
+               libboost-regex-dev,
+               libboost-iostreams-dev,
+               libgts-dev,
+               libavformat-dev,
+               libavcodec-dev,
+               libswscale-dev,
+               libusb-1.0-0-dev,
+               libspnav-dev,
+               libsdformat3-dev,
+               libignition-math2-dev,
+               libbullet-dev,
+               libsimbody-dev,
+               libsimbody-dev (<< 4.0.0),
+               libgdal-dev,
+               ruby-ronn,
+               libgtest-dev
+Standards-Version: 3.9.6
+Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/gazebo.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
 
 Package: gazebo6-common
 Architecture: all
-Depends: ttf-dejavu-core, ${misc:Depends}
-Replaces: gazebo5-common
 Multi-Arch: foreign
+Depends: ttf-dejavu-core,
+         ${misc:Depends}
+Replaces: gazebo5-common
 Description: Open Source Robotics Simulator - Shared files
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -68,17 +69,17 @@ Description: Open Source Robotics Simulator - Shared files
 
 Package: gazebo6
 Architecture: any
+Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          ttf-liberation,
          ruby,
-	 libgazebo6 (= ${binary:Version}),
-	 gazebo6-common (= ${source:Version})
+         libgazebo6 (= ${binary:Version}),
+         gazebo6-common (= ${source:Version})
 Recommends: gazebo6-plugin-base
 Suggests: gazebo6-doc
 Conflicts: gazebo5
 Replaces: gazebo5
-Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Binaries
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -90,11 +91,12 @@ Description: Open Source Robotics Simulator - Binaries
  This package contains then main application binaries
 
 Package: libgazebo6
-Section: libs
 Architecture: any
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${shlibs:Depends}, ${misc:Depends}
 Multi-Arch: same
+Section: libs
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
 Description: Open Source Robotics Simulator - shared library
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -107,36 +109,36 @@ Description: Open Source Robotics Simulator - shared library
 
 Package: libgazebo6-dev
 Architecture: any
+Multi-Arch: same
 Section: libdevel
 Depends: libtbb-dev,
-	 libxml2-dev,
-	 libqt4-dev,
-	 libprotoc-dev,
-	 libfreeimage-dev,
-	 libprotobuf-dev,
-	 libboost-all-dev,
-	 freeglut3-dev,
-	 libogre-1.9-dev,
-	 libtar-dev,
-	 libcurl4-openssl-dev,
-	 libgts-dev,
+         libxml2-dev,
+         libqt4-dev,
+         libprotoc-dev,
+         libfreeimage-dev,
+         libprotobuf-dev,
+         libboost-all-dev,
+         freeglut3-dev,
+         libogre-1.9-dev,
+         libtar-dev,
+         libcurl4-openssl-dev,
+         libgts-dev,
          libusb-1.0-0-dev,
          libgdal-dev,
-	 libavformat-dev,
-	 libavcodec-dev,
-	 libswscale-dev,
-	 libsdformat3-dev,
-	 libignition-math2-dev (>= 2.2.3),
-	 libsimbody-dev,
-	 libgazebo6 (= ${binary:Version}),
-	 gazebo6-common (= ${source:Version}),
-	 gazebo6-plugin-base (= ${binary:Version}),
-	 ${misc:Depends}
-Replaces: libgazebo-dev,
-          libgazebo5-dev
+         libavformat-dev,
+         libavcodec-dev,
+         libswscale-dev,
+         libsdformat3-dev,
+         libignition-math2-dev,
+         libsimbody-dev,
+         libgazebo6 (= ${binary:Version}),
+         gazebo6-common (= ${source:Version}),
+         gazebo6-plugin-base (= ${binary:Version}),
+         ${misc:Depends}
 Conflicts: libgazebo-dev,
            libgazebo5-dev
-Multi-Arch: same
+Replaces: libgazebo-dev,
+          libgazebo5-dev
 Description: Open Source Robotics Simulator - Development Files
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -150,11 +152,11 @@ Description: Open Source Robotics Simulator - Development Files
 
 Package: gazebo6-plugin-base
 Architecture: any
+Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends}
 Enhances: gazebo6
 Replaces: gazebo5-plugin-base
-Multi-Arch: foreign
 Description: Open Source Robotics Simulator - base plug-ins
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -167,12 +169,12 @@ Description: Open Source Robotics Simulator - base plug-ins
 
 Package: libgazebo6-dbg
 Architecture: any
+Multi-Arch: foreign
 Section: debug
 Priority: extra
 Depends: libgazebo6 (= ${binary:Version}),
          ${misc:Depends}
 Replaces: libgazebo5-dbg
-Multi-Arch: foreign
 Description: Open Source Robotics Simulator - Debugging Symbols
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -185,11 +187,12 @@ Description: Open Source Robotics Simulator - Debugging Symbols
 
 Package: gazebo6-doc
 Architecture: all
-Section: doc
-Depends: ${misc:Depends}, libjs-jquery 
-Replaces: gazebo5-doc
-Breaks: gazebo5-doc
 Multi-Arch: foreign
+Section: doc
+Depends: ${misc:Depends},
+         libjs-jquery
+Breaks: gazebo5-doc
+Replaces: gazebo5-doc
 Description: Open Source Robotics Simulator - Documentation
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
