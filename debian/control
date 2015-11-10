@@ -1,6 +1,7 @@
 Source: gazebo
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
-Uploaders: Jose Luis Rivero <jrivero@osrfoundation.org>
+Uploaders: Jose Luis Rivero <jrivero@osrfoundation.org>,
+           Anton Gladky <gladk@debian.org>
 Section: science
 Priority: optional
 Build-Depends: cmake,
