@@ -1,3 +1,9 @@
+gazebo (6.5.0+dfsg-2) unstable; urgency=medium
+
+  * Remove player as dependency (Closes: #802032)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 10 Nov 2015 17:35:12 +0100
+
 gazebo (6.5.0+dfsg-1) unstable; urgency=medium
 
   * Added filter to gdp.conf
