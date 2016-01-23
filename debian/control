@@ -51,7 +51,7 @@ Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/gazebo.git
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
 
-Package: gazebo6-common
+Package: gazebo7-common
 Architecture: all
 Multi-Arch: foreign
 Depends: ttf-dejavu-core,
@@ -68,18 +68,18 @@ Description: Open Source Robotics Simulator - Shared files
  This package contains shared files such as 3d models, worlds and
  robots.
 
-Package: gazebo6
+Package: gazebo7
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          ttf-liberation,
          ruby,
-         libgazebo6 (= ${binary:Version}),
-         gazebo6-common (= ${source:Version})
-Recommends: gazebo6-plugin-base
-Suggests: gazebo6-doc
-Conflicts: gazebo5
+         libgazebo7 (= ${binary:Version}),
+         gazebo7-common (= ${source:Version})
+Recommends: gazebo7-plugin-base
+Suggests: gazebo7-doc
+Conflicts: gazebo5, gazebo6
 Replaces: gazebo5
 Description: Open Source Robotics Simulator - Binaries
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -91,7 +91,7 @@ Description: Open Source Robotics Simulator - Binaries
  .
  This package contains then main application binaries
 
-Package: libgazebo6
+Package: libgazebo7
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -108,7 +108,7 @@ Description: Open Source Robotics Simulator - shared library
  .
  This package gathers shared libraries used
 
-Package: libgazebo6-dev
+Package: libgazebo7-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
@@ -132,14 +132,16 @@ Depends: libtbb-dev,
          libsdformat3-dev,
          libignition-math2-dev,
          libsimbody-dev,
-         libgazebo6 (= ${binary:Version}),
-         gazebo6-common (= ${source:Version}),
-         gazebo6-plugin-base (= ${binary:Version}),
+         libgazebo7 (= ${binary:Version}),
+         gazebo7-common (= ${source:Version}),
+         gazebo7-plugin-base (= ${binary:Version}),
          ${misc:Depends}
 Conflicts: libgazebo-dev,
-           libgazebo5-dev
+           libgazebo5-dev,
+           libgazebo6-dev
 Replaces: libgazebo-dev,
-          libgazebo5-dev
+          libgazebo5-dev,
+          libgazebo6-dev
 Description: Open Source Robotics Simulator - Development Files
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -151,13 +153,14 @@ Description: Open Source Robotics Simulator - Development Files
  This package contains development files (headers, shared library
  symbolic link and pkg-config file).
 
-Package: gazebo6-plugin-base
+Package: gazebo7-plugin-base
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends}
-Enhances: gazebo6
-Replaces: gazebo5-plugin-base
+Enhances: gazebo7
+Replaces: gazebo5-plugin-base,
+          gazebo6-plugin-base,
 Description: Open Source Robotics Simulator - base plug-ins
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -168,12 +171,12 @@ Description: Open Source Robotics Simulator - base plug-ins
  .
  This package gathers built-in plugins.
 
-Package: libgazebo6-dbg
+Package: libgazebo7-dbg
 Architecture: any
 Multi-Arch: foreign
 Section: debug
 Priority: extra
-Depends: libgazebo6 (= ${binary:Version}),
+Depends: libgazebo7 (= ${binary:Version}),
          ${misc:Depends}
 Replaces: libgazebo5-dbg
 Description: Open Source Robotics Simulator - Debugging Symbols
@@ -186,7 +189,7 @@ Description: Open Source Robotics Simulator - Debugging Symbols
  .
  This package contains the debugging symbols.
 
-Package: gazebo6-doc
+Package: gazebo7-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
