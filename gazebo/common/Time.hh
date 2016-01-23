@@ -30,6 +30,11 @@ namespace gazebo
 {
   namespace common
   {
+    /// \brief Convert seconds to hours. This divides the given value by
+    /// the number of seconds in an hour, which is 3600.
+    /// \param[in] _s Seconds to convert.
+    #define GZ_SEC_TO_HOUR(_s) ((_s) / 3600.0)
+
     /// \addtogroup gazebo_common
     /// \{
 
@@ -444,6 +449,13 @@ namespace gazebo
       /// \brief Nanoseconds
       public: int32_t nsec;
 
+      /// \brief Constant multiplier to convert from nanoseconds to seconds.
+      public: static const int32_t nsInSec;
+
+      /// \brief Constant multiplier to convert from nanoseconds to
+      /// milliseconds.
+      public: static const int32_t nsInMs;
+
       /// \brief a singleton value of the last GetWallTime() value
       private: static Time wallTime;
 
@@ -474,13 +486,6 @@ namespace gazebo
                }
 
       private: static struct timespec clockResolution;
-
-      /// \brief Constant multiplier to convert from nanoseconds to seconds.
-      private: static const int32_t nsInSec;
-
-      /// \brief Constant multiplier to convert from nanoseconds to
-      /// milliseconds.
-      private: static const int32_t nsInMs;
     };
     /// \}
   }

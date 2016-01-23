@@ -23,7 +23,7 @@ using namespace gui;
 event::EventT<void (std::string, std::string)> Events::createEntity;
 event::EventT<void (bool)> Events::moveMode;
 event::EventT<void (std::string)> Events::manipMode;
-event::EventT<void (std::string, std::string, std::string, bool)>
+event::EventT<void (std::string, std::string, std::string, bool, bool)>
     Events::alignMode;
 event::EventT<void (bool)> Events::fullScreen;
 event::EventT<void (bool)> Events::showToolbars;
@@ -37,5 +37,6 @@ event::EventT<void (const std::string &)> Events::follow;
 event::EventT<void (bool)> Events::leftPaneVisibility;
 event::EventT<void ()> Events::mainWindowReady;
 event::EventT<void (const std::string &)> Events::editModel;
+event::EventT<void (const std::string &)> Events::windowMode;
 event::EventT<void (const std::string &, const math::Vector3 &)>
     Events::scaleEntity;
