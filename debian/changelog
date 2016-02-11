@@ -1,6 +1,7 @@
 gazebo (7.0.0+dfsg-1) unstable; urgency=medium
 
   * Need sdformat4 in gazebo7
+    (Closes: #813001)
   * Add libqtwebkit dependency
   * Imported Upstream version 7.0.0
 
