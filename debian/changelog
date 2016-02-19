@@ -4,16 +4,10 @@ gazebo (7.0.0+dfsg-1) unstable; urgency=medium
     (Closes: #813001)
   * Add libqtwebkit dependency
   * Imported Upstream version 7.0.0
-
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 26 Jan 2016 13:49:54 +0100
-
-gazebo (7.0.0~pre1+dfsg-1) unstable; urgency=medium
-
-  * Imported Upstream version 7.0.0~pre1
   * Migrate all package metadata to gazebo7
   * Remove patch. Circular dependencies problem is fixed upstream
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Sat, 23 Jan 2016 10:57:42 +0100
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 26 Jan 2016 13:49:54 +0100
 
 gazebo (6.5.0+dfsg-2) unstable; urgency=medium
 
