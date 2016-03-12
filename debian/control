@@ -58,7 +58,8 @@ Architecture: all
 Multi-Arch: foreign
 Depends: ttf-dejavu-core,
          ${misc:Depends}
-Replaces: gazebo5-common
+Breaks: gazebo6-common
+Replaces: gazebo6-common
 Description: Open Source Robotics Simulator - Shared files
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -168,24 +169,6 @@ Description: Open Source Robotics Simulator - base plug-ins
  accurate simulation of rigid-body physics).
  .
  This package gathers built-in plugins.
-
-Package: libgazebo7-dbg
-Architecture: any
-Multi-Arch: foreign
-Section: debug
-Priority: extra
-Depends: libgazebo7 (= ${binary:Version}),
-         ${misc:Depends}
-Replaces: libgazebo5-dbg
-Description: Open Source Robotics Simulator - Debugging Symbols
- Gazebo is a multi-robot simulator for outdoor environments. Like
- Stage (part of the Player project), it is capable of simulating a
- population of robots, sensors and objects, but does so in a
- three-dimensional world. It generates both realistic sensor feedback
- and physically plausible interactions between objects (it includes an
- accurate simulation of rigid-body physics).
- .
- This package contains the debugging symbols.
 
 Package: gazebo7-doc
 Architecture: all
