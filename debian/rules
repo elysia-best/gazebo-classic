@@ -17,6 +17,7 @@ endif
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
+                -DUSE_EXTERNAL_TINYXML:BOOL=False \
                 -DENABLE_TESTS_COMPILATION:BOOL=False \
                 -DUSE_HOST_CFLAGS:BOOL=False \
                 -DUSE_UPSTREAM_CFLAGS:BOOL=False \
