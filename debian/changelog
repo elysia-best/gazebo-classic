@@ -1,3 +1,10 @@
+gazebo (7.3.0-dfsg-1) unstable; urgency=medium
+
+  * Explicitly use of external tinyxml copy
+  * Imported Upstream version 7.3.0
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 14 Jul 2016 18:53:12 +0000
+
 gazebo (7.0.0+dfsg-2) unstable; urgency=medium
 
   * [9916e19] Fix Breaks/Replaces dependecies. (Closes: #817189)
