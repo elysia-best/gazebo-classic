@@ -6,7 +6,7 @@ Section: science
 Priority: optional
 Build-Depends: cmake,
                pkg-config,
-               debhelper (>= 9),
+               debhelper (>= 9.20151004),
                bash-completion,
                doxygen,
                doxygen-latex,
