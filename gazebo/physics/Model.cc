@@ -63,6 +63,7 @@ Model::Model(BasePtr _parent)
 //////////////////////////////////////////////////
 Model::~Model()
 {
+  this->Fini();
 }
 
 //////////////////////////////////////////////////
@@ -407,14 +408,43 @@ boost::shared_ptr<Model> Model::shared_from_this()
 //////////////////////////////////////////////////
 void Model::Fini()
 {
-  Entity::Fini();
+  // Destroy all attached models
+  for (auto &model : this->attachedModels)
+  {
+    if (model)
+      model->Fini();
+  }
+  this->attachedModels.clear();
+
+  // Destroy all models
+  for (auto &model : this->models)
+  {
+    if (model)
+      model->Fini();
+  }
+  this->models.clear();
+
+  // Destroy all joints
+  for (auto &joint : this->joints)
+  {
+    if (joint)
+      joint->Fini();
+  }
+  this->joints.clear();
+  this->jointController.reset();
+
+  // Destroy all links
+  for (auto &link : this->links)
+  {
+    if (link)
+      link->Fini();
+  }
+  this->canonicalLink.reset();
+  this->links.clear();
 
   this->plugins.clear();
-  this->attachedModels.clear();
-  this->joints.clear();
-  this->links.clear();
-  this->canonicalLink.reset();
-  this->models.clear();
+
+  Entity::Fini();
 }
 
 //////////////////////////////////////////////////
@@ -427,25 +457,58 @@ void Model::UpdateParameters(sdf::ElementPtr _sdf)
     sdf::ElementPtr linkElem = _sdf->GetElement("link");
     while (linkElem)
     {
+      auto linkName = linkElem->Get<std::string>("name");
       LinkPtr link = boost::dynamic_pointer_cast<Link>(
-          this->GetChild(linkElem->Get<std::string>("name")));
-      link->UpdateParameters(linkElem);
+          this->GetChild(linkName));
+      if (link)
+        link->UpdateParameters(linkElem);
+      else
+      {
+        gzwarn << "Model [" << this->GetName() <<
+            "] doesn't have a link called [" << linkName << "]" << std::endl;
+      }
       linkElem = linkElem->GetNextElement("link");
     }
   }
-  /*
 
   if (_sdf->HasElement("joint"))
   {
     sdf::ElementPtr jointElem = _sdf->GetElement("joint");
     while (jointElem)
     {
-      JointPtr joint = boost::dynamic_pointer_cast<Joint>(this->GetChild(jointElem->Get<std::string>("name")));
-      joint->UpdateParameters(jointElem);
+      auto jointName = jointElem->Get<std::string>("name");
+      JointPtr joint = boost::dynamic_pointer_cast<Joint>(
+          this->GetChild(jointName));
+      if (joint)
+        joint->UpdateParameters(jointElem);
+      else
+      {
+        gzwarn << "Model [" << this->GetName() <<
+            "] doesn't have a joint called [" << jointName << "]" << std::endl;
+      }
       jointElem = jointElem->GetNextElement("joint");
     }
   }
-  */
+
+  if (_sdf->HasElement("model"))
+  {
+    sdf::ElementPtr modelElem = _sdf->GetElement("model");
+    while (modelElem)
+    {
+      auto modelName = modelElem->Get<std::string>("name");
+      ModelPtr model = boost::dynamic_pointer_cast<Model>(
+          this->GetChild(modelName));
+      if (model)
+        model->UpdateParameters(modelElem);
+      else
+      {
+        gzwarn << "Model [" << this->GetName() <<
+            "] doesn't have a nested model called [" << modelName << "]"
+            << std::endl;
+      }
+      modelElem = modelElem->GetNextElement("model");
+    }
+  }
 }
 
 //////////////////////////////////////////////////
@@ -1470,4 +1533,24 @@ bool Model::RemoveJoint(const std::string &_name)
            << "], not removed.\n";
     return false;
   }
+}
+
+/////////////////////////////////////////////////
+LinkPtr Model::CreateLink(const std::string &_name)
+{
+  LinkPtr link;
+  if (this->GetLink(_name))
+  {
+    gzwarn << "Model [" << this->GetName()
+      << "] already has a link named [" << _name
+      << "], skipping creating link.\n";
+    return link;
+  }
+
+  link = this->world->GetPhysicsEngine()->CreateLink(shared_from_this());
+
+  link->SetName(_name);
+  this->links.push_back(link);
+
+  return link;
 }

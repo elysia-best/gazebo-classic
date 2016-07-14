@@ -125,15 +125,7 @@ Camera::Camera(const std::string &_name, ScenePtr _scene,
 //////////////////////////////////////////////////
 Camera::~Camera()
 {
-  delete [] this->saveFrameBuffer;
-  this->saveFrameBuffer = NULL;
-  delete [] this->bayerFrameBuffer;
-  this->bayerFrameBuffer = NULL;
-
   this->Fini();
-
-  this->sdf->Reset();
-  this->sdf.reset();
 }
 
 //////////////////////////////////////////////////
@@ -220,8 +212,23 @@ void Camera::Init()
 //////////////////////////////////////////////////
 void Camera::Fini()
 {
+  if (this->saveFrameBuffer)
+    delete [] this->saveFrameBuffer;
+  this->saveFrameBuffer = NULL;
+
+  if (this->bayerFrameBuffer)
+    delete [] this->bayerFrameBuffer;
+  this->bayerFrameBuffer = NULL;
+
   this->initialized = false;
+
+  this->dataPtr->cmdSub.reset();
+  if (this->dataPtr->node)
+    this->dataPtr->node->Fini();
   this->dataPtr->node.reset();
+
+  this->dataPtr->distortion.reset();
+  this->dataPtr->trackedVisual.reset();
 
   if (this->viewport && this->scene)
     RTShaderSystem::DetachViewport(this->viewport, this->scene);
@@ -245,6 +252,10 @@ void Camera::Fini()
 
   this->scene.reset();
   this->connections.clear();
+
+  if (this->sdf)
+    this->sdf->Reset();
+  this->sdf.reset();
 }
 
 //////////////////////////////////////////////////
@@ -321,10 +332,6 @@ void Camera::Update()
   // Update animations
   if (this->animState)
   {
-    this->animState->addTime(
-        (common::Time::GetWallTime() - this->prevAnimTime).Double());
-    this->prevAnimTime = common::Time::GetWallTime();
-
     if (this->animState->hasEnded())
     {
       try
@@ -348,6 +355,12 @@ void Camera::Update()
                              this->dataPtr->moveToPositionQueue[0].second);
         this->dataPtr->moveToPositionQueue.pop_front();
       }
+    }
+    else
+    {
+      common::Time wallTime = common::Time::GetWallTime();
+      this->animState->addTime((wallTime - this->prevAnimTime).Double());
+      this->prevAnimTime = wallTime;
     }
   }
   else if (this->dataPtr->trackedVisual)
@@ -2161,6 +2174,12 @@ std::string Camera::ProjectionType() const
 }
 
 //////////////////////////////////////////////////
+ignition::math::Matrix4d Camera::ProjectionMatrix() const
+{
+  return Conversions::ConvertIgn(this->camera->getProjectionMatrix());
+}
+
+//////////////////////////////////////////////////
 event::ConnectionPtr Camera::ConnectNewImageFrame(
     std::function<void (const unsigned char *, unsigned int, unsigned int,
     unsigned int, const std::string &)> _subscriber)
@@ -2172,4 +2191,19 @@ event::ConnectionPtr Camera::ConnectNewImageFrame(
 void Camera::DisconnectNewImageFrame(event::ConnectionPtr &_c)
 {
   this->newImageFrame.Disconnect(_c);
+}
+
+/////////////////////////////////////////////////
+ignition::math::Vector2i Camera::Project(
+    const ignition::math::Vector3d &_pt) const
+{
+  // Convert from 3D world pos to 2D screen pos
+  Ogre::Vector3 pos = this->OgreCamera()->getProjectionMatrix() *
+      this->OgreCamera()->getViewMatrix() * Conversions::Convert(_pt);
+
+  ignition::math::Vector2i screenPos;
+  screenPos.X() = ((pos.x / 2.0) + 0.5) * this->ViewportWidth();
+  screenPos.Y() = (1 - ((pos.y / 2.0) + 0.5)) * this->ViewportHeight();
+
+  return screenPos;
 }

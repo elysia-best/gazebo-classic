@@ -74,15 +74,7 @@ Sensor::Sensor(SensorCategory _cat)
 //////////////////////////////////////////////////
 Sensor::~Sensor()
 {
-  if (this->node)
-    this->node->Fini();
-  this->node.reset();
-
-  if (this->sdf)
-    this->sdf->Reset();
-  this->sdf.reset();
-  this->connections.clear();
-  this->noises.clear();
+  this->Fini();
 }
 
 //////////////////////////////////////////////////
@@ -259,11 +251,25 @@ void Sensor::Update(const bool _force)
 //////////////////////////////////////////////////
 void Sensor::Fini()
 {
+  if (this->node)
+    this->node->Fini();
+  this->node.reset();
+
+  this->connections.clear();
+
   for (auto &it : this->noises)
     it.second->Fini();
+  this->noises.clear();
 
   this->active = false;
   this->plugins.clear();
+
+  if (this->sdf)
+    this->sdf->Reset();
+  this->sdf.reset();
+
+  this->scene.reset();
+  this->world.reset();
 }
 
 //////////////////////////////////////////////////
@@ -275,7 +281,11 @@ std::string Sensor::GetName() const
 //////////////////////////////////////////////////
 std::string Sensor::Name() const
 {
-  return this->sdf->Get<std::string>("name");
+  if (this->sdf)
+    return this->sdf->Get<std::string>("name");
+
+  gzwarn << "Missing sensor SDF." << std::endl;
+  return "";
 }
 
 //////////////////////////////////////////////////

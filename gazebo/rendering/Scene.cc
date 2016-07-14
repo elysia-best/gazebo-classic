@@ -1257,9 +1257,10 @@ bool Scene::FirstContact(CameraPtr _camera,
     unsigned int flags = iter->movable->getVisibilityFlags();
 
     // Only accept a hit if there is an entity and not a gui visual
-    if (iter->movable &&
+    if (iter->movable && iter->movable->getVisible() &&
         iter->movable->getMovableType().compare("Entity") == 0 &&
-        !(flags != GZ_VISIBILITY_ALL && flags & GZ_VISIBILITY_GUI))
+        !(flags != GZ_VISIBILITY_ALL && flags & GZ_VISIBILITY_GUI
+        && !(flags & GZ_VISIBILITY_SELECTABLE)))
     {
       Ogre::Entity *ogreEntity = static_cast<Ogre::Entity*>(iter->movable);
 
@@ -2515,10 +2516,10 @@ void Scene::ProcessRequestMsg(ConstRequestPtr &_msg)
       VisualPtr visPtr;
       try
       {
-        Visual_M::iterator iter;
-        iter = this->dataPtr->visuals.find(
+        auto iter = this->dataPtr->visuals.find(
             boost::lexical_cast<uint32_t>(_msg->data()));
-        visPtr = iter->second;
+        if (iter != this->dataPtr->visuals.end())
+          visPtr = iter->second;
       } catch(...)
       {
         visPtr = this->GetVisual(_msg->data());
