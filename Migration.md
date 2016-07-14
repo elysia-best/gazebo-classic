@@ -5,6 +5,16 @@ Deprecated code produces compile-time warnings. These warning serve as
 notification to users that their code should be upgraded. The next major
 release will remove the deprecated code.
 
+## Gazebo 7.1.0 to 7.X
+
+### Additions
+
+1. **gazebo/physics/ode/ODEJoint.hh**
+    + public: virtual void Fini();
+
+1. **gazebo/physics/bullet/BulletJoint.hh**
+    + public: virtual void Fini();
+
 ## Gazebo 6.X to 7.X
 
 ### Additions
@@ -50,6 +60,12 @@ release will remove the deprecated code.
 
 1. **gazebo/physics/Actor.hh**
     + Type change of `protected: math::Vector3 lastPos;` to `protected: ignition::math::Vector3d lastPos;`
+
+1. **gazebo/physics/ContactManager.hh**
+    + Remove contact filters with names that contain `::`.
+      The `CreateFilter`, `HasFilter`, and `RemoveFilter` functions
+      now convert `::` strings to `/` in the filter name before acting.
+      These were not being deleted properly in previous versions.
 
 1. **gazebo/rendering/RenderTypes.hh**
     + typedefs for Visual and its derived classes have been changed from boost to std pointers.
@@ -368,9 +384,9 @@ release will remove the deprecated code.
     + ***Replacement:** public: virtual std::string Topic() const;
     + ***Deprecation:** public: rendering::GpuLaserPtr GetLaserCamera() const
     + ***Replacement:** public: rendering::GpuLaserPtr LaserCamera() const;
-    + ***Deprecation:** public: double GetAngleResolution() const 
+    + ***Deprecation:** public: double GetAngleResolution() const
     + ***Replacement:** public: double AngleResolution() const;
-    + ***Deprecation:** public: double GetRangeMin() const 
+    + ***Deprecation:** public: double GetRangeMin() const
     + ***Replacement:** public: double RangeMin() const;
     + ***Deprecation:** public: double GetRangeMax() const
     + ***Replacement:** public: double RangeMax() const;
@@ -524,7 +540,7 @@ release will remove the deprecated code.
 1. **gazebo/sensors/WirelessTransmitter.hh**
     + ***Deprecation:** public: std::string GetESSID() const
     + ***Replacement:** public: std::string ESSID() const;
-    + ***Deprecation:** public: double GetFreq() const 
+    + ***Deprecation:** public: double GetFreq() const
     + ***Replacement:** public: double Freq() const;
 
 1. **gazebo/rendering/ApplyWrenchVisual.hh**

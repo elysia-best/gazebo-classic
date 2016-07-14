@@ -165,6 +165,10 @@ namespace gazebo
       /// \return A list of all the Models in the world.
       public: Model_V GetModels() const;
 
+      /// \brief Get the number of lights.
+      /// \return The number of lights in the World.
+      public: unsigned int LightCount() const;
+
       /// \brief Get a list of all the lights.
       /// \return A list of all the Lights in the world.
       public: Light_V Lights() const;
@@ -396,6 +400,13 @@ namespace gazebo
       /// be called by SensorManager.
       /// \param[in] _init True if sensors have been initialized.
       public: void _SetSensorsInitialized(const bool _init);
+
+      /// \brief Get a model name which doesn't overlap with any existing
+      /// models, by appending numbers to the given name. If _name is already,
+      /// unique, the returned value is the same.
+      /// \param[in] _name Desired model name.
+      /// \return Unique model name.
+      public: std::string UniqueModelName(const std::string &_name);
 
       /// \cond
       /// This is an internal function.
