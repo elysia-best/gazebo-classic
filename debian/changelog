@@ -1,4 +1,4 @@
-gazebo (7.3.0-dfsg-1) unstable; urgency=medium
+gazebo (7.3.0+dfsg-1) unstable; urgency=medium
 
   * Explicitly use of external tinyxml copy
   * Imported Upstream version 7.3.0
