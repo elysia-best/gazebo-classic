@@ -6,7 +6,7 @@ Section: science
 Priority: optional
 Build-Depends: cmake,
                pkg-config,
-               debhelper,
+               debhelper (>9),
                bash-completion,
                doxygen,
                doxygen-latex,
@@ -48,7 +48,7 @@ Build-Depends: cmake,
                libgdal-dev,
                ruby-ronn,
                libgtest-dev
-Standards-Version: 3.9.7
+Standards-Version: 3.9.8
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/gazebo.git
 Vcs-Git: https://anonscm.debian.org/git/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
