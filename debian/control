@@ -41,7 +41,7 @@ Build-Depends: cmake,
                libusb-1.0-0-dev,
                libspnav-dev,
                libsdformat4-dev (>= 4.1.0) | libsdformat-dev,
-               libignition-math2-dev | libignition-math-dev,
+               libignition-math2-dev,
                libbullet-dev,
                libsimbody-dev,
                libsimbody-dev (<< 4.0.0),
@@ -134,7 +134,7 @@ Depends: libtbb-dev,
          libavcodec-dev,
          libswscale-dev,
          libsdformat4-dev (>= 4.1.0) | libsdformat-dev,
-         libignition-math2-dev | libignition-math-dev,
+         libignition-math2-dev,
          libsimbody-dev,
          libgazebo7 (= ${binary:Version}),
          gazebo7-common (= ${source:Version}),
@@ -142,7 +142,6 @@ Depends: libtbb-dev,
          ${misc:Depends}
 Breaks: libgazebo6-dev
 Replaces: libgazebo6-dev
-Conflicts: libignition-math-dev (<< 2.0.0)
 Description: Open Source Robotics Simulator - Development Files
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
