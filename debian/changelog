@@ -1,3 +1,9 @@
+gazebo (7.3.0+dfsg-2) unstable; urgency=medium
+
+   * Patch to fix linking with gcc6 (Closes: #831176)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 21 Jul 2016 15:31:57 +0000
+
 gazebo (7.3.0+dfsg-1) unstable; urgency=medium
 
   * Explicitly use of external tinyxml copy
