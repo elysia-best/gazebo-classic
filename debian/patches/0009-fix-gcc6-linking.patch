@@ -1,0 +1,17 @@
+Description: Include boost library to fix problems with gcc6
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Bug: https://bitbucket.org/osrf/gazebo/pull-requests/2402
+Last-Update: 2016-07-21
+
+diff --git a/gazebo/physics/CMakeLists.txt b/gazebo/physics/CMakeLists.txt
+index 0150efc..3d82b0f 100644
+--- a/gazebo/physics/CMakeLists.txt
++++ b/gazebo/physics/CMakeLists.txt
+@@ -153,6 +153,7 @@ target_link_libraries(gazebo_physics
+   gazebo_util
+   gazebo_ode
+   gazebo_opcode
++  ${Boost_LIBRARIES}
+ )
+ 
+ # Link in Bullet support if present
