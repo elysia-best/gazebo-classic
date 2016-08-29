@@ -17,12 +17,12 @@ if (HAVE_BULLET)
   add_subdirectory(bullet)
 endif()
 
-# Add DART support if present
-if (HAVE_DART)
-  add_subdirectory(dart)
+# Add KIDO support if present
+if (HAVE_KIDO)
+  add_subdirectory(kido)
 
-  include_directories(${DARTCore_INCLUDE_DIRS})
-  link_directories(${DARTCore_LIBRARY_DIRS})
+  include_directories(${KIDO_INCLUDE_DIRS})
+  link_directories(${KIDO_LIBRARY_DIRS})
 endif()
 
 # Add Simbody support if present
@@ -160,9 +160,9 @@ if (HAVE_BULLET)
   target_link_libraries(gazebo_physics ${BULLET_LIBRARIES})
 endif()
 
-# Link in DART support if present
-if (HAVE_DART)
-  target_link_libraries(gazebo_physics ${DARTCore_LIBRARIES})
+# Link in KIDO support if present
+if (HAVE_KIDO)
+  target_link_libraries(gazebo_physics ${KIDO_LIBRARIES})
 endif()
 
 # Link in Simbody support if present

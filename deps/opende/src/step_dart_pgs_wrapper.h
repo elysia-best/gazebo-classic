@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 */
-#ifndef _ODE_STEP_DART_PGS_WRAPPER_H_
-#define _ODE_STEP_DART_PGS_WRAPPER_H_
+#ifndef _ODE_STEP_KIDO_PGS_WRAPPER_H_
+#define _ODE_STEP_KIDO_PGS_WRAPPER_H_
 
 #include <ode/common.h>
 void dSolveLCP_dart_pgs(int m, int mskip,  dReal *A, dReal *x, dReal *b,

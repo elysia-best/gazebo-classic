@@ -313,8 +313,8 @@ TEST_F(ODEPhysics_TEST, PhysicsParam)
   }
 
   {
-    // Switch to "DART_PGS" using SetWorldStepSolverType
-    const std::string worldSolverType = "DART_PGS";
+    // Switch to "KIDO_PGS" using SetWorldStepSolverType
+    const std::string worldSolverType = "KIDO_PGS";
     odePhysics->SetWorldStepSolverType(worldSolverType);
     EXPECT_EQ(odePhysics->GetWorldStepSolverType(), worldSolverType);
     std::string param;

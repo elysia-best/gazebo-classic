@@ -5,8 +5,8 @@
 
 #define dxDeviceContext cudaStream_t
 #define dxDeviceQueue cudaStream_t
-#define dxParallelInfF CUDART_INF_F
-#define dxParallelInfD CUDART_INF
+#define dxParallelInfF CUKIDO_INF_F
+#define dxParallelInfD CUKIDO_INF
 #define dxOverload
 #define dxDevice __device__
 #define dxHost __host__

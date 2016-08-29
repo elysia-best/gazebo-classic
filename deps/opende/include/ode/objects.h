@@ -43,7 +43,7 @@ enum Friction_Model {
 /// Enum of world stepper LCP solver choices
 enum World_Solver_Type{
   ODE_DEFAULT,
-  DART_PGS,
+  KIDO_PGS,
   BULLET_PGS,
   BULLET_LEMKE
 };
@@ -680,7 +680,7 @@ ODE_API void dWorldSetQuickStepExtraFrictionIterations (dWorldID, int iters);
 ODE_API void dWorldSetQuickStepFrictionModel(dWorldID, Friction_Model fricmodel);
 
 /**
- * @brief Set the LCP Solver from: ODE_DEFAULT, DART_PGS, BULLET_PGS
+ * @brief Set the LCP Solver from: ODE_DEFAULT, KIDO_PGS, BULLET_PGS
  * @ingroup world
  * @param enum for LCP Solver
  */

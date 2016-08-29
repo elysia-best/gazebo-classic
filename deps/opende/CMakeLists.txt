@@ -19,9 +19,9 @@ link_directories(
   ${Boost_LIBRARY_DIR}
 )
 
-if (HAVE_DART)
-  include_directories(${DARTCore_INCLUDE_DIRS})
-  link_directories(${DARTCore_LIBRARY_DIRS})
+if (HAVE_KIDO)
+  include_directories(${KIDO_INCLUDE_DIRS})
+  link_directories(${KIDO_LIBRARY_DIRS})
 endif()
 
 if (HAVE_BULLET)

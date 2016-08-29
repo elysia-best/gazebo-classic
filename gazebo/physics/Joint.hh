@@ -291,7 +291,7 @@ namespace gazebo
       /// \brief Set the velocity of an axis(index).
       /// In ODE and Bullet, the SetVelocityMaximal function is used to
       /// set the velocity of the child link relative to the parent.
-      /// In Simbody and DART, this function updates the velocity state,
+      /// In Simbody and KIDO, this function updates the velocity state,
       /// which has a recursive effect on the rest of the chain.
       /// \param[in] _index Index of the axis.
       /// \param[in] _vel Velocity.

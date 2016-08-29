@@ -417,7 +417,7 @@ if(NOT "${CUDA_TOOLKIT_ROOT_DIR}" STREQUAL "${CUDA_TOOLKIT_ROOT_DIR_INTERNAL}")
   unset(CUDA_NVCC_EXECUTABLE CACHE)
   unset(CUDA_VERSION CACHE)
   unset(CUDA_TOOLKIT_INCLUDE CACHE)
-  unset(CUDA_CUDART_LIBRARY CACHE)
+  unset(CUDA_CUKIDO_LIBRARY CACHE)
   unset(CUDA_CUDA_LIBRARY CACHE)
   unset(CUDA_cublas_LIBRARY CACHE)
   unset(CUDA_cublasemu_LIBRARY CACHE)
@@ -544,12 +544,12 @@ macro(FIND_LIBRARY_LOCAL_FIRST _var _names _doc)
 endmacro()
 
 # CUDA_LIBRARIES
-find_library_local_first(CUDA_CUDART_LIBRARY cudart "\"cudart\" library")
-set(CUDA_LIBRARIES ${CUDA_CUDART_LIBRARY})
+find_library_local_first(CUDA_CUKIDO_LIBRARY cudart "\"cudart\" library")
+set(CUDA_LIBRARIES ${CUDA_CUKIDO_LIBRARY})
 if(APPLE)
   # We need to add the path to cudart to the linker using rpath, since the
   # library name for the cuda libraries is prepended with @rpath.
-  get_filename_component(_cuda_path_to_cudart "${CUDA_CUDART_LIBRARY}" PATH)
+  get_filename_component(_cuda_path_to_cudart "${CUDA_CUKIDO_LIBRARY}" PATH)
   if(_cuda_path_to_cudart)
     list(APPEND CUDA_LIBRARIES -Wl,-rpath "-Wl,${_cuda_path_to_cudart}")
   endif()
@@ -566,7 +566,7 @@ endif(CUDA_CUDA_LIBRARY)
 
 mark_as_advanced(
   CUDA_CUDA_LIBRARY
-  CUDA_CUDART_LIBRARY
+  CUDA_CUKIDO_LIBRARY
   )
 
 #######################
@@ -666,7 +666,7 @@ find_package_handle_standard_args(CUDA DEFAULT_MSG
   CUDA_TOOLKIT_ROOT_DIR
   CUDA_NVCC_EXECUTABLE
   CUDA_INCLUDE_DIRS
-  CUDA_CUDART_LIBRARY
+  CUDA_CUKIDO_LIBRARY
   _cuda_version_acceptable
   )
 

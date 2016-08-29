@@ -67,8 +67,8 @@ void PhysicsEngineTest::PhysicsEngineParam(const std::string &_physicsEngine)
     type = msgs::Physics::ODE;
   else if (_physicsEngine == "bullet")
     type = msgs::Physics::BULLET;
-  else if (_physicsEngine == "dart")
-    type = msgs::Physics::DART;
+  else if (_physicsEngine == "kido")
+    type = msgs::Physics::KIDO;
   else if (_physicsEngine == "simbody")
     type = msgs::Physics::SIMBODY;
   else
@@ -204,9 +204,9 @@ void PhysicsEngineTest::PhysicsEngineGetParamBool
     EXPECT_TRUE(physics->GetParam("iters", value));
     EXPECT_EQ(boost::any_cast<int>(value), 50);
   }
-  else if (_physicsEngine == "dart")
+  else if (_physicsEngine == "kido")
   {
-    gzwarn << "DARTPhysics::GetParam not yet implemented." << std::endl;
+    gzwarn << "KIDOPhysics::GetParam not yet implemented." << std::endl;
     return;
   }
   else if (_physicsEngine == "simbody")

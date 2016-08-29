@@ -626,8 +626,8 @@ ODEPhysics::ConvertWorldStepSolverType(const std::string &_solverType)
   World_Solver_Type result = ODE_DEFAULT;
   if (_solverType.compare("ODE_DANTZIG") == 0)
     result = ODE_DEFAULT;
-  else if (_solverType.compare("DART_PGS") == 0)
-    result = DART_PGS;
+  else if (_solverType.compare("KIDO_PGS") == 0)
+    result = KIDO_PGS;
   else if (_solverType.compare("BULLET_LEMKE") == 0)
     result = BULLET_LEMKE;
   else if (_solverType.compare("BULLET_PGS") == 0)
@@ -654,9 +654,9 @@ ODEPhysics::ConvertWorldStepSolverType(const World_Solver_Type _solverType)
       result = "ODE_DANTZIG";
       break;
     }
-    case DART_PGS:
+    case KIDO_PGS:
     {
-      result = "DART_PGS";
+      result = "KIDO_PGS";
       break;
     }
     case BULLET_LEMKE:

@@ -574,8 +574,8 @@ namespace gazebo
       /// \brief Private data pointer.
       private: WorldPrivate *dataPtr;
 
-      /// Friend DARTLink so that it has access to dataPtr->dirtyPoses
-      private: friend class DARTLink;
+      /// Friend KIDOLink so that it has access to dataPtr->dirtyPoses
+      private: friend class KIDOLink;
 
       /// Friend SimbodyPhysics so that it has access to dataPtr->dirtyPoses
       private: friend class SimbodyPhysics;

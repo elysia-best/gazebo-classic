@@ -40,9 +40,9 @@ void RegisterODEPhysics();
   void RegisterBulletPhysics();
 #endif
 
-#ifdef HAVE_DART
+#ifdef HAVE_KIDO
   GZ_PHYSICS_VISIBLE
-  void RegisterDARTPhysics();
+  void RegisterKIDOPhysics();
 #endif
 
 using namespace gazebo;
@@ -64,8 +64,8 @@ void PhysicsFactory::RegisterAll()
   RegisterBulletPhysics();
 #endif
 
-#ifdef HAVE_DART
-  RegisterDARTPhysics();
+#ifdef HAVE_KIDO
+  RegisterKIDOPhysics();
 #endif
 }
 

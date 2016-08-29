@@ -34,7 +34,7 @@
 #include "joints/hinge.h"
 #include "gazebo/gazebo_config.h"
 
-#ifdef HAVE_DART
+#ifdef HAVE_KIDO
 #include "step_dart_pgs_wrapper.h"
 #endif
 
@@ -742,13 +742,13 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
         // this will destroy A but that's OK
         dSolveLCP (context, m, A, lambda, rhs, NULL, nub, lo, hi, findex);
       }
-      else if (solver_type == DART_PGS)
+      else if (solver_type == KIDO_PGS)
       {
-#ifdef HAVE_DART
+#ifdef HAVE_KIDO
         const int mskip = dPAD(m);
         dSolveLCP_dart_pgs(m, mskip, A, lambda, rhs, nub, lo, hi, findex);
 #else
-        dMessage(d_ERR_LCP, "HAVE_DART is NOT defined");
+        dMessage(d_ERR_LCP, "HAVE_KIDO is NOT defined");
 #endif
       }
       else if (solver_type == BULLET_LEMKE)
@@ -766,7 +766,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 #ifdef HAVE_BULLET
         dSolveLCP_bullet_pgs(m, A, lambda, rhs, lo, hi, findex);
 #else
-        dMessage(d_ERR_LCP, "HAVE_DART is NOT defined");
+        dMessage(d_ERR_LCP, "HAVE_KIDO is NOT defined");
 #endif
       }
       else

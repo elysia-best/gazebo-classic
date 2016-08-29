@@ -65,7 +65,7 @@ namespace gazebo
       /// \brief Update the physics engine collision.
       public: virtual void UpdateCollision() = 0;
 
-      /// \brief Return the physics engine type (ode|bullet|dart|simbody).
+      /// \brief Return the physics engine type (ode|bullet|kido|simbody).
       /// \return Type of the physics engine.
       public: virtual std::string GetType() const = 0;
 
@@ -173,7 +173,7 @@ namespace gazebo
       /// Below is a list of _key parameter definitions:
       ///       -# "solver_type" (string) - returns solver used by engine, e.g.
       ///          "sequential_impulse' for Bullet, "quick" for ODE
-      ///          "Featherstone and Lemkes" for DART and
+      ///          "Featherstone and Lemkes" for KIDO and
       ///          "Spatial Algebra and Elastic Foundation" for Simbody.
       ///       -# "cfm" (double) - global CFM (ODE/Bullet)
       ///       -# "erp" (double) - global ERP (ODE/Bullet)

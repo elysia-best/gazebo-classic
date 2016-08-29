@@ -36,30 +36,30 @@
 #endif
 
 #define SIMBODY_SUPPORT
-#define DART_SUPPORT
-#define WORLD_STEP_DART_PGS
+#define KIDO_SUPPORT
+#define WORLD_STEP_KIDO_PGS
 
 #ifdef HAVE_SIMBODY
 # undef SIMBODY_SUPPORT
 # define SIMBODY_SUPPORT , "simbody"
 #endif
-#ifdef HAVE_DART
-# undef DART_SUPPORT
-# define DART_SUPPORT , "dart"
-# undef WORLD_STEP_DART_PGS
-# define WORLD_STEP_DART_PGS , "DART_PGS"
+#ifdef HAVE_KIDO
+# undef KIDO_SUPPORT
+# define KIDO_SUPPORT , "kido"
+# undef WORLD_STEP_KIDO_PGS
+# define WORLD_STEP_KIDO_PGS , "KIDO_PGS"
 #endif
 
 /// \brief Helper macro to instantiate gtest for different physics engines
 #define PHYSICS_ENGINE_VALUES ::testing::Values("ode" \
   BULLET_SUPPORT \
   SIMBODY_SUPPORT \
-  DART_SUPPORT \
+  KIDO_SUPPORT \
   )
 
 /// \brief Helper macro to instantiate gtest for different solvers
 #define WORLD_STEP_SOLVERS ::testing::Values("ODE_DANTZIG" \
-  WORLD_STEP_DART_PGS \
+  WORLD_STEP_KIDO_PGS \
   WORLD_STEP_BULLET_PGS \
   WORLD_STEP_BULLET_LEMKE \
   )

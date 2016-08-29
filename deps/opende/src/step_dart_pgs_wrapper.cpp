@@ -28,7 +28,7 @@
 
 #include "gazebo/gazebo_config.h"
 
-#ifdef HAVE_DART
+#ifdef HAVE_KIDO
 #include "dart/constraint/PGSLCPSolver.h"
 #include "step_dart_pgs_wrapper.h"
 
