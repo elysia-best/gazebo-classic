@@ -1,3 +1,14 @@
+gazebo (7.3.0+dfsg-3) unstable; urgency=medium
+
+  [ Jochen Sprickerhof ]
+  * Add libcurl-dev as an alternative to simplify apts resolution
+
+  [ Jose Luis Rivero ]
+  * Include patch to fix tinyxml constant removal
+    (Closes: #835427)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 29 Aug 2016 00:44:02 +0000
+
 gazebo (7.3.0+dfsg-2) unstable; urgency=medium
 
    * Patch to fix linking with gcc6 (Closes: #831176)
