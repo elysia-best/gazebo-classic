@@ -1,0 +1,20 @@
+Description: Use new tinyxml constant
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Forwarded: https://bitbucket.org/osrf/gazebo/pull-requests/2435
+Last-Update: 2016-08-31
+
+diff --git a/gazebo/gui/SpaceNav.cc b/gazebo/gui/SpaceNav.cc
+index e0d9ed2..745288d 100644
+--- a/gazebo/gui/SpaceNav.cc
++++ b/gazebo/gui/SpaceNav.cc
+@@ -25,6 +25,10 @@
+ #include <gazebo/gazebo_config.h>
+ #ifdef HAVE_SPNAV
+ #include <spnav.h>
++// Status is defined in X11/Xlib.h which is included by spnav.h
++// protobuf define a class named Status. To avoid conflicts, remove here
++// the definition of Status.
++#undef Status
+ #endif
+ 
+ #include "gazebo/gui/GuiIface.hh"

@@ -3,3 +3,4 @@
 0008-arial-font-removed-in-dfsg.patch
 0009-fix-gcc6-linking.patch
 0001-fix_tinyxml_constant.patch
+0004-fix-status-double-declaration.patch
