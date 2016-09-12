@@ -44,7 +44,7 @@ Build-Depends: cmake,
                libbullet-dev,
                libsimbody-dev,
                libsimbody-dev (<< 4.0.0),
-               libkido-dev [amd64 arm64 i386 powerpc alpha],
+               libkido-dev [amd64 arm64 i386 ppc64el alpha mipsel],
                libgdal-dev,
                ruby-ronn,
                libgtest-dev
