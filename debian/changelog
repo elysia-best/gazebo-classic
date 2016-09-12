@@ -1,3 +1,11 @@
+gazebo (7.3.0+dfsg-5) unstable; urgency=medium
+
+  * Use the current list of successfull builds of kido (amd64 arm64 i386
+    ppc64el alpha mipsel) to fix architectures in control file. Thank to
+    Jeremy Bicha. (Closes: #837121)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 12 Sep 2016 16:23:58 +0000
+
 gazebo (7.3.0+dfsg-4) unstable; urgency=medium
 
   * Team upload.
