@@ -1,3 +1,10 @@
+gazebo (7.3.0+dfsg-6) unstable; urgency=medium
+
+  * Fix supported arches in libgazebo7-dev package. Thanks to Graham Inggs
+    (Closes: #837121)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Wed, 14 Sep 2016 17:00:37 +0000
+
 gazebo (7.3.0+dfsg-5) unstable; urgency=medium
 
   * Use the current list of successfull builds of kido (amd64 arm64 i386
