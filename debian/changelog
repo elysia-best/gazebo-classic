@@ -1,10 +1,11 @@
-gazebo (7.3.1+dfsg-1.1) UNRELEASED; urgency=medium
+gazebo (7.3.1+dfsg-1.1) unstable; urgency=medium
 
+  [ Gianfranco Costamagna ]
   * Non-maintainer upload.
   * d/p/fix-boost1.62.patch: cherry-pick upstream commit to fix
-    a boost1.62 build failure due to a missing include (Closes: #-1).
+    a boost1.62 build failure due to a missing include (Closes: #843243).
 
- -- Gianfranco Costamagna <locutusofborg@debian.org>  Sat, 05 Nov 2016 13:06:20 +0100
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 10 Nov 2016 11:13:19 +0000
 
 gazebo (7.3.1+dfsg-1) unstable; urgency=medium
 
