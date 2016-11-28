@@ -1,6 +1,6 @@
 Description: Use system packaged gtest
 Author: Jose Luis Rivero <jrivero@osrfoundation.org>
-Last-Update: 2015-08-02
+Last-Update: 2016-10-26
 
 --- /dev/null
 +++ b/cmake/FindGtest.cmake
@@ -32,7 +32,7 @@ Last-Update: 2015-08-02
 +    PATHS "$ENV{PROGRAMFILES}/gtest" "$ENV{PROGRAMW6432}/gtest"
 +    PATHS "$ENV{PROGRAMFILES}/gtest-1.7.0" "$ENV{PROGRAMW6432}/gtest-1.7.0"
 +    PATH /usr/src/gtest
-+    PATH_SUFFIXES gtest usr/src/gtest)
++    PATH_SUFFIXES gtest src/gtest)
 +
 +set(GTEST_INCLUDE_DIRS ${GTEST_INCLUDE_DIR})
 +set(CMAKE_FIND_FRAMEWORK)
