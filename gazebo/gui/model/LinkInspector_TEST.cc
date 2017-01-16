@@ -36,12 +36,18 @@ void LinkInspector_TEST::RemoveButton()
   QList<QToolButton *> toolButtons =
       linkInspector->findChildren<QToolButton *>();
 
-  // 3 tool buttons: remove link, remove visual, remove collision
-  QVERIFY(toolButtons.size() == 3);
-  QVERIFY(toolButtons[0]->text() == "");
+  // 6 tool buttons:
+  // show collisions,
+  // show visuals,
+  // show link frames,
+  // remove link,
+  // remove visual,
+  // remove collision
+  QVERIFY(toolButtons.size() == 6);
+  QVERIFY(toolButtons[3]->text() == "");
 
   // Trigger remove
-  toolButtons[0]->click();
+  toolButtons[3]->click();
 
   // Check link inspector disappeared
   QVERIFY(!linkInspector->isVisible());
