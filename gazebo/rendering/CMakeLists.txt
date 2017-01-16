@@ -154,9 +154,11 @@ set (gtest_sources_dri
   COMVisual_TEST.cc
   GpuLaser_TEST.cc
   Heightmap_TEST.cc
+  InertiaVisual_TEST.cc
   JointVisual_TEST.cc
   LinkFrameVisual_TEST.cc
   OriginVisual_TEST.cc
+  RenderEngine_TEST.cc
   Scene_TEST.cc
   SelectionObj_TEST.cc
   SonarVisual_TEST.cc

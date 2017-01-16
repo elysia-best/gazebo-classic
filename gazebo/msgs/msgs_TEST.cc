@@ -102,6 +102,106 @@ TEST_F(MsgsTest, BadPackage)
   EXPECT_THROW(msgs::Package("test_type", msg), common::Exception);
 }
 
+TEST_F(MsgsTest, ConvertDoubleToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(1.0);
+  EXPECT_EQ(msg.type(), msgs::Any::DOUBLE);
+  ASSERT_TRUE(msg.has_double_value());
+  EXPECT_DOUBLE_EQ(1, msg.double_value());
+}
+
+TEST_F(MsgsTest, ConvertIntToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(2);
+  EXPECT_EQ(msg.type(), msgs::Any::INT32);
+  ASSERT_TRUE(msg.has_int_value());
+  EXPECT_DOUBLE_EQ(2, msg.int_value());
+}
+
+TEST_F(MsgsTest, ConvertStringToAny)
+{
+  msgs::Any msg = msgs::ConvertAny("test_string");
+  EXPECT_EQ(msg.type(), msgs::Any::STRING);
+  ASSERT_TRUE(msg.has_string_value());
+  EXPECT_EQ("test_string", msg.string_value());
+}
+
+TEST_F(MsgsTest, ConvertBoolToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(true);
+
+  EXPECT_EQ(msg.type(), msgs::Any::BOOLEAN);
+  ASSERT_TRUE(msg.has_bool_value());
+  EXPECT_TRUE(msg.bool_value());
+}
+
+TEST_F(MsgsTest, ConvertVector3dToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(ignition::math::Vector3d(1, 2, 3));
+  EXPECT_EQ(msg.type(), msgs::Any::VECTOR3D);
+  ASSERT_TRUE(msg.has_vector3d_value());
+
+  EXPECT_DOUBLE_EQ(1, msg.vector3d_value().x());
+  EXPECT_DOUBLE_EQ(2, msg.vector3d_value().y());
+  EXPECT_DOUBLE_EQ(3, msg.vector3d_value().z());
+}
+
+TEST_F(MsgsTest, ConvertColorToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(common::Color(.1, .2, .3, 1.0));
+  EXPECT_EQ(msg.type(), msgs::Any::COLOR);
+  ASSERT_TRUE(msg.has_color_value());
+
+  EXPECT_DOUBLE_EQ(0.1f, msg.color_value().r());
+  EXPECT_DOUBLE_EQ(0.2f, msg.color_value().g());
+  EXPECT_DOUBLE_EQ(0.3f, msg.color_value().b());
+  EXPECT_DOUBLE_EQ(1.0f, msg.color_value().a());
+}
+
+TEST_F(MsgsTest, ConvertPose3dToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(ignition::math::Pose3d(
+      ignition::math::Vector3d(1, 2, 3),
+      ignition::math::Quaterniond(4, 5, 6, 7)));
+
+  EXPECT_EQ(msg.type(), msgs::Any::POSE3D);
+  ASSERT_TRUE(msg.has_pose3d_value());
+
+  EXPECT_DOUBLE_EQ(1, msg.pose3d_value().position().x());
+  EXPECT_DOUBLE_EQ(2, msg.pose3d_value().position().y());
+  EXPECT_DOUBLE_EQ(3, msg.pose3d_value().position().z());
+
+  EXPECT_DOUBLE_EQ(msg.pose3d_value().orientation().w(), 4.0);
+  EXPECT_DOUBLE_EQ(msg.pose3d_value().orientation().x(), 5.0);
+  EXPECT_DOUBLE_EQ(msg.pose3d_value().orientation().y(), 6.0);
+  EXPECT_DOUBLE_EQ(msg.pose3d_value().orientation().z(), 7.0);
+}
+
+TEST_F(MsgsTest, ConvertQuaternionToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(
+      ignition::math::Quaterniond(1, 2, 3, 4));
+
+  EXPECT_EQ(msg.type(), msgs::Any::QUATERNIOND);
+  ASSERT_TRUE(msg.has_quaternion_value());
+
+  EXPECT_DOUBLE_EQ(msg.quaternion_value().w(), 1.0);
+  EXPECT_DOUBLE_EQ(msg.quaternion_value().x(), 2.0);
+  EXPECT_DOUBLE_EQ(msg.quaternion_value().y(), 3.0);
+  EXPECT_DOUBLE_EQ(msg.quaternion_value().z(), 4.0);
+}
+
+TEST_F(MsgsTest, ConvertTimeToAny)
+{
+  msgs::Any msg = msgs::ConvertAny(common::Time(2, 123));
+
+  EXPECT_EQ(msg.type(), msgs::Any::TIME);
+  ASSERT_TRUE(msg.has_time_value());
+
+  EXPECT_EQ(2, msg.time_value().sec());
+  EXPECT_EQ(123, msg.time_value().nsec());
+}
+
 TEST_F(MsgsTest, CovertMathVector3ToMsgs)
 {
   msgs::Vector3d msg = msgs::Convert(ignition::math::Vector3d(1, 2, 3));
@@ -204,6 +304,63 @@ TEST_F(MsgsTest, ConvertCommonTimeToMsgs)
   common::Time v = msgs::Convert(msg);
   EXPECT_EQ(2, v.sec);
   EXPECT_EQ(123, v.nsec);
+}
+
+TEST_F(MsgsTest, ConvertMathInertialToMsgs)
+{
+  const auto pose = ignition::math::Pose3d(5, 6, 7, 0.4, 0.5, 0.6);
+  msgs::Inertial msg = msgs::Convert(
+      ignition::math::Inertiald(
+        ignition::math::MassMatrix3d(12.0,
+          ignition::math::Vector3d(2, 3, 4),
+          ignition::math::Vector3d(0.1, 0.2, 0.3)),
+        pose));
+
+  EXPECT_DOUBLE_EQ(12.0, msg.mass());
+  EXPECT_DOUBLE_EQ(2.0, msg.ixx());
+  EXPECT_DOUBLE_EQ(3.0, msg.iyy());
+  EXPECT_DOUBLE_EQ(4.0, msg.izz());
+  EXPECT_DOUBLE_EQ(0.1, msg.ixy());
+  EXPECT_DOUBLE_EQ(0.2, msg.ixz());
+  EXPECT_DOUBLE_EQ(0.3, msg.iyz());
+  EXPECT_EQ(pose, msgs::ConvertIgn(msg.pose()));
+}
+
+TEST_F(MsgsTest, ConvertMsgsInertialToMath)
+{
+  const auto pose = ignition::math::Pose3d(5, 6, 7, 0.4, 0.5, 0.6);
+  msgs::Inertial msg = msgs::Convert(
+      ignition::math::Inertiald(
+        ignition::math::MassMatrix3d(12.0,
+          ignition::math::Vector3d(2, 3, 4),
+          ignition::math::Vector3d(0.1, 0.2, 0.3)),
+        pose));
+  auto inertial = msgs::Convert(msg);
+
+  EXPECT_DOUBLE_EQ(12.0, inertial.MassMatrix().Mass());
+  EXPECT_DOUBLE_EQ(2.0, inertial.MassMatrix().IXX());
+  EXPECT_DOUBLE_EQ(3.0, inertial.MassMatrix().IYY());
+  EXPECT_DOUBLE_EQ(4.0, inertial.MassMatrix().IZZ());
+  EXPECT_DOUBLE_EQ(0.1, inertial.MassMatrix().IXY());
+  EXPECT_DOUBLE_EQ(0.2, inertial.MassMatrix().IXZ());
+  EXPECT_DOUBLE_EQ(0.3, inertial.MassMatrix().IYZ());
+  EXPECT_EQ(pose, inertial.Pose());
+}
+
+TEST_F(MsgsTest, ConvertMathMassMatrix3ToMsgs)
+{
+  msgs::Inertial msg = msgs::Convert(
+      ignition::math::MassMatrix3d(12.0,
+        ignition::math::Vector3d(2, 3, 4),
+        ignition::math::Vector3d(0.1, 0.2, 0.3)));
+
+  EXPECT_DOUBLE_EQ(12.0, msg.mass());
+  EXPECT_DOUBLE_EQ(2.0, msg.ixx());
+  EXPECT_DOUBLE_EQ(3.0, msg.iyy());
+  EXPECT_DOUBLE_EQ(4.0, msg.izz());
+  EXPECT_DOUBLE_EQ(0.1, msg.ixy());
+  EXPECT_DOUBLE_EQ(0.2, msg.ixz());
+  EXPECT_DOUBLE_EQ(0.3, msg.iyz());
 }
 
 TEST_F(MsgsTest, ConvertMathPlaneToMsgs)
@@ -367,6 +524,44 @@ TEST_F(MsgsTest, SetTime)
   msgs::Set(&msg, common::Time(2, 123));
   EXPECT_EQ(2, msg.sec());
   EXPECT_EQ(123, msg.nsec());
+}
+
+TEST_F(MsgsTest, SetInertial)
+{
+  const auto pose = ignition::math::Pose3d(5, 6, 7, 0.4, 0.5, 0.6);
+  msgs::Inertial msg;
+  msgs::Set(&msg, ignition::math::Inertiald(
+      ignition::math::MassMatrix3d(
+        12.0,
+        ignition::math::Vector3d(2, 3, 4),
+        ignition::math::Vector3d(0.1, 0.2, 0.3)),
+      pose));
+
+  EXPECT_DOUBLE_EQ(12.0, msg.mass());
+  EXPECT_DOUBLE_EQ(2.0, msg.ixx());
+  EXPECT_DOUBLE_EQ(3.0, msg.iyy());
+  EXPECT_DOUBLE_EQ(4.0, msg.izz());
+  EXPECT_DOUBLE_EQ(0.1, msg.ixy());
+  EXPECT_DOUBLE_EQ(0.2, msg.ixz());
+  EXPECT_DOUBLE_EQ(0.3, msg.iyz());
+  EXPECT_EQ(pose, msgs::ConvertIgn(msg.pose()));
+}
+
+TEST_F(MsgsTest, SetMassMatrix3)
+{
+  msgs::Inertial msg;
+  msgs::Set(&msg, ignition::math::MassMatrix3d(
+        12.0,
+        ignition::math::Vector3d(2, 3, 4),
+        ignition::math::Vector3d(0.1, 0.2, 0.3)));
+
+  EXPECT_DOUBLE_EQ(12.0, msg.mass());
+  EXPECT_DOUBLE_EQ(2.0, msg.ixx());
+  EXPECT_DOUBLE_EQ(3.0, msg.iyy());
+  EXPECT_DOUBLE_EQ(4.0, msg.izz());
+  EXPECT_DOUBLE_EQ(0.1, msg.ixy());
+  EXPECT_DOUBLE_EQ(0.2, msg.ixz());
+  EXPECT_DOUBLE_EQ(0.3, msg.iyz());
 }
 
 TEST_F(MsgsTest, SetPlane)
@@ -1434,7 +1629,7 @@ TEST_F(MsgsTest, SurfaceToFromSDF)
   sdf::initFile("surface.sdf", sdf2);
   msgs::SurfaceToSDF(surfaceMsg2, sdf2);
 
-  ASSERT_TRUE(sdf2 != NULL);
+  ASSERT_TRUE(sdf2 != nullptr);
 
   ASSERT_TRUE(sdf2->HasElement("bounce"));
   EXPECT_DOUBLE_EQ(
@@ -2104,6 +2299,7 @@ TEST_F(MsgsTest, GeometryToSDF)
       ignition::math::Vector3d(100, 200, 30));
   msgs::Set(heightmapGeom->mutable_origin(),
       ignition::math::Vector3d(50, 100, 15));
+  heightmapGeom->set_sampling(1);
   heightmapGeom->set_use_terrain_paging(true);
 
   msgs::HeightmapGeom_Texture *texture1 = heightmapGeom->add_texture();
@@ -2128,6 +2324,11 @@ TEST_F(MsgsTest, GeometryToSDF)
       ignition::math::Vector3d(100, 200, 30));
   EXPECT_TRUE(heightmapElem->Get<ignition::math::Vector3d>("pos") ==
       ignition::math::Vector3d(50, 100, 15));
+  // fix test while we wait for new sdformat4 version to be released
+  if (heightmapElem->HasElementDescription("sampling"))
+  {
+    EXPECT_EQ(heightmapElem->Get<unsigned int>("sampling"), 1u);
+  }
   EXPECT_TRUE(heightmapElem->Get<bool>("use_terrain_paging"));
 
   sdf::ElementPtr textureElem1 = heightmapElem->GetElement("texture");
@@ -3256,9 +3457,76 @@ TEST_F(MsgsTest, PluginToFromSDF)
   sdf2.reset(new sdf::Element);
   sdf::initFile("plugin.sdf", sdf2);
   msgs::PluginToSDF(msg2, sdf2);
-  EXPECT_TRUE(sdf2 != NULL);
+  EXPECT_TRUE(sdf2 != nullptr);
   EXPECT_EQ(sdf2->Get<std::string>("name"), name);
   EXPECT_EQ(sdf2->Get<std::string>("filename"), filename);
   EXPECT_TRUE(sdf2->HasElement("plugin_param"));
   EXPECT_EQ(sdf2->Get<std::string>("plugin_param"), "param");
+}
+
+/////////////////////////////////////////////////
+TEST_F(MsgsTest, VisualPluginToFromSDF)
+{
+  const std::string visName("visual_name");
+  const double radius = 3.3;
+  std::string pluginName("plugin_name");
+  std::string filename("plugin_filename");
+  std::string innerxml("<plugin_param>param</plugin_param>\n");
+
+  // Create SDF
+  sdf::ElementPtr sdf1(new sdf::Element());
+  sdf::initFile("visual.sdf", sdf1);
+  ASSERT_TRUE(sdf::readString(
+      "<sdf version='" SDF_VERSION "'>\
+         <visual name='" + visName + "'>\
+           <geometry>\
+             <sphere><radius>" + std::to_string(radius) + "</radius></sphere>\
+           </geometry>\
+           <plugin name='" + pluginName + "' filename='" + filename + "'>\
+             " + innerxml + "\
+           </plugin>\
+         </visual>\
+      </sdf>", sdf1));
+
+  // To msg
+  auto msg1 = msgs::VisualFromSDF(sdf1);
+
+  // Back to SDF
+  auto sdf2 = msgs::VisualToSDF(msg1);
+  ASSERT_TRUE(sdf2 != nullptr);
+
+  // DEPRECATED: Remove this test in Gazebo8
+  {
+    EXPECT_TRUE(sdf2->HasElement("plugin"));
+    EXPECT_TRUE(sdf2->GetElement("plugin")->HasElement("plugin_param"));
+
+    EXPECT_TRUE(sdf2->GetElement("plugin")->HasElement("sdf"));
+    EXPECT_TRUE(sdf2->GetElement("plugin")->GetElement("sdf")->
+        HasElement("plugin_param"));
+  }
+
+  // Back to Msg
+  auto msg2 = msgs::VisualFromSDF(sdf2);
+
+  // Back to SDF
+  auto sdf3 = msgs::VisualToSDF(msg2);
+  ASSERT_TRUE(sdf3 != nullptr);
+
+  ASSERT_TRUE(sdf3->HasAttribute("name"));
+  EXPECT_EQ(sdf3->Get<std::string>("name"), visName);
+
+  ASSERT_TRUE(sdf3->HasElement("geometry"));
+  auto geomElem = sdf3->GetElement("geometry");
+  ASSERT_TRUE(geomElem->HasElement("sphere"));
+  auto sphereElem = geomElem->GetElement("sphere");
+  EXPECT_TRUE(sphereElem->HasElement("radius"));
+  EXPECT_DOUBLE_EQ(sphereElem->Get<double>("radius"), radius);
+
+  ASSERT_TRUE(sdf3->HasElement("plugin"));
+  auto pluginElem = sdf3->GetElement("plugin");
+  EXPECT_EQ(pluginElem->Get<std::string>("name"), pluginName);
+  EXPECT_EQ(pluginElem->Get<std::string>("filename"), filename);
+
+  EXPECT_TRUE(pluginElem->HasElement("plugin_param"));
+  EXPECT_EQ(pluginElem->Get<std::string>("plugin_param"), "param");
 }

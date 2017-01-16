@@ -44,6 +44,7 @@ set(tests
   gz_model.cc
   gz_physics.cc
   gz_world.cc
+  harness.cc
   imu.cc
   joint_controller.cc
   joint_force_torque.cc
@@ -55,6 +56,7 @@ set(tests
   joint_spawn.cc
   joint_test.cc
   joint_universal.cc
+  keys_to_joints.cc
   laser.cc
   logical_camera_sensor.cc
   model.cc
@@ -161,11 +163,13 @@ set(dri_tests
   projector.cc
   rendering_sensor.cc
   speed_pr2.cc
+  wideanglecamera_sensor.cc
   world_reset.cc
 )
 gz_build_dri_tests(${dri_tests} EXTRA_LIBS gazebo_test_fixture)
 
 set(qt_tests
+  collada_visualization.cc
   insert_model.cc
   model_editor.cc
   model_manipulation.cc

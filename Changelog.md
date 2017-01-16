@@ -1,5 +1,101 @@
 ## Gazebo 7
 
+## Gazebo 7.x.x (2016-xx-xx)
+
+1. Don't use qt4 webkit for HotkeyDialog
+    * [Pull request 2584](https://bitbucket.org/osrf/gazebo/pull-request/2584)
+
+1. Support configuring heightmap sampling level
+    * [Pull request 2519](https://bitbucket.org/osrf/gazebo/pull-request/2519)
+
+1. Fix `model.config` dependency support, and add ability to reference
+   textures using a URI.
+    * [Pull request 2517](https://bitbucket.org/osrf/gazebo/pull-request/2517)
+
+1. Fix DEM heightmap size, collision, scale
+    * [Pull request 2477](https://bitbucket.org/osrf/gazebo/pull-request/2477)
+
+1. Create ode_quiet parameter to silence solver messages
+    * [Pull request 2512](https://bitbucket.org/osrf/gazebo/pull-request/2512)
+
+1. Update QT render loop to throttle based on UserCamera::RenderRate.
+    * [Pull request 2476](https://bitbucket.org/osrf/gazebo/pull-request/2476)
+    * [Issue 1560](https://bitbucket.org/osrf/gazebo/issues/1560)
+
+1. Generate visualization on demand, instead of on load. This helps to
+   reduce load time.
+    * [Pull request 2457](https://bitbucket.org/osrf/gazebo/pull-request/2457)
+
+1. Added a plugin to teleoperate joints in a model with the keyboard.
+    * [Pull request 2490](https://bitbucket.org/osrf/gazebo/pull-request/2490)
+
+1. Add GUI items to change the user camera clip distance
+    * [Pull request 2470](https://bitbucket.org/osrf/gazebo/pull-request/2470)
+    * [Issue 2064](https://bitbucket.org/osrf/gazebo/issues/2064)
+
+1. Support custom material scripts for heightmaps
+    * [Pull request 2473](https://bitbucket.org/osrf/gazebo/pull-request/2473)
+
+1. Sim events plugin accepts custom topics
+    * [Pull request 2535](https://bitbucket.org/osrf/gazebo/pull-request/2535)
+
+1. Model Editor: Show / hide collisions
+    * [Pull request 2503](https://bitbucket.org/osrf/gazebo/pull-request/2503)
+
+1. Model Editor: Show / hide visuals
+    * [Pull request 2516](https://bitbucket.org/osrf/gazebo/pull-request/2516)
+
+1. Model Editor: Show / hide link frames
+    * [Pull request 2521](https://bitbucket.org/osrf/gazebo/pull-request/2521)
+
+## Gazebo 7.4.0 (2016-10-11)
+
+1. Add test for HarnessPlugin, reduce likelihood of race condition
+    * [Pull request 2431](https://bitbucket.org/osrf/gazebo/pull-request/2431)
+    * [Issue 2034](https://bitbucket.org/osrf/gazebo/issues/2034)
+
+1. Add `syntax = proto2` in proto files to fix some protobuf3 warnings
+    * [Pull request 2456](https://bitbucket.org/osrf/gazebo/pull-request/2456)
+
+1. Add support for loading wavefront obj mesh files
+    * [Pull request 2454](https://bitbucket.org/osrf/gazebo/pull-request/2454)
+
+1. Added filesystem operations to the common library. Additions include
+   `cwd`, `exists`, `isDirectory`, `isFile`, `copyFile`, and `moveFile`.
+    * [Pull request 2417](https://bitbucket.org/osrf/gazebo/pull-request/2417)
+
+1. Fix loading collada files with multiple texture coordinates.
+    * [Pull request 2413](https://bitbucket.org/osrf/gazebo/pull-request/2413)
+
+1. Added visualization of minimum range to laservisual.
+    * [Pull request 2412](https://bitbucket.org/osrf/gazebo/pull-request/2412)
+    * [Issue 2018](https://bitbucket.org/osrf/gazebo/issues/2018)
+
+1. Use precision 2 for FPS display in TimePanel
+    * [Pull request 2405](https://bitbucket.org/osrf/gazebo/pull-request/2405)
+
+1. Switch ImuSensor::worldToReference transform from Pose to Quaternion
+    * [Pull request 2410](https://bitbucket.org/osrf/gazebo/pull-request/2410)
+    * [Issue 1959](https://bitbucket.org/osrf/gazebo/issues/1959)
+
+1. Include Boost_LIBRARIES  in the linking of gazebo_physics
+    * [Pull request 2402](https://bitbucket.org/osrf/gazebo/pull-request/2402)
+
+1. Backported KeyboardGUIPlugin and msgs::Any
+    * [Pull request 2416](https://bitbucket.org/osrf/gazebo/pull-request/2416)
+
+1. Use XML_SUCCESS enum instead of XML_NO_ERROR, which has been deleted in tinyxml2 4.0
+    * [Pull request 2397](https://bitbucket.org/osrf/gazebo/pull-request/2397)
+
+1. Ignore ffmpeg deprecation warnings to clean up CI since they are noted in #2002
+    * [Pull request 2388](https://bitbucket.org/osrf/gazebo/pull-request/2388)
+
+1. Added a visual blinking plugin
+    * [Pull request 2394](https://bitbucket.org/osrf/gazebo/pull-request/2394)
+
+1. Fix InertiaVisual for non-diagonal inertia matrices
+    * [Pull request 2354](https://bitbucket.org/osrf/gazebo/pull-request/2354)
+
 ## Gazebo 7.3.1 (2016-07-13)
 
 1. Fix homebrew test failure of UNIT_ApplyWrenchDialog_TEST
@@ -2292,4 +2388,3 @@ compilation on Windows.
 *  Numerous bug fixes
 *  APT repository hosted at [http://osrfoundation.org OSRF]
 *  Improved process control prevents zombie processes
-
