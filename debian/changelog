@@ -1,4 +1,4 @@
-gazebo (7.5.0-1+dfsg-1) unstable; urgency=medium
+gazebo (7.5.0+dfsg-1) unstable; urgency=medium
 
   * Imported Upstream version 7.5.0
   * Don't need webkit anymore
