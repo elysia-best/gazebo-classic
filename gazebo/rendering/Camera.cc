@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 Open Source Robotics Foundation
+ * Copyright (C) 2012 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1527,7 +1527,7 @@ void Camera::CreateRenderTexture(const std::string &_textureName)
       this->ImageWidth(),
       this->ImageHeight(),
       0,
-      (Ogre::PixelFormat)this->imageFormat,
+      static_cast<Ogre::PixelFormat>(this->imageFormat),
       Ogre::TU_RENDERTARGET,
       0,
       false,
