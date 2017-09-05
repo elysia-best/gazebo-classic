@@ -1,6 +1,6 @@
 repo: e803bb5fe03c1370cbb9f434912cd73fd1e7942d
-node: 9e29536e741ecafd5b7389e491153316f673ba78
+node: a24b331f8ebfd712a226ba73b7f43d2d4c14fe15
 branch: gazebo7
-latesttag: gazebo7_7.4.0
-latesttagdistance: 107
-changessincelatesttag: 213
+latesttag: gazebo7_7.8.0
+latesttagdistance: 12
+changessincelatesttag: 29
