@@ -10,7 +10,7 @@ Build-Depends: cmake,
                doxygen,
                doxygen-latex,
                texlive-fonts-recommended,
-               ttf-liberation,
+               fonts-liberation,
                libfreeimage-dev,
                libprotoc-dev,
                libprotobuf-dev,
@@ -55,7 +55,7 @@ Homepage: http://gazebosim.org/
 Package: gazebo7-common
 Architecture: all
 Multi-Arch: foreign
-Depends: ttf-dejavu-core,
+Depends: fonts-dejavu-core,
          ${misc:Depends}
 Breaks: gazebo6-common
 Replaces: gazebo6-common
@@ -75,7 +75,7 @@ Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         ttf-liberation,
+         fonts-liberation,
          ruby,
          libgazebo7 (= ${binary:Version}),
          gazebo7-common (= ${source:Version})
