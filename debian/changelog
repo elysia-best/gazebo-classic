@@ -1,3 +1,11 @@
+gazebo (7.8.1+dfsg-2) unstable; urgency=medium
+
+  * Team upload.
+  * strlen patch taken from upstream (Closes: #876562)
+  * Fix fonts dependencies (Closes: #878595, #857393, #857393)
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Mon, 16 Oct 2017 01:03:51 +0200
+
 gazebo (7.8.1+dfsg-1) unstable; urgency=medium
 
   * Remove merged patches
