@@ -56,6 +56,7 @@ Package: gazebo7-common
 Architecture: all
 Multi-Arch: foreign
 Depends: fonts-dejavu-core,
+         fonts-liberation,
          ${misc:Depends}
 Breaks: gazebo6-common
 Replaces: gazebo6-common
@@ -75,7 +76,6 @@ Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         fonts-liberation,
          ruby,
          libgazebo7 (= ${binary:Version}),
          gazebo7-common (= ${source:Version})
