@@ -2,3 +2,4 @@
 0005-fix-problems-on-manpage.patch
 0008-arial-font-removed-in-dfsg.patch
 strlen.patch
+0005-Add-Q_MOC_RUN-to-work-around-syntax-error.patch

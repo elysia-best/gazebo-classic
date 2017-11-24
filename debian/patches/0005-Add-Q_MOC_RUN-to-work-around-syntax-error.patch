@@ -1,0 +1,38 @@
+From: Jochen Sprickerhof <git@jochen.sprickerhof.de>
+Date: Fri, 24 Nov 2017 23:52:10 +0100
+Subject: Add Q_MOC_RUN to work around syntax error
+
+---
+ gazebo/common/SystemPaths.hh | 2 ++
+ gazebo/math/Helpers.hh       | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/gazebo/common/SystemPaths.hh b/gazebo/common/SystemPaths.hh
+index 2196b0b..5cf805f 100644
+--- a/gazebo/common/SystemPaths.hh
++++ b/gazebo/common/SystemPaths.hh
+@@ -28,7 +28,9 @@
+   #define GetCurrentDir getcwd
+ #endif
+ 
++#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+ #include <boost/filesystem.hpp>
++#endif
+ #include <list>
+ #include <string>
+ 
+diff --git a/gazebo/math/Helpers.hh b/gazebo/math/Helpers.hh
+index 9e8e092..e9fdb59 100644
+--- a/gazebo/math/Helpers.hh
++++ b/gazebo/math/Helpers.hh
+@@ -17,8 +17,10 @@
+ #ifndef _GAZEBO_MATH_FUNCTIONS_HH_
+ #define _GAZEBO_MATH_FUNCTIONS_HH_
+ 
++#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+ #include <boost/math/special_functions/fpclassify.hpp>
+ #include <boost/math/special_functions/round.hpp>
++#endif
+ #include <algorithm>
+ #include <cmath>
+ #include <limits>
