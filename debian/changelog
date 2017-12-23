@@ -1,3 +1,13 @@
+gazebo (7.8.1+dfsg-4) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Iain Lane ]
+  * Take patch from Fedora to fix FTBFS when running moc. Update it a bit for
+    current gazebo. (Closes: #882591)
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Sat, 23 Dec 2017 18:01:02 +0100
+
 gazebo (7.8.1+dfsg-3) unstable; urgency=medium
 
   * Team upload.
