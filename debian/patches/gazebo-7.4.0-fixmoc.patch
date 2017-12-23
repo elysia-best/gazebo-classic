@@ -1,0 +1,190 @@
+
+Index: b/plugins/CessnaGUIPlugin.hh
+===================================================================
+--- a/plugins/CessnaGUIPlugin.hh
++++ b/plugins/CessnaGUIPlugin.hh
+@@ -18,9 +18,9 @@
+ #define _GAZEBO_GUI_CESSNA_PLUGIN_HH_
+ 
+ #include <mutex>
+-#include <gazebo/common/Plugin.hh>
+-#include <gazebo/gui/GuiPlugin.hh>
+ #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
++# include <gazebo/common/Plugin.hh>
++# include <gazebo/gui/GuiPlugin.hh>
+ # include <gazebo/transport/transport.hh>
+ # include <gazebo/gui/gui.hh>
+ #endif
+Index: b/plugins/KeyboardGUIPlugin.hh
+===================================================================
+--- a/plugins/KeyboardGUIPlugin.hh
++++ b/plugins/KeyboardGUIPlugin.hh
+@@ -18,10 +18,10 @@
+ #define GAZEBO_PLUGINS_KEYBOARDGUIPLUGIN_HH_
+ 
+ #include <memory>
+-#include <gazebo/common/Plugin.hh>
+ 
+ // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+ #ifndef Q_MOC_RUN
++# include <gazebo/common/Plugin.hh>
+ # include <gazebo/gui/gui.hh>
+ #endif
+ 
+Index: b/plugins/TimerGUIPlugin.hh
+===================================================================
+--- a/plugins/TimerGUIPlugin.hh
++++ b/plugins/TimerGUIPlugin.hh
+@@ -22,10 +22,10 @@
+ #include <boost/thread/mutex.hpp>
+ 
+ #include <gazebo/common/Events.hh>
+-#include <gazebo/common/Plugin.hh>
+ #include <gazebo/common/Timer.hh>
+-#include <gazebo/gui/GuiPlugin.hh>
+ #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
++# include <gazebo/gui/GuiPlugin.hh>
++# include <gazebo/common/Plugin.hh>
+ # include <gazebo/transport/transport.hh>
+ # include <gazebo/gui/gui.hh>
+ #endif
+Index: b/gazebo/gui/DataLogger.cc
+===================================================================
+--- a/gazebo/gui/DataLogger.cc
++++ b/gazebo/gui/DataLogger.cc
+@@ -23,6 +23,7 @@
+   #include <io.h>
+ #endif
+ 
++#ifndef Q_MOC_RUN
+ #include <boost/filesystem.hpp>
+ #include <stdio.h>
+ 
+@@ -32,6 +33,7 @@
+ #include "gazebo/gui/DataLoggerPrivate.hh"
+ #include "gazebo/msgs/msgs.hh"
+ #include "gazebo/transport/transport.hh"
++#endif
+ 
+ using namespace gazebo;
+ using namespace gui;
+Index: b/gazebo/common/CommonTypes.hh
+===================================================================
+--- a/gazebo/common/CommonTypes.hh
++++ b/gazebo/common/CommonTypes.hh
+@@ -21,7 +21,9 @@
+ #include <map>
+ #include <string>
+ #include <memory>
++#ifndef Q_MOC_RUN
+ #include <boost/shared_ptr.hpp>
++#endif
+ #include "gazebo/util/system.hh"
+ 
+ /////////////////////////////////////////////////////////////////////////////
+Index: b/gazebo/common/Event.hh
+===================================================================
+--- a/gazebo/common/Event.hh
++++ b/gazebo/common/Event.hh
+@@ -26,8 +26,10 @@
+ #include <mutex>
+ #include <list>
+ 
++#ifndef Q_MOC_RUN
+ #include <boost/function.hpp>
+ #include <boost/bind.hpp>
++#endif
+ 
+ #include <gazebo/gazebo_config.h>
+ #include <gazebo/common/Time.hh>
+Index: b/gazebo/gui/ApplyWrenchDialog.hh
+===================================================================
+--- a/gazebo/gui/ApplyWrenchDialog.hh
++++ b/gazebo/gui/ApplyWrenchDialog.hh
+@@ -20,10 +20,12 @@
+ 
+ #include <string>
+ 
++#ifndef Q_MOC_RUN
+ #include "gazebo/common/MouseEvent.hh"
+ #include "gazebo/gui/qt.h"
+ #include "gazebo/math/Vector3.hh"
+ #include "gazebo/transport/TransportTypes.hh"
++#endif
+ 
+ namespace gazebo
+ {
+Index: b/gazebo/msgs/MessageTypes.hh.in
+===================================================================
+--- a/gazebo/msgs/MessageTypes.hh.in
++++ b/gazebo/msgs/MessageTypes.hh.in
+@@ -4,4 +4,6 @@
+ #ifdef __MACH__
+ # undef TYPE_BOOL
+ #endif
++#ifndef Q_MOC_RUN
+ ${message_headers}
++#endif
+Index: b/gazebo/msgs/msgs.hh
+===================================================================
+--- a/gazebo/msgs/msgs.hh
++++ b/gazebo/msgs/msgs.hh
+@@ -21,6 +21,7 @@
+ 
+ #include <sdf/sdf.hh>
+ 
++#ifndef Q_MOC_RUN
+ #include <ignition/math/Inertial.hh>
+ #include <ignition/math/MassMatrix3.hh>
+ #include <ignition/math/Plane.hh>
+@@ -42,6 +43,7 @@
+ #include "gazebo/common/Color.hh"
+ #include "gazebo/common/Time.hh"
+ #include "gazebo/common/Image.hh"
++#endif
+ 
+ namespace gazebo
+ {
+Index: b/gazebo/rendering/RenderTypes.hh
+===================================================================
+--- a/gazebo/rendering/RenderTypes.hh
++++ b/gazebo/rendering/RenderTypes.hh
+@@ -17,7 +17,9 @@
+ #ifndef _RENDERTYPES_HH_
+ #define _RENDERTYPES_HH_
+ 
++#ifndef Q_MOC_RUN
+ #include <boost/shared_ptr.hpp>
++#endif
+ #include "gazebo/gazebo_config.h"
+ #include "gazebo/util/system.hh"
+ 
+Index: b/gazebo/rendering/Visual.hh
+===================================================================
+--- a/gazebo/rendering/Visual.hh
++++ b/gazebo/rendering/Visual.hh
+@@ -18,8 +18,10 @@
+ #ifndef _GAZEBO_VISUAL_HH_
+ #define _GAZEBO_VISUAL_HH_
+ 
++#ifndef Q_MOC_RUN
+ #include <boost/enable_shared_from_this.hpp>
+ #include <boost/function.hpp>
++#endif
+ #include <string>
+ #include <utility>
+ #include <vector>
+Index: b/gazebo/transport/TransportTypes.hh
+===================================================================
+--- a/gazebo/transport/TransportTypes.hh
++++ b/gazebo/transport/TransportTypes.hh
+@@ -17,7 +17,9 @@
+ #ifndef _TRANSPORT_TYPES_HH_
+ #define _TRANSPORT_TYPES_HH_
+ 
++#ifndef Q_MOC_RUN
+ #include <boost/shared_ptr.hpp>
++#endif
+ // avoid collision from Mac OS X's ConditionalMacros.h
+ // see gazebo issue #1289
+ #ifdef __MACH__

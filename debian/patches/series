@@ -3,3 +3,4 @@
 0008-arial-font-removed-in-dfsg.patch
 strlen.patch
 0005-Add-Q_MOC_RUN-to-work-around-syntax-error.patch
+gazebo-7.4.0-fixmoc.patch
