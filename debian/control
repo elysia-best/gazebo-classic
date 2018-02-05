@@ -149,8 +149,8 @@ Depends: libtbb-dev,
          gazebo9-common (= ${source:Version}),
          gazebo9-plugin-base (= ${binary:Version}),
          ${misc:Depends}
-Breaks: libgazebo6-dev
-Replaces: libgazebo6-dev
+Breaks: libgazebo7-dev
+Replaces: libgazebo7-dev
 Description: Open Source Robotics Simulator - Development Files
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -168,7 +168,7 @@ Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends}
 Enhances: gazebo9
-Replaces: gazebo6-plugin-base
+Replaces: gazebo7-plugin-base
 Description: Open Source Robotics Simulator - base plug-ins
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
@@ -185,8 +185,8 @@ Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends},
          libjs-jquery
-Breaks: gazebo6-doc
-Replaces: gazebo6-doc
+Breaks: gazebo7-doc
+Replaces: gazebo7-doc
 Description: Open Source Robotics Simulator - Documentation
  Gazebo is a multi-robot simulator for outdoor environments. Like
  Stage (part of the Player project), it is capable of simulating a
