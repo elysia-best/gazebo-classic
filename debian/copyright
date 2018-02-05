@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: gazebo
 Upstream-Contact: gazebo@osrfoundation.org
 Source: http://gazebosim.org/
-Files-Excluded: media/fonts/arial.ttf
+Files-Excluded: media/fonts/arial.ttf test/gtest configure.bat .hg*
 
 Files: *
 Copyright: 2012-2015 Open Source Robotics Foundation

@@ -5,7 +5,7 @@ Section: science
 Priority: optional
 Build-Depends: cmake,
                pkg-config,
-               debhelper (>>9),
+               debhelper (>= 11),
                bash-completion,
 	       clang-format-4.0,
                doxygen,
@@ -39,21 +39,21 @@ Build-Depends: cmake,
                libswscale-dev,
                libusb-1.0-0-dev,
                libspnav-dev,
-               libsdformat4-dev (>= 4.1.0) | libsdformat-dev,
-               libignition-math2-dev,
+               libsdformat6-dev,
+               libignition-math4-dev,
+               libignition-transport4-dev,
                libbullet-dev,
                libsimbody-dev,
                libsimbody-dev (<< 4.0.0),
-               libkido-dev [amd64 arm64 i386 ppc64el alpha mipsel],
                libgdal-dev,
                ruby-ronn,
                libgtest-dev
-Standards-Version: 4.0.0
+Standards-Version: 4.1.3
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-science/packages/gazebo.git
 Vcs-Git: https://anonscm.debian.org/git/debian-science/packages/gazebo.git
 Homepage: http://gazebosim.org/
 
-Package: gazebo7-common
+Package: gazebo9-common
 Architecture: all
 Multi-Arch: foreign
 Depends: fonts-dejavu-core,
@@ -72,16 +72,16 @@ Description: Open Source Robotics Simulator - Shared files
  This package contains shared files such as 3d models, worlds and
  robots.
 
-Package: gazebo7
+Package: gazebo9
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          ruby,
-         libgazebo7 (= ${binary:Version}),
-         gazebo7-common (= ${source:Version})
-Recommends: gazebo7-plugin-base
-Suggests: gazebo7-doc
+         libgazebo9 (= ${binary:Version}),
+         gazebo9-common (= ${source:Version})
+Recommends: gazebo9-plugin-base
+Suggests: gazebo9-doc
 Breaks: gazebo6
 Replaces: gazebo6
 Description: Open Source Robotics Simulator - Binaries
@@ -94,7 +94,7 @@ Description: Open Source Robotics Simulator - Binaries
  .
  This package contains then main application binaries
 
-Package: libgazebo7
+Package: libgazebo9
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -111,7 +111,7 @@ Description: Open Source Robotics Simulator - shared library
  .
  This package gathers shared libraries used
 
-Package: libgazebo7-dev
+Package: libgazebo9-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
@@ -137,9 +137,9 @@ Depends: libtbb-dev,
          libbullet-dev,
          libsimbody-dev,
          libkido-dev [amd64 arm64 i386 ppc64el alpha mipsel],
-         libgazebo7 (= ${binary:Version}),
-         gazebo7-common (= ${source:Version}),
-         gazebo7-plugin-base (= ${binary:Version}),
+         libgazebo9 (= ${binary:Version}),
+         gazebo9-common (= ${source:Version}),
+         gazebo9-plugin-base (= ${binary:Version}),
          ${misc:Depends}
 Breaks: libgazebo6-dev
 Replaces: libgazebo6-dev
@@ -154,12 +154,12 @@ Description: Open Source Robotics Simulator - Development Files
  This package contains development files (headers, shared library
  symbolic link and pkg-config file).
 
-Package: gazebo7-plugin-base
+Package: gazebo9-plugin-base
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends},
          ${misc:Depends}
-Enhances: gazebo7
+Enhances: gazebo9
 Replaces: gazebo6-plugin-base
 Description: Open Source Robotics Simulator - base plug-ins
  Gazebo is a multi-robot simulator for outdoor environments. Like
@@ -171,7 +171,7 @@ Description: Open Source Robotics Simulator - base plug-ins
  .
  This package gathers built-in plugins.
 
-Package: gazebo7-doc
+Package: gazebo9-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc

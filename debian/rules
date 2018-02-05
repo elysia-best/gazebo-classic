@@ -12,7 +12,8 @@ endif
 .PHONY: override_dh_auto_configure	\
 	override_dh_auto_build-indep	\
 	override_dh_install		\
-	override_dh_auto_test
+	override_dh_auto_test           \
+	get-orig-src
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
@@ -30,11 +31,15 @@ override_dh_install:
 	dh_install -- # Install
 
         # Get rid of fonts already packaged elsewhere.
-	rm -f debian/gazebo7-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf
+	rm -f debian/gazebo9-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf
 
 override_dh_auto_test:
 	# Tests needs an X server running and GPU acceleration
 	true
+
+# Upstream release page is generated dynamically taking long time
+get-orig-source:
+	uscan --timeout 180 --verbose --force-download --repack --compress xz
 
 %:
 	dh $@ --parallel --buildsystem=cmake --with bash-completion
