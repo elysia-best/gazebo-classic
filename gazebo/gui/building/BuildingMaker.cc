@@ -23,6 +23,7 @@
 
 #include <sstream>
 #include <boost/filesystem.hpp>
+#include <ignition/math/Color.hh>
 
 #include "gazebo/gazebo_config.h"
 
@@ -31,7 +32,7 @@
 #include "gazebo/gui/GuiIface.hh"
 #include "gazebo/gui/KeyEventHandler.hh"
 #include "gazebo/gui/MouseEventHandler.hh"
-#include "gazebo/gui/SaveDialog.hh"
+#include "gazebo/gui/SaveEntityDialog.hh"
 #include "gazebo/gui/building/BuildingEditorEvents.hh"
 #include "gazebo/gui/building/BuildingMaker.hh"
 #include "gazebo/gui/building/BuildingMakerPrivate.hh"
@@ -105,7 +106,8 @@ BuildingMaker::BuildingMaker() : dataPtr(new BuildingMakerPrivate())
       gui::editor::Events::ConnectToggleEditMode(
       std::bind(&BuildingMaker::OnEdit, this, std::placeholders::_1)));
 
-  this->dataPtr->saveDialog.reset(new SaveDialog(SaveDialog::BUILDING));
+  this->dataPtr->saveDialog.reset(
+      new SaveEntityDialog(SaveEntityDialog::BUILDING));
 
   // Transport
   this->dataPtr->node = transport::NodePtr(new transport::Node());
@@ -121,9 +123,9 @@ BuildingMaker::~BuildingMaker()
 {
   this->dataPtr->modelSDF.reset();
 
+  this->dataPtr->makerPub.reset();
   this->dataPtr->node->Fini();
   this->dataPtr->node.reset();
-  this->dataPtr->makerPub.reset();
 }
 
 /////////////////////////////////////////////////
@@ -175,8 +177,8 @@ void BuildingMaker::ConnectItem(const std::string &_partName,
       manip, SLOT(OnRotationChanged(double, double, double)));
   QObject::connect(_item, SIGNAL(LevelChanged(int)),
       manip, SLOT(OnLevelChanged(int)));
-  QObject::connect(_item, SIGNAL(ColorChanged(common::Color)),
-      manip, SLOT(OnColorChanged(common::Color)));
+  QObject::connect(_item, SIGNAL(ColorChanged(ignition::math::Color)),
+      manip, SLOT(OnColorChanged(ignition::math::Color)));
   QObject::connect(_item, SIGNAL(TextureChanged(std::string)),
       manip, SLOT(OnTextureChanged(std::string)));
   QObject::connect(_item, SIGNAL(TransparencyChanged(float)),
@@ -199,8 +201,8 @@ void BuildingMaker::ConnectItem(const std::string &_partName,
   QObject::connect(_item, SIGNAL(ItemDeleted()), manip, SLOT(OnDeleted()));
 
   // manip changes -> item changes
-  QObject::connect(manip, SIGNAL(ColorChanged(common::Color)),
-      _item, SLOT(OnColorChanged(common::Color)));
+  QObject::connect(manip, SIGNAL(ColorChanged(ignition::math::Color)),
+      _item, SLOT(OnColorChanged(ignition::math::Color)));
   QObject::connect(manip, SIGNAL(TextureChanged(std::string)),
       _item, SLOT(OnTextureChanged(std::string)));
 }
@@ -321,7 +323,7 @@ std::string BuildingMaker::AddWall(const QVector3D &_size,
       ->GetElement("model")->GetElement("link")->GetElement("visual");
   visualElem->GetElement("material")->ClearElements();
   visualElem->GetElement("material")->AddElement("ambient")
-      ->Set(gazebo::common::Color(1, 1, 1));
+      ->Set(ignition::math::Color(1, 1, 1));
   visualElem->AddElement("cast_shadows")->Set(false);
   visVisual->Load(visualElem);
   auto scaledSize = BuildingMaker::ConvertSize(_size.x(), _size.y(), _size.z());
@@ -476,7 +478,7 @@ std::string BuildingMaker::AddStairs(const QVector3D &_size,
       ->GetElement("model")->GetElement("link")->GetElement("visual");
   visualElem->GetElement("material")->ClearElements();
   visualElem->GetElement("material")->AddElement("ambient")
-      ->Set(gazebo::common::Color(1, 1, 1));
+      ->Set(ignition::math::Color(1, 1, 1));
   visualElem->AddElement("cast_shadows")->Set(false);
 
   // Relative size of each step within the parent visual
@@ -541,7 +543,7 @@ std::string BuildingMaker::AddFloor(const QVector3D &_size,
       ->GetElement("model")->GetElement("link")->GetElement("visual");
   visualElem->GetElement("material")->ClearElements();
   visualElem->GetElement("material")->AddElement("ambient")
-      ->Set(gazebo::common::Color(1, 1, 1));
+      ->Set(ignition::math::Color(1, 1, 1));
   visualElem->AddElement("cast_shadows")->Set(false);
   visVisual->Load(visualElem);
 
@@ -694,8 +696,8 @@ void BuildingMaker::GenerateSDF()
   if (this->dataPtr->previewVisual)
   {
     modelOrigin = ignition::math::Pose3d(
-      this->dataPtr->previewVisual->GetBoundingBox().GetCenter().x,
-      this->dataPtr->previewVisual->GetBoundingBox().GetCenter().y, 0, 0, 0, 0);
+      this->dataPtr->previewVisual->BoundingBox().Center().X(),
+      this->dataPtr->previewVisual->BoundingBox().Center().Y(), 0, 0, 0, 0);
   }
   modelElem->GetElement("pose")->Set(modelOrigin);
 
@@ -712,7 +714,7 @@ void BuildingMaker::GenerateSDF()
     visualElem = newLinkElem->GetElement("visual");
     collisionElem = newLinkElem->GetElement("collision");
     newLinkElem->GetAttribute("name")->Set(buildingModelManip->Name());
-    newLinkElem->GetElement("pose")->Set(visual->GetParent()->GetWorldPose() -
+    newLinkElem->GetElement("pose")->Set(visual->GetParent()->WorldPose() -
         modelOrigin);
 
     // Only stairs have children
@@ -728,12 +730,12 @@ void BuildingMaker::GenerateSDF()
             + "_Visual");
         collisionElem->GetAttribute("name")->Set(buildingModelManip->Name()
             + "_Collision");
-        visualElem->GetElement("pose")->Set(visual->GetPose());
-        collisionElem->GetElement("pose")->Set(visual->GetPose());
+        visualElem->GetElement("pose")->Set(visual->Pose());
+        collisionElem->GetElement("pose")->Set(visual->Pose());
         visualElem->GetElement("geometry")->GetElement("box")->
-            GetElement("size")->Set(visual->GetScale());
+            GetElement("size")->Set(visual->Scale());
         collisionElem->GetElement("geometry")->GetElement("box")->
-            GetElement("size")->Set(visual->GetScale());
+            GetElement("size")->Set(visual->Scale());
       }
       // Wall
       else if (name.find("Wall") != std::string::npos)
@@ -746,8 +748,8 @@ void BuildingMaker::GenerateSDF()
           std::vector<QRectF> holes;
           rendering::VisualPtr wallVis = visual;
           auto wallPose =
-              wallVis->GetParent()->GetWorldPose().Ign() - modelOrigin;
-          auto wallSize = wallVis->GetScale().Ign();
+              wallVis->GetParent()->WorldPose() - modelOrigin;
+          auto wallSize = wallVis->Scale();
           for (auto const &childManip : parentManip->second)
           {
             auto attachedObj = this->ManipByName(childManip);
@@ -761,12 +763,12 @@ void BuildingMaker::GenerateSDF()
                 || objName.find("Door") != std::string::npos)
             {
               rendering::VisualPtr attachedVis = attachedObj->Visual();
-              auto offset = attachedVis->GetParent()->GetWorldPose().Ign() -
+              auto offset = attachedVis->GetParent()->WorldPose() -
                   modelOrigin - wallPose;
-              auto size = attachedVis->GetScale().Ign();
+              auto size = attachedVis->Scale();
 
-              offset.Pos().Z() += attachedVis->GetPosition().z
-                  - wallVis->GetPosition().z;
+              offset.Pos().Z() += attachedVis->Position().Z()
+                  - wallVis->Position().Z();
 
               auto newOffset = offset.Pos() - (-wallSize/2.0) - size/2.0;
               QRectF hole(newOffset.X(), newOffset.Z(), size.X(), size.Z());
@@ -774,7 +776,7 @@ void BuildingMaker::GenerateSDF()
             }
           }
           std::vector<QRectF> subdivisions;
-          QRectF surface(0, 0, wallVis->GetScale().x, wallVis->GetScale().z);
+          QRectF surface(0, 0, wallVis->Scale().X(), wallVis->Scale().Z());
 
           // subdivide the wall into mutiple compositing rectangles in order
           // to create holes for the attached children
@@ -783,7 +785,7 @@ void BuildingMaker::GenerateSDF()
           newLinkElem->ClearElements();
           newLinkElem->GetAttribute("name")->Set(buildingModelManip->Name());
           newLinkElem->GetElement("pose")->Set(
-              visual->GetParent()->GetWorldPose() - modelOrigin);
+              visual->GetParent()->WorldPose() - modelOrigin);
           // create a link element of box geom for each subdivision
           for (unsigned int i = 0; i< subdivisions.size(); ++i)
           {
@@ -810,7 +812,7 @@ void BuildingMaker::GenerateSDF()
             visualElem->GetElement("pose")->Set(newPose);
             collisionElem->GetElement("pose")->Set(newPose);
             ignition::math::Vector3d blockSize(subdivisions[i].width(),
-                wallVis->GetScale().y, subdivisions[i].height());
+                wallVis->Scale().Y(), subdivisions[i].height());
             visualElem->GetElement("geometry")->GetElement("box")->
                 GetElement("size")->Set(blockSize);
             collisionElem->GetElement("geometry")->GetElement("box")->
@@ -832,12 +834,12 @@ void BuildingMaker::GenerateSDF()
               + "_Visual");
           collisionElem->GetAttribute("name")->Set(buildingModelManip->Name()
               + "_Collision");
-          visualElem->GetElement("pose")->Set(visual->GetPose());
-          collisionElem->GetElement("pose")->Set(visual->GetPose());
+          visualElem->GetElement("pose")->Set(visual->Pose());
+          collisionElem->GetElement("pose")->Set(visual->Pose());
           visualElem->GetElement("geometry")->GetElement("box")->
-              GetElement("size")->Set(visual->GetScale());
+              GetElement("size")->Set(visual->Scale());
           collisionElem->GetElement("geometry")->GetElement("box")->
-              GetElement("size")->Set(visual->GetScale());
+              GetElement("size")->Set(visual->Scale());
           visualElem->GetElement("material")->GetElement("ambient")->
               Set(buildingModelManip->Color());
           visualElem->GetElement("material")->GetElement("script")
@@ -856,8 +858,8 @@ void BuildingMaker::GenerateSDF()
         {
           std::vector<QRectF> holes;
           rendering::VisualPtr floorVis = visual;
-          auto floorPose = floorVis->GetWorldPose().Ign() - modelOrigin;
-          auto floorSize = floorVis->GetScale().Ign();
+          auto floorPose = floorVis->WorldPose() - modelOrigin;
+          auto floorSize = floorVis->Scale();
           for (auto const &childManip : parentManip->second)
           {
             auto attachedObj = this->ManipByName(childManip);
@@ -870,9 +872,9 @@ void BuildingMaker::GenerateSDF()
             if (objName.find("Stairs") != std::string::npos)
             {
               rendering::VisualPtr attachedVis = attachedObj->Visual();
-              auto offset = attachedVis->GetParent()->GetWorldPose().Ign() -
+              auto offset = attachedVis->GetParent()->WorldPose() -
                   modelOrigin - floorPose;
-              auto size = attachedVis->GetScale().Ign();
+              auto size = attachedVis->Scale();
 
               QRectF rect(0, 0, size.X(), size.Y());
               QPolygonF polygon(rect);
@@ -888,7 +890,7 @@ void BuildingMaker::GenerateSDF()
             }
           }
           std::vector<QRectF> subdivisions;
-          QRectF surface(0, 0, floorVis->GetScale().x, floorVis->GetScale().y);
+          QRectF surface(0, 0, floorVis->Scale().X(), floorVis->Scale().Y());
 
           // subdivide the floor into mutiple compositing rectangles to make an
           // opening for the stairs
@@ -897,7 +899,7 @@ void BuildingMaker::GenerateSDF()
           newLinkElem->ClearElements();
           newLinkElem->GetAttribute("name")->Set(buildingModelManip->Name());
           newLinkElem->GetElement("pose")->Set(
-              visual->GetParent()->GetWorldPose() - modelOrigin);
+              visual->GetParent()->WorldPose() - modelOrigin);
           // create a link element of box geom for each subdivision
           for (unsigned int i = 0; i< subdivisions.size(); ++i)
           {
@@ -918,13 +920,13 @@ void BuildingMaker::GenerateSDF()
                 subdivisions[i].y(), 0)
                 + ignition::math::Vector3d(subdivisions[i].width()/2,
                 subdivisions[i].height()/2, 0);
-            newSubPos.Z(newSubPos.Z() + floorVis->GetPosition().z);
+            newSubPos.Z(newSubPos.Z() + floorVis->Position().Z());
             ignition::math::Pose3d newPose(newSubPos,
-                visual->GetParent()->GetRotation().Ign());
+                visual->GetParent()->Rotation());
             visualElem->GetElement("pose")->Set(newPose);
             collisionElem->GetElement("pose")->Set(newPose);
             ignition::math::Vector3d blockSize(subdivisions[i].width(),
-                subdivisions[i].height(), floorVis->GetScale().z);
+                subdivisions[i].height(), floorVis->Scale().Z());
             visualElem->GetElement("geometry")->GetElement("box")->
                 GetElement("size")->Set(blockSize);
             collisionElem->GetElement("geometry")->GetElement("box")->
@@ -946,12 +948,12 @@ void BuildingMaker::GenerateSDF()
               + "_Visual");
           collisionElem->GetAttribute("name")->Set(buildingModelManip->Name()
               + "_Collision");
-          visualElem->GetElement("pose")->Set(visual->GetPose());
-          collisionElem->GetElement("pose")->Set(visual->GetPose());
+          visualElem->GetElement("pose")->Set(visual->Pose());
+          collisionElem->GetElement("pose")->Set(visual->Pose());
           visualElem->GetElement("geometry")->GetElement("box")->
-              GetElement("size")->Set(visual->GetScale());
+              GetElement("size")->Set(visual->Scale());
           collisionElem->GetElement("geometry")->GetElement("box")->
-              GetElement("size")->Set(visual->GetScale());
+              GetElement("size")->Set(visual->Scale());
           visualElem->GetElement("material")->GetElement("ambient")->
               Set(buildingModelManip->Color());
           visualElem->GetElement("material")->GetElement("script")
@@ -980,14 +982,14 @@ void BuildingMaker::GenerateSDF()
             << "_Collision_" << i;
         collisionElem->GetAttribute("name")->Set(collisionNameStream.str());
         rendering::VisualPtr childVisual = visual->GetChild(i);
-        ignition::math::Pose3d newPose(childVisual->GetWorldPose().pos.Ign() -
-            modelOrigin.Pos(), visual->GetParent()->GetRotation().Ign());
+        ignition::math::Pose3d newPose(childVisual->WorldPose().Pos() -
+            modelOrigin.Pos(), visual->GetParent()->Rotation());
         visualElem->GetElement("pose")->Set(newPose);
         collisionElem->GetElement("pose")->Set(newPose);
         visualElem->GetElement("geometry")->GetElement("box")->
-            GetElement("size")->Set(visual->GetScale()*childVisual->GetScale());
+            GetElement("size")->Set(visual->Scale()*childVisual->Scale());
         collisionElem->GetElement("geometry")->GetElement("box")->
-            GetElement("size")->Set(visual->GetScale()*childVisual->GetScale());
+            GetElement("size")->Set(visual->Scale()*childVisual->Scale());
         visualElem->GetElement("material")->GetElement("ambient")->
               Set(buildingModelManip->Color());
         visualElem->GetElement("material")->GetElement("script")
@@ -1049,7 +1051,7 @@ void BuildingMaker::GenerateSDFWithCSG()
     visualElem = newLinkElem->GetElement("visual");
     collisionElem = newLinkElem->GetElement("collision");
     newLinkElem->GetAttribute("name")->Set(buildingModelManip->Name());
-    newLinkElem->GetElement("pose")->Set(visual->GetParent()->GetWorldPose());
+    newLinkElem->GetElement("pose")->Set(visual->GetParent()->WorldPose());
 
     // create a hole to represent a window/door in the wall
     auto parentManip = this->dataPtr->attachmentMap.find(name);
@@ -1063,7 +1065,7 @@ void BuildingMaker::GenerateSDFWithCSG()
         && !parentManip->second.empty())
     {
       rendering::VisualPtr wallVis = visual;
-      auto wallPose = wallVis->GetWorldPose().Ign();
+      auto wallPose = wallVis->WorldPose();
       const common::Mesh *wallMesh = common::MeshManager::Instance()
           ->GetMesh(wallVis->GetMeshName());
       // clone wall mesh to to be used in boolean operation
@@ -1084,7 +1086,7 @@ void BuildingMaker::GenerateSDFWithCSG()
           m1SubMesh->AddIndex(subMesh->GetIndex(j));
         }
       }
-      m1->SetScale(wallVis->GetScale().Ign());
+      m1->SetScale(wallVis->Scale());
 
       std::string booleanMeshName = buildingModelManip->Name() + "_Boolean";
       common::Mesh *booleanMesh = NULL;
@@ -1107,7 +1109,7 @@ void BuildingMaker::GenerateSDFWithCSG()
             || objName.find("Door") != std::string::npos)
         {
           rendering::VisualPtr attachedVis = attachedObj->Visual();
-          auto offset = attachedVis->GetWorldPose().Ign() - wallPose;
+          auto offset = attachedVis->WorldPose() - wallPose;
           const common::Mesh *attachedMesh = common::MeshManager::Instance()->
               GetMesh(attachedVis->GetMeshName());
           // clone attached object mesh
@@ -1128,7 +1130,7 @@ void BuildingMaker::GenerateSDFWithCSG()
               m2SubMesh->AddIndex(subMesh->GetIndex(j));
             }
           }
-          m2->SetScale(attachedVis->GetScale().Ign());
+          m2->SetScale(attachedVis->Scale());
           // create csg but don't add to mesh manager just yet
           common::MeshCSG csg;
           booleanMesh = csg.CreateBoolean(m1, m2, common::MeshCSG::DIFFERENCE,
@@ -1151,10 +1153,10 @@ void BuildingMaker::GenerateSDFWithCSG()
       std::string uri = "model://" + this->dataPtr->folderName + "/meshes/"
           + booleanMeshName;
       meshElem->GetElement("uri")->Set(uri);
-      visualElem->GetElement("pose")->Set(visual->GetPose());
+      visualElem->GetElement("pose")->Set(visual->Pose());
       collisionElem->GetElement("geometry")->GetElement("box")->
-          GetElement("size")->Set(visual->GetScale());
-      collisionElem->GetElement("pose")->Set(visual->GetPose());
+          GetElement("size")->Set(visual->Scale());
+      collisionElem->GetElement("pose")->Set(visual->Pose());
     }
     else if (name.find("Stairs") != std::string::npos
         && visual->GetChildCount() > 0)
@@ -1172,14 +1174,14 @@ void BuildingMaker::GenerateSDFWithCSG()
             << i;
         collisionElem->GetAttribute("name")->Set(collisionNameStream.str());
         rendering::VisualPtr childVisual = visual->GetChild(i);
-        ignition::math::Pose3d newPose(childVisual->GetWorldPose().pos.Ign(),
-            visual->GetRotation().Ign());
+        ignition::math::Pose3d newPose(childVisual->WorldPose().Pos(),
+            visual->Rotation());
         visualElem->GetElement("pose")->Set(newPose);
         collisionElem->GetElement("pose")->Set(newPose);
         visualElem->GetElement("geometry")->GetElement("box")->
-            GetElement("size")->Set(visual->GetScale()*childVisual->GetScale());
+            GetElement("size")->Set(visual->Scale()*childVisual->Scale());
         collisionElem->GetElement("geometry")->GetElement("box")->
-            GetElement("size")->Set(visual->GetScale()*childVisual->GetScale());
+            GetElement("size")->Set(visual->Scale()*childVisual->Scale());
 
         newLinkElem->InsertElement(visualElem);
         newLinkElem->InsertElement(collisionElem);
@@ -1740,17 +1742,17 @@ bool BuildingMaker::On3dMouseMove(const common::MouseEvent &_event)
     return true;
   }
 
-  rendering::VisualPtr vis = userCamera->GetVisual(_event.Pos());
+  rendering::VisualPtr vis = userCamera->Visual(_event.Pos());
   // Highlight visual on hover
   if (vis)
   {
-    std::string visName = vis->GetParent()->GetName();
+    std::string visName = vis->GetParent()->Name();
 
     // Stairs have nested visuals
     if (visName.find("Stair") != std::string::npos)
     {
       vis = vis->GetParent();
-      visName = vis->GetParent()->GetName();
+      visName = vis->GetParent()->Name();
     }
 
     if (this->dataPtr->hoverVis && this->dataPtr->hoverVis != vis)
@@ -1773,9 +1775,10 @@ bool BuildingMaker::On3dMouseMove(const common::MouseEvent &_event)
       this->dataPtr->hoverVis = vis;
       if (this->dataPtr->selectedColor.isValid())
       {
-        common::Color newColor(this->dataPtr->selectedColor.red(),
+        ignition::math::Color newColor(this->dataPtr->selectedColor.red(),
                                this->dataPtr->selectedColor.green(),
-                               this->dataPtr->selectedColor.blue());
+                               this->dataPtr->selectedColor.blue(),
+                               1.0f);
         this->dataPtr->hoverVis->SetAmbient(newColor);
       }
       else if (this->dataPtr->selectedTexture != "")
@@ -1837,7 +1840,7 @@ bool BuildingMaker::On3dMouseRelease(const common::MouseEvent &_event)
 
   if (this->dataPtr->hoverVis)
   {
-    std::string hoverName = this->dataPtr->hoverVis->GetParent()->GetName();
+    std::string hoverName = this->dataPtr->hoverVis->GetParent()->Name();
     hoverName = hoverName.substr(hoverName.find("::")+2);
 
     std::map<std::string, BuildingModelManip *>::const_iterator it =
@@ -1894,7 +1897,7 @@ void BuildingMaker::ResetHoverVis()
 {
   if (this->dataPtr->hoverVis)
   {
-    std::string hoverName = this->dataPtr->hoverVis->GetParent()->GetName();
+    std::string hoverName = this->dataPtr->hoverVis->GetParent()->Name();
     hoverName = hoverName.substr(hoverName.find("::")+2);
 
     std::map<std::string, BuildingModelManip *>::const_iterator it =

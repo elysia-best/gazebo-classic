@@ -14,6 +14,9 @@
  * limitations under the License.
  *
 */
+
+#include <boost/lexical_cast.hpp>
+
 #include "gazebo/test/ServerFixture.hh"
 #include "gazebo/test/helper_physics_generator.hh"
 
@@ -50,13 +53,13 @@ void SpeedTest::BallTest(const std::string &_physicsEngine)
 
   // Load 500 spheres into the world
   std::string name = "sphere";
-  math::Vector3 pos(0, 0, 5);
+  ignition::math::Vector3d pos(0, 0, 5);
 
   for (int i = 0; i < 500; ++i)
   {
-    pos.z += i;
+    pos.Z() += i;
     SpawnSphere(name + boost::lexical_cast<std::string>(i),
-        pos, math::Vector3(0, 0, 0), i == 499);
+        pos, ignition::math::Vector3d::Zero, i == 499);
   }
 
   common::Time::MSleep(2000);
@@ -67,7 +70,7 @@ void SpeedTest::BallTest(const std::string &_physicsEngine)
   std::cout << "Speed: Empty[" << emptySpeed << "] Loaded["
             << loadedSpeed << "] Ratio[" << speedRatio << "]\n";
 
-#ifdef BUILD_TYPE_RELEASE
+#ifdef GAZEBO_BUILD_TYPE_RELEASE
   EXPECT_GT(speedRatio, 0.02);
 #else
   EXPECT_GT(speedRatio, 0.01);
@@ -91,12 +94,12 @@ void SpeedTest::ShapesWorld(const std::string &_physicsEngine)
 
   // Load 500 spheres into the world
   std::string name = "sphere";
-  math::Vector3 pos(0, 0, 5);
+  ignition::math::Vector3d pos(0, 0, 5);
   for (int i = 0; i < 500; ++i)
   {
-    pos.z += i;
+    pos.Z() += i;
     SpawnSphere(name + boost::lexical_cast<std::string>(i),
-        pos, math::Vector3(0, 0, 0), i == 499);
+        pos, ignition::math::Vector3d::Zero, i == 499);
   }
   common::Time::MSleep(2000);
 
@@ -106,7 +109,7 @@ void SpeedTest::ShapesWorld(const std::string &_physicsEngine)
   std::cout << "Speed: Empty[" << emptySpeed << "] Loaded["
             << loadedSpeed << "] Ratio[" << speedRatio << "]\n";
 
-#ifdef BUILD_TYPE_RELEASE
+#ifdef GAZEBO_BUILD_TYPE_RELEASE
   EXPECT_GT(speedRatio, 0.08);
 #else
   EXPECT_GT(speedRatio, 0.01);
@@ -126,7 +129,7 @@ void SpeedTest::UnthrottledStep(const std::string &_physicsEngine)
   ASSERT_TRUE(world != NULL);
 
   // Unthrottle physics updates
-  physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+  physics::PhysicsEnginePtr physics = world->Physics();
   ASSERT_TRUE(physics != NULL);
   physics->SetRealTimeUpdateRate(0.0);
   double dt = physics->GetMaxStepSize();

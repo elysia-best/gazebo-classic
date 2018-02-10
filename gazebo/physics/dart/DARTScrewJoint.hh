@@ -36,7 +36,7 @@ namespace gazebo
     {
       /// \brief Constructor.
       /// \param[in] _parent Pointer to the Link that is the joint' parent
-      public: DARTScrewJoint(BasePtr _parent);
+      public: explicit DARTScrewJoint(BasePtr _parent);
 
       /// \brief Destructor.
       public: virtual ~DARTScrewJoint();
@@ -44,22 +44,19 @@ namespace gazebo
       // Documentation inherited.
       public: virtual void Load(sdf::ElementPtr _sdf);
 
-      // Documentation inherited
-      public: virtual math::Vector3 GetAnchor(unsigned int _index) const;
-
-      // Documentation inherited
-      public: virtual void SetAnchor(unsigned int _index,
-                  const math::Vector3 &_anchor);
-
       // Documentation inherited.
       public: virtual void Init();
 
       // Documentation inherited
-      public: virtual math::Vector3 GetGlobalAxis(unsigned int _index) const;
+      public: virtual double GetVelocity(unsigned int _index) const override;
 
       // Documentation inherited
-      public: virtual void SetAxis(unsigned int _index,
-                  const math::Vector3 &_axis);
+      public: virtual ignition::math::Vector3d GlobalAxis(
+          const unsigned int _index) const;
+
+      // Documentation inherited
+      public: virtual void SetAxis(const unsigned int _index,
+                  const ignition::math::Vector3d &_axis);
 
       /// \copydoc ScrewJoint::SetThreadPitch
       public: virtual void SetThreadPitch(unsigned int _index,
@@ -76,25 +73,15 @@ namespace gazebo
 
       // Documentation inherited
       public: virtual double GetParam(const std::string &_key,
-                  unsigned int _index);
+                                      unsigned int _index);
 
       // Documentation inherited
-      public: virtual math::Angle GetAngleImpl(unsigned int _index) const;
+      public: virtual bool SetParam(const std::string &_key,
+                                    unsigned int _index,
+                                    const boost::any &_value);
 
-      // Documentation inherited
-      public: virtual double GetVelocity(unsigned int _index) const;
-
-      // Documentation inherited
-      public: virtual void SetVelocity(unsigned int _index, double _vel);
-
-      // Documentation inherited.
-      public: virtual math::Angle GetHighStop(unsigned int _index);
-
-      // Documentation inherited.
-      public: virtual math::Angle GetLowStop(unsigned int _index);
-
-      // Documentation inherited.
-      protected: virtual void SetForceImpl(unsigned int _index, double _effort);
+      public: virtual double PositionImpl(
+        const unsigned int _index = 0) const override;
     };
     /// \}
   }

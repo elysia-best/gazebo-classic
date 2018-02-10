@@ -21,6 +21,9 @@
 #include <map>
 #include <string>
 
+#include <ignition/math/Pose3.hh>
+#include <ignition/math/Vector3.hh>
+
 #include "gazebo/gui/qt.h"
 #include "gazebo/gui/model/ModelData.hh"
 
@@ -116,7 +119,7 @@ namespace gazebo
       /// \param[in] _size Size of the geometry.
       /// \param[in] _uri URI of the geometry.
       public: void SetGeometry(const std::string &_name,
-          const math::Vector3 &_size, const std::string &_uri = "");
+          const ignition::math::Vector3d &_size, const std::string &_uri = "");
 
       /// \brief Get the geometry data of a visual
       /// \param[in] _name Name of visual.
@@ -134,8 +137,10 @@ namespace gazebo
       /// \param[in] _emissive Emissive color of visual.
       public: void SetMaterial(const std::string &_name,
           const std::string &_materialName,
-          const common::Color &_ambient, const common::Color &_diffuse,
-          const common::Color &_specular, const common::Color &_emissive);
+          const ignition::math::Color &_ambient,
+          const ignition::math::Color &_diffuse,
+          const ignition::math::Color &_specular,
+          const ignition::math::Color &_emissive);
 
       /// \brief Get visual config data
       /// \return Config data for the visuals
@@ -191,7 +196,7 @@ namespace gazebo
       /// signal.
       /// \param[in] _value New value.
       private slots: void OnColorChanged(const QString &_name,
-          const gazebo::common::Color &_value);
+          const ignition::math::Color &_value);
 
       /// \brief Qt callback when a double value has changed.
       /// \param[in] _name of widget in the config widget that emitted the

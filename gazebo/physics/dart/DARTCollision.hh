@@ -15,10 +15,9 @@
  *
 */
 
-#ifndef _GAZEBO_DARTCOLLISION_HH_
-#define _GAZEBO_DARTCOLLISION_HH_
+#ifndef GAZEBO_PHYSICS_DART_DARTCOLLISION_HH_
+#define GAZEBO_PHYSICS_DART_DARTCOLLISION_HH_
 
-#include "gazebo/common/CommonTypes.hh"
 #include "gazebo/physics/PhysicsTypes.hh"
 #include "gazebo/physics/Collision.hh"
 #include "gazebo/physics/dart/dart_inc.h"
@@ -72,25 +71,28 @@ namespace gazebo
       public: virtual unsigned int GetCollideBits() const;
 
       // Documentation inherited.
-      public: virtual math::Box GetBoundingBox() const;
+      public: virtual ignition::math::Box BoundingBox() const;
 
       /// \brief Get DART body node.
       /// \return Pointer to the dart BodyNode.
-      public: dart::dynamics::BodyNode *GetDARTBodyNode() const;
+      public: dart::dynamics::BodyNode *DARTBodyNode() const;
 
       /// \brief Set DART collision shape.
       /// \param[in] _shape DART Collision shape
       /// \param[in] _placeable True to make the object movable.
-      public: void SetDARTCollisionShape(dart::dynamics::Shape *_shape,
-                                         bool _placeable = true);
+      public: void SetDARTCollisionShapeNode(
+                           dart::dynamics::ShapeNodePtr _shape,
+                           const bool _placeable = true);
 
-      /// \brief Get DART collision shape.
-      public: dart::dynamics::Shape *GetDARTCollisionShape() const;
+      /// \brief Get DART collision shape node.
+      /// \return DART Collision shape pointer.
+      public: dart::dynamics::ShapeNodePtr DARTCollisionShapeNode() const;
+
 
       /// \brief Similar to Collision::GetSurface, but provides dynamically
       ///        casted pointer to DARTSurfaceParams.
       /// \return Dynamically casted pointer to DARTSurfaceParams.
-      public: DARTSurfaceParamsPtr GetDARTSurface() const;
+      public: DARTSurfaceParamsPtr DARTSurface() const;
 
       /// \internal
       /// \brief Pointer to private data

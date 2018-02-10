@@ -15,6 +15,8 @@
  *
 */
 
+#include <ignition/math/Helpers.hh>
+
 #include "gazebo/gazebo_config.h"
 #include "gazebo/common/Console.hh"
 #include "gazebo/physics/Link.hh"
@@ -28,19 +30,21 @@ using namespace physics;
 DARTBallJoint::DARTBallJoint(BasePtr _parent)
   : BallJoint<DARTJoint>(_parent)
 {
-  this->dataPtr->dtJoint = new dart::dynamics::BallJoint();
 }
 
 //////////////////////////////////////////////////
 DARTBallJoint::~DARTBallJoint()
 {
-  // We don't need to delete dtJoint because the world will delete it
 }
 
 //////////////////////////////////////////////////
 void DARTBallJoint::Load(sdf::ElementPtr _sdf)
 {
   BallJoint<DARTJoint>::Load(_sdf);
+
+  this->dataPtr->dtProperties.reset(
+        new dart::dynamics::BallJoint::Properties(
+          *(this->dataPtr->dtProperties)));
 }
 
 //////////////////////////////////////////////////
@@ -50,79 +54,16 @@ void DARTBallJoint::Init()
 }
 
 //////////////////////////////////////////////////
-math::Vector3 DARTBallJoint::GetAnchor(unsigned int /*_index*/) const
+ignition::math::Vector3d DARTBallJoint::GlobalAxis(
+    const unsigned int /*_index*/) const
 {
-  Eigen::Isometry3d T = this->dataPtr->dtChildBodyNode->getTransform() *
-                        this->dataPtr->dtJoint->getTransformFromChildBodyNode();
-  Eigen::Vector3d worldOrigin = T.translation();
-
-  return DARTTypes::ConvVec3(worldOrigin);
+  return ignition::math::Vector3d::Zero;
 }
 
 //////////////////////////////////////////////////
-math::Vector3 DARTBallJoint::GetGlobalAxis(unsigned int /*_index*/) const
+void DARTBallJoint::SetAxis(const unsigned int /*_index*/,
+                            const ignition::math::Vector3d &/*_axis*/)
 {
-  return math::Vector3();
-}
-
-//////////////////////////////////////////////////
-void DARTBallJoint::SetVelocity(unsigned int /*_index*/, double /*_angle*/)
-{
-}
-
-//////////////////////////////////////////////////
-double DARTBallJoint::GetVelocity(unsigned int /*_index*/) const
-{
-  gzerr << "DARTBallJoint::GetVelocity not implemented" << std::endl;
-  return 0;
-}
-
-//////////////////////////////////////////////////
-math::Angle DARTBallJoint::GetAngleImpl(unsigned int /*_index*/) const
-{
-  gzerr << "DARTBallJoint::GetAngleImpl not implemented" << std::endl;
-  return math::Angle(0);
-}
-
-//////////////////////////////////////////////////
-void DARTBallJoint::SetForceImpl(unsigned int /*_index*/, double /*_torque*/)
-{
-  gzerr << "DARTBallJoint::SetForceImpl not implemented";
-}
-
-//////////////////////////////////////////////////
-void DARTBallJoint::SetAxis(unsigned int /*_index*/,
-                            const math::Vector3 &/*_axis*/)
-{
-  gzerr << "DARTBallJoint::SetAxis not implemented" << std::endl;
-}
-
-//////////////////////////////////////////////////
-math::Angle DARTBallJoint::GetHighStop(unsigned int /*_index*/)
-{
-  gzerr << "DARTBallJoint::GetHighStop not implemented" << std::endl;
-  return math::Angle();
-}
-
-//////////////////////////////////////////////////
-math::Angle DARTBallJoint::GetLowStop(unsigned int /*_index*/)
-{
-  gzerr << "DARTBallJoint::GetLowStop not implemented" << std::endl;
-  return math::Angle();
-}
-
-//////////////////////////////////////////////////
-bool DARTBallJoint::SetHighStop(unsigned int /*_index*/,
-                                const math::Angle &/*_angle*/)
-{
-  gzerr << "DARTBallJoint::SetHighStop not implemented" << std::endl;
-  return false;
-}
-
-//////////////////////////////////////////////////
-bool DARTBallJoint::SetLowStop(unsigned int /*_index*/,
-                               const math::Angle &/*_angle*/)
-{
-  gzerr << "DARTBallJoint::SetLowStop not implemented" << std::endl;
-  return false;
+  gzerr << "DARTBallJoint::SetAxis: dart::dynamics::BallJoint does not have an "
+        << "axis" << std::endl;
 }

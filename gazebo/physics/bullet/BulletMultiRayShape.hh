@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 */
-#ifndef _BULLETMULTIRAYSHAPE_HH_
-#define _BULLETMULTIRAYSHAPE_HH_
+#ifndef GAZEBO_PHYSICS_BULLET_BULLETMULTIRAYSHAPE_HH_
+#define GAZEBO_PHYSICS_BULLET_BULLETMULTIRAYSHAPE_HH_
 
 #include "gazebo/physics/MultiRayShape.hh"
 #include "gazebo/util/system.hh"
@@ -32,7 +32,7 @@ namespace gazebo
     class GZ_PHYSICS_VISIBLE BulletMultiRayShape : public MultiRayShape
     {
       /// \brief Constructor
-      public: BulletMultiRayShape(CollisionPtr parent);
+      public: explicit BulletMultiRayShape(CollisionPtr parent);
 
       /// \brief Destructor
       public: virtual ~BulletMultiRayShape();
@@ -41,8 +41,8 @@ namespace gazebo
       public: virtual void UpdateRays();
 
       /// \brief Add a ray to the collision
-      protected: void AddRay(const math::Vector3 &start,
-                             const math::Vector3 &end);
+      protected: void AddRay(const ignition::math::Vector3d &start,
+                             const ignition::math::Vector3d &end);
 
       private: BulletPhysicsPtr physicsEngine;
     };

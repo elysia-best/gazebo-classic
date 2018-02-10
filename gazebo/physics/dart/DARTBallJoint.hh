@@ -34,7 +34,7 @@ namespace gazebo
     {
       /// \brief Constructor
       /// \param[in] _parent Parent of the Joint
-      public: DARTBallJoint(BasePtr _parent);
+      public: explicit DARTBallJoint(BasePtr _parent);
 
       /// \brief Destructor.
       public: virtual ~DARTBallJoint();
@@ -46,40 +46,12 @@ namespace gazebo
       public: virtual void Init();
 
       // Documentation inherited
-      public: virtual math::Vector3 GetAnchor(unsigned int _index) const;
-
-      // Documentation inherited
-      public: virtual math::Vector3 GetGlobalAxis(unsigned int _index) const;
-
-      // Documentation inherited
-      public: virtual void SetVelocity(unsigned int _index, double _angle);
-
-      // Documentation inherited
-      public: virtual double GetVelocity(unsigned int _index) const;
-
-      // Documentation inherited
-      public: virtual math::Angle GetAngleImpl(unsigned int _index) const;
+      public: virtual ignition::math::Vector3d GlobalAxis(
+          const unsigned int _index) const;
 
       // Documentation inherited.
-      protected: void SetForceImpl(unsigned int _index, double _torque);
-
-      // Documentation inherited.
-      public: virtual void SetAxis(unsigned int _index,
-                                   const math::Vector3 &_axis);
-
-      // Documentation inherited.
-      public: virtual math::Angle GetHighStop(unsigned int _index);
-
-      // Documentation inherited.
-      public: virtual math::Angle GetLowStop(unsigned int _index);
-
-      // Documentation inherited.
-      public: virtual bool SetHighStop(unsigned int _index,
-                                       const math::Angle &_angle);
-
-      // Documentation inherited.
-      public: virtual bool SetLowStop(unsigned int _index,
-                                      const math::Angle &_angle);
+      public: virtual void SetAxis(const unsigned int _index,
+                                   const ignition::math::Vector3d &_axis);
     };
     /// \}
   }

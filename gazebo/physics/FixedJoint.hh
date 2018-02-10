@@ -34,14 +34,14 @@ namespace gazebo
     {
       /// \brief Constructor
       /// \param[in] _parent Parent link
-      public: FixedJoint(BasePtr _parent) : T(_parent)
+      public: explicit FixedJoint(BasePtr _parent) : T(_parent)
               { this->AddType(Base::FIXED_JOINT); }
       /// \brief Destructor
       public: virtual ~FixedJoint()
               { }
 
       // Documentation inherited.
-      public: virtual unsigned int GetAngleCount() const
+      public: virtual unsigned int DOF() const
               {return 0;}
 
       /// \brief Load joint

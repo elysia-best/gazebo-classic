@@ -15,24 +15,21 @@
  *
 */
 
-#ifndef _VISUAL_PRIVATE_HH_
-#define _VISUAL_PRIVATE_HH_
+#ifndef GAZEBO_RENDERING_VISUALPRIVATE_HH_
+#define GAZEBO_RENDERING_VISUALPRIVATE_HH_
 
+#include <map>
 #include <string>
 #include <utility>
 #include <list>
 #include <vector>
+#include <functional>
 
-#include <boost/function.hpp>
 #include <sdf/sdf.hh>
+#include <ignition/math/Vector3.hh>
+#include <ignition/math/Pose3.hh>
 
 #include "gazebo/msgs/msgs.hh"
-#include "gazebo/common/Event.hh"
-#include "gazebo/math/Box.hh"
-#include "gazebo/math/Pose.hh"
-#include "gazebo/math/Quaternion.hh"
-#include "gazebo/math/Vector3.hh"
-#include "gazebo/math/Vector2d.hh"
 
 #include "gazebo/rendering/Visual.hh"
 #include "gazebo/rendering/RenderTypes.hh"
@@ -147,7 +144,7 @@ namespace gazebo
       public: common::Time prevAnimTime;
 
       /// \brief Callback for the animation complete event.
-      public: boost::function<void()> onAnimationComplete;
+      public: std::function<void()> onAnimationComplete;
 
       /// \brief True to use RT shader system.
       public: bool useRTShader;
@@ -180,16 +177,18 @@ namespace gazebo
       public: std::string subMeshName;
 
       /// \brief Ambient color of the visual.
-      public: common::Color ambient;
+      public: ignition::math::Color ambient = ignition::math::Color(0, 0, 0, 0);
 
       /// \brief Diffuse color of the visual.
-      public: common::Color diffuse;
+      public: ignition::math::Color diffuse = ignition::math::Color(0, 0, 0, 0);
 
       /// \brief Specular color of the visual.
-      public: common::Color specular;
+      public: ignition::math::Color specular =
+          ignition::math::Color(0, 0, 0, 0);
 
       /// \brief Emissive color of the visual.
-      public: common::Color emissive;
+      public: ignition::math::Color emissive =
+          ignition::math::Color(0, 0, 0, 0);
 
       /// \brief Visibility flags of the visual.
       public: uint32_t visibilityFlags;
@@ -220,6 +219,9 @@ namespace gazebo
 
       /// \brief The initial pose of the visual.
       public: ignition::math::Pose3d initialRelativePose;
+
+      /// \brief Original ogre materials used by the submeshes in the visual
+      public: std::map<std::string, Ogre::MaterialPtr> submeshMaterials;
     };
     /// \}
   }

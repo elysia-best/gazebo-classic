@@ -14,8 +14,10 @@
  * limitations under the License.
  *
 */
-#ifndef _IMAGEFRAME_HH_
-#define _IMAGEFRAME_HH_
+#ifndef GAZEBO_GUI_VIEWERS_IMAGEFRAME_HH_
+#define GAZEBO_GUI_VIEWERS_IMAGEFRAME_HH_
+
+#include <memory>
 
 #include "gazebo/gui/qt.h"
 #include "gazebo/msgs/msgs.hh"
@@ -33,7 +35,7 @@ namespace gazebo
 
       /// \brief Constructor
       /// \param[in] _parent Parent Qt widget
-      public: ImageFrame(QWidget *_parent);
+      public: explicit ImageFrame(QWidget *_parent);
 
       /// \brief Destructor
       public: virtual ~ImageFrame();
@@ -47,7 +49,7 @@ namespace gazebo
       protected: void paintEvent(QPaintEvent *_event);
 
       /// \brief Pointer to private data
-      private: ImageFramePrivate *dataPtr;
+      private: std::unique_ptr<ImageFramePrivate> dataPtr;
     };
   }
 }

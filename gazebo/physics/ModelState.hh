@@ -15,15 +15,15 @@
  *
 */
 
-#ifndef _GAZEBO_MODELSTATE_HH_
-#define _GAZEBO_MODELSTATE_HH_
+#ifndef GAZEBO_PHYSICS_MODELSTATE_HH_
+#define GAZEBO_PHYSICS_MODELSTATE_HH_
 
 #include <vector>
 #include <string>
 #include <boost/regex.hpp>
 
+#include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>
-#include "gazebo/math/Pose.hh"
 
 #include "gazebo/physics/State.hh"
 #include "gazebo/physics/LinkState.hh"
@@ -95,8 +95,8 @@ namespace gazebo
       public: virtual void Load(const sdf::ElementPtr _elem);
 
       /// \brief Get the stored model pose.
-      /// \return The math::Pose of the Model.
-      public: const math::Pose &GetPose() const;
+      /// \return The ignition::math::Pose3d of the Model.
+      public: const ignition::math::Pose3d &Pose() const;
 
       /// \brief Get the stored model scale.
       /// \return The scale of the Model.
@@ -243,17 +243,17 @@ namespace gazebo
       public: inline friend std::ostream &operator<<(std::ostream &_out,
                   const gazebo::physics::ModelState &_state)
       {
-        math::Vector3 q(_state.pose.rot.GetAsEuler());
+        ignition::math::Vector3d euler(_state.pose.Rot().Euler());
         _out.unsetf(std::ios_base::floatfield);
         _out << std::setprecision(3)
           << "<model name='" << _state.GetName() << "'>"
           << "<pose>"
-          << ignition::math::precision(_state.pose.pos.x, 4) << " "
-          << ignition::math::precision(_state.pose.pos.y, 4) << " "
-          << ignition::math::precision(_state.pose.pos.z, 4) << " "
-          << ignition::math::precision(q.x, 4) << " "
-          << ignition::math::precision(q.y, 4) << " "
-          << ignition::math::precision(q.z, 4) << " "
+          << ignition::math::precision(_state.pose.Pos().X(), 4) << " "
+          << ignition::math::precision(_state.pose.Pos().Y(), 4) << " "
+          << ignition::math::precision(_state.pose.Pos().Z(), 4) << " "
+          << ignition::math::precision(euler.X(), 4) << " "
+          << ignition::math::precision(euler.Y(), 4) << " "
+          << ignition::math::precision(euler.Z(), 4) << " "
           << "</pose>";
 
         // Only record scale if it is not the default value of [1, 1, 1].
@@ -286,7 +286,7 @@ namespace gazebo
       }
 
       /// \brief Pose of the model.
-      private: math::Pose pose;
+      private: ignition::math::Pose3d pose;
 
       /// \brief Scale of the model.
       private: ignition::math::Vector3d scale;

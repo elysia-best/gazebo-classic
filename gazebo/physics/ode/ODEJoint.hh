@@ -47,7 +47,7 @@ namespace gazebo
 
       /// \brief Constructor.
       /// \param[in] _parent Parent of the Joint.
-      public: ODEJoint(BasePtr _parent);
+      public: explicit ODEJoint(BasePtr _parent);
 
       /// \brief Destructor.
       public: virtual ~ODEJoint();
@@ -90,7 +90,11 @@ namespace gazebo
       public: virtual void SetDamping(unsigned int _index, double _damping);
 
       // Documentation inherited.
-      public: virtual bool SetPosition(unsigned int _index, double _position);
+      public: virtual bool SetPosition(
+                              const unsigned int _index,
+                              const double _position,
+                              const bool _preserveWorldVelocity = false)
+            override;
 
       // Documentation inherited.
       public: virtual void SetStiffness(unsigned int _index,
@@ -204,28 +208,24 @@ namespace gazebo
       private: bool useImplicitSpringDamper;
 
       // Documentation inherited.
-      public: virtual bool SetHighStop(unsigned int _index,
-                  const math::Angle &_angle);
+      public: virtual void SetUpperLimit(const unsigned int _index,
+                                         const double _limit);
 
       // Documentation inherited.
-      public: virtual bool SetLowStop(unsigned int _index,
-                  const math::Angle &_angle);
+      public: virtual void SetLowerLimit(const unsigned int _index,
+                                         const double _limit);
 
       // Documentation inherited.
-      public: virtual math::Angle GetHighStop(unsigned int _index);
+      public: virtual ignition::math::Vector3d LinkForce(
+          const unsigned int _index) const;
 
       // Documentation inherited.
-      public: virtual math::Angle GetLowStop(unsigned int _index);
+      public: virtual ignition::math::Vector3d LinkTorque(
+          const unsigned int _index) const;
 
       // Documentation inherited.
-      public: virtual math::Vector3 GetLinkForce(unsigned int _index) const;
-
-      // Documentation inherited.
-      public: virtual math::Vector3 GetLinkTorque(unsigned int _index) const;
-
-      // Documentation inherited.
-      public: virtual void SetAxis(unsigned int _index,
-                  const math::Vector3 &_axis);
+      public: virtual void SetAxis(const unsigned int _index,
+                  const ignition::math::Vector3d &_axis);
 
       // Documentation inherited.
       public: virtual bool SetParam(const std::string &_key,

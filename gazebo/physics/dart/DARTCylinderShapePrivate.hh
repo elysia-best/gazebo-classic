@@ -30,10 +30,43 @@ namespace gazebo
     class DARTCylinderShapePrivate
     {
       /// \brief Constructor
-      public: DARTCylinderShapePrivate() = default;
+      public: DARTCylinderShapePrivate()
+      {
+      }
 
       /// \brief Default destructor
       public: ~DARTCylinderShapePrivate() = default;
+
+      // \brief returns the shape
+      public: dart::dynamics::ShapeNodePtr ShapeNode() const
+      {
+        return this->dtCylinderShape;
+      }
+
+      // \brief returns the shape
+      public: dart::dynamics::CylinderShape* Shape() const
+      {
+        GZ_ASSERT(this->dtCylinderShape, "CylinderShape is NULL");
+        return static_cast<dart::dynamics::CylinderShape*>
+                       (this->dtCylinderShape->getShape().get());
+      }
+
+      /// \brief Creates the shape
+      /// \param[in] _bodyNode the body node to use for the shape
+      public: void CreateShape(const dart::dynamics::BodyNodePtr& _bodyNode)
+      {
+        GZ_ASSERT(_bodyNode, "BodyNode is NULL");
+        dart::dynamics::ShapePtr shape(
+                                  new dart::dynamics::CylinderShape(1, 1));
+        dart::dynamics::ShapeNode *node = _bodyNode->createShapeNodeWith<
+                                      dart::dynamics::VisualAspect,
+                                      dart::dynamics::CollisionAspect,
+                                      dart::dynamics::DynamicsAspect>(shape);
+        this->dtCylinderShape.set(node);
+      }
+
+      /// \brief DART cylinder shape
+      private: dart::dynamics::ShapeNodePtr dtCylinderShape;
     };
   }
 }

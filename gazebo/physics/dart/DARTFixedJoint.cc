@@ -16,6 +16,7 @@
 */
 
 #include <boost/bind.hpp>
+#include <ignition/math/Helpers.hh>
 
 #include "gazebo/gazebo_config.h"
 #include "gazebo/common/Console.hh"
@@ -30,19 +31,21 @@ using namespace physics;
 DARTFixedJoint::DARTFixedJoint(BasePtr _parent)
   : FixedJoint<DARTJoint>(_parent)
 {
-  this->dataPtr->dtJoint = new dart::dynamics::WeldJoint();
 }
 
 //////////////////////////////////////////////////
 DARTFixedJoint::~DARTFixedJoint()
 {
-  // We don't need to delete dtJoint because the world will delete it
 }
 
 //////////////////////////////////////////////////
 void DARTFixedJoint::Load(sdf::ElementPtr _sdf)
 {
   FixedJoint<DARTJoint>::Load(_sdf);
+
+  this->dataPtr->dtProperties.reset(
+        new dart::dynamics::WeldJoint::Properties(
+          *(this->dataPtr->dtProperties)));
 }
 
 //////////////////////////////////////////////////
@@ -52,60 +55,20 @@ void DARTFixedJoint::Init()
 }
 
 //////////////////////////////////////////////////
-math::Vector3 DARTFixedJoint::GetAnchor(unsigned int /*index*/) const
+ignition::math::Vector3d DARTFixedJoint::GlobalAxis(
+    const unsigned int /*_index*/) const
 {
-  Eigen::Isometry3d T = this->dataPtr->dtChildBodyNode->getTransform() *
-                        this->dataPtr->dtJoint->getTransformFromChildBodyNode();
-  Eigen::Vector3d worldOrigin = T.translation();
+  gzwarn << "DARTFixedJoint: called method "
+         << "GlobalAxis which is not valid for the FixedJoint type.\n";
 
-  return DARTTypes::ConvVec3(worldOrigin);
+  return ignition::math::Vector3d::Zero;
 }
 
 //////////////////////////////////////////////////
-math::Vector3 DARTFixedJoint::GetGlobalAxis(unsigned int /*_index*/) const
+void DARTFixedJoint::SetAxis(const unsigned int /*_index*/,
+                             const ignition::math::Vector3d& /*_axis*/)
 {
   gzwarn << "DARTFixedJoint: called method "
-         << "GetGlobalAxis that is not valid for joints of type fixed.\n";
-
-  return math::Vector3();
-}
-
-//////////////////////////////////////////////////
-void DARTFixedJoint::SetAxis(unsigned int /*_index*/,
-                             const math::Vector3& /*_axis*/)
-{
-  gzwarn << "DARTFixedJoint: called method "
-         << "SetAxis that is not valid for joints of type fixed.\n";
+         << "SetAxis which is not valid for the FixedJoint type.\n";
   return;
-}
-
-//////////////////////////////////////////////////
-math::Angle DARTFixedJoint::GetAngleImpl(unsigned int /*_index*/) const
-{
-  gzwarn << "DARTFixedJoint: called method "
-         << "GetAngleImpl that is not valid for joints of type fixed.\n";
-  return math::Angle();
-}
-
-//////////////////////////////////////////////////
-void DARTFixedJoint::SetVelocity(unsigned int /*_index*/, double /*_vel*/)
-{
-  gzwarn << "DARTFixedJoint: called method "
-         << "SetVelocity that is not valid for joints of type fixed.\n";
-  return;
-}
-
-//////////////////////////////////////////////////
-double DARTFixedJoint::GetVelocity(unsigned int /*_index*/) const
-{
-  gzwarn << "DARTFixedJoint: called method "
-         << "GetVelocity that is not valid for joints of type fixed.\n";
-  return 0.0;
-}
-
-//////////////////////////////////////////////////
-void DARTFixedJoint::SetForceImpl(unsigned int /*_index*/, double /*_effort*/)
-{
-  gzwarn << "DARTFixedJoint: called method "
-         << "SetForceImpl that is not valid for joints of type fixed.\n";
 }

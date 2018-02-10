@@ -10,7 +10,7 @@ execute_process(COMMAND pkg-config --modversion protobuf
   RESULT_VARIABLE protobuf_modversion_failed)
 
 ########################################
-# 1. can not use BUILD_TYPE_PROFILE is defined after include this module
+# 1. can not use GAZEBO_BUILD_TYPE_PROFILE is defined after include this module
 # 2. TODO: TOUPPER is a hack until we fix the build system to support standard build names
 if (CMAKE_BUILD_TYPE)
   string(TOUPPER ${CMAKE_BUILD_TYPE} TMP_CMAKE_BUILD_TYPE)
@@ -97,8 +97,22 @@ if (MSVC)
   set (PKG_CONFIG_FOUND TRUE)
 endif()
 
+find_package(CURL)
+if (CURL_FOUND)
+  # FindCURL.cmake distributed with CMake exports
+  # the CURL_INCLUDE_DIRS variable, while the pkg_check_modules
+  # function exports the CURL_INCLUDEDIR variable.
+  # TODO: once the configure.bat VS2013 based script has been removed,
+  #       remove the call pkg_check_modules(CURL libcurl) and all the uses of
+  #       CURL_LIBDIR and CURL_INCLUDEDIR and use directly the variables
+  #       CURL_INCLUDE_DIRS and CURL_LIBRARIES provided by FindCURL.cmake
+  set(CURL_INCLUDEDIR ${CURL_INCLUDE_DIRS})
+endif ()
+
 if (PKG_CONFIG_FOUND)
-  pkg_check_modules(CURL libcurl)
+  if (NOT CURL_FOUND)
+    pkg_check_modules(CURL libcurl)
+  endif ()
   if (NOT CURL_FOUND)
     BUILD_ERROR ("Missing: libcurl. Required for connection to model database.")
   endif()
@@ -137,21 +151,27 @@ if (PKG_CONFIG_FOUND)
   #list(APPEND CMAKE_MODULE_PATH ${SimTK_INSTALL_PREFIX}/share/cmake)
   find_package(Simbody)
   if (Simbody_FOUND)
+    message (STATUS "Looking for Simbody - found")
     set (HAVE_SIMBODY TRUE)
   else()
+    message (STATUS "Looking for Simbody - not found")
     BUILD_WARNING ("Simbody not found, for simbody physics engine option, please install libsimbody-dev.")
     set (HAVE_SIMBODY FALSE)
   endif()
 
   #################################################
   # Find DART
-  find_package(DARTCore 4.3.3 QUIET)
-  if (DARTCore_FOUND)
-    message (STATUS "Looking for DARTCore - found")
+  set(DART_MIN_REQUIRED_VERSION 6)
+  find_package(DART ${DART_MIN_REQUIRED_VERSION} CONFIG OPTIONAL_COMPONENTS utils-urdf)
+  if (DART_FOUND)
+    message (STATUS "Looking for DART - found")
     set (HAVE_DART TRUE)
+    if (DART_utils-urdf_FOUND)
+      set (HAVE_DART_URDF TRUE)
+    endif()
   else()
-    message (STATUS "Looking for DARTCore - not found")
-    BUILD_WARNING ("DART not found, for dart physics engine option, please install libdart-core4-dev.")
+    message (STATUS "Looking for DART - not found")
+    BUILD_WARNING ("DART ${DART_MIN_REQUIRED_VERSION} not found, for dart physics engine option, please install libdart${DART_MIN_REQUIRED_VERSION}-dev.")
     set (HAVE_DART FALSE)
   endif()
 
@@ -196,7 +216,7 @@ if (PKG_CONFIG_FOUND)
   else()
     # Needed in WIN32 since in UNIX the flag is added in the code installed
     message (STATUS "Skipping search for tinyxml")
-    set (tinyxml_INCLUDE_DIRS "")
+    set (tinyxml_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/win/tinyxml")
     set (tinyxml_LIBRARIES "")
     set (tinyxml_LIBRARY_DIRS "")
   endif()
@@ -248,7 +268,7 @@ if (PKG_CONFIG_FOUND)
   else()
     # Needed in WIN32 since in UNIX the flag is added in the code installed
     message (STATUS "Skipping search for tinyxml2")
-    set (tinyxml2_INCLUDE_DIRS "")
+    set (tinyxml2_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/tinyxml2")
     set (tinyxml2_LIBRARIES "")
     set (tinyxml2_LIBRARY_DIRS "")
   endif()
@@ -334,8 +354,23 @@ if (PKG_CONFIG_FOUND)
   endif ()
 
   pkg_check_modules(OGRE OGRE>=${MIN_OGRE_VERSION})
-  # There are some runtime problems to solve with ogre-1.9.
-  # Please read gazebo issues: 994, 995
+
+  if (NOT OGRE_FOUND)
+    # If OGRE was not found, try with the standard find_package(OGRE)
+    find_package(OGRE COMPONENTS RTShaderSystem Terrain Overlay Paging)
+    # Add each component include directories to OGRE_INCLUDE_DIRS because
+    # some OGRE components headers include without prefix headers contained
+    # in other components (see http://www.ogre3d.org/forums/viewtopic.php?f=2&t=73222)
+    list(APPEND OGRE_INCLUDE_DIRS ${OGRE_RTShaderSystem_INCLUDE_DIRS})
+    list(APPEND OGRE_INCLUDE_DIRS ${OGRE_Terrain_INCLUDE_DIRS})
+    list(APPEND OGRE_INCLUDE_DIRS ${OGRE_Overlay_INCLUDE_DIRS})
+    list(APPEND OGRE_INCLUDE_DIRS ${OGRE_Paging_INCLUDE_DIRS})
+    list(APPEND OGRE_LIBRARIES ${OGRE_RTShaderSystem_LIBRARIES})
+    list(APPEND OGRE_LIBRARIES ${OGRE_Terrain_LIBRARIES})
+    list(APPEND OGRE_LIBRARIES ${OGRE_Overlay_LIBRARIES})
+    list(APPEND OGRE_LIBRARIES ${OGRE_Paging_LIBRARIES})
+  endif ()
+
   if (NOT OGRE_FOUND)
     BUILD_ERROR("Missing: Ogre3d version >=${MIN_OGRE_VERSION}(http://www.orge3d.org)")
   else ()
@@ -415,6 +450,24 @@ if (PKG_CONFIG_FOUND)
   endif ()
 
   ########################################
+  # Find AV device. Only check for this on linux.
+  if (UNIX)
+    pkg_check_modules(libavdevice libavdevice>=56.4.100)
+    if (NOT libavdevice_FOUND)
+      BUILD_WARNING ("libavdevice not found. Recording to a video device will be disabled.")
+    else()
+      include_directories(${libavdevice_INCLUDE_DIRS})
+      link_directories(${libavdevice_LIBRARY_DIRS})
+    endif ()
+  endif ()
+
+  if (NOT libavdevice_FOUND)
+    set (HAVE_AVDEVICE False)
+  else()
+    set (HAVE_AVDEVICE True)
+  endif()
+
+  ########################################
   # Find AV format
   pkg_check_modules(libavformat libavformat)
   if (NOT libavformat_FOUND)
@@ -441,8 +494,8 @@ if (PKG_CONFIG_FOUND)
     BUILD_WARNING ("libavutil not found. Audio-video capabilities will be disabled.")
   endif ()
 
-
-  if (libavutil_FOUND AND libavformat_FOUND AND libavcodec_FOUND AND libswscale_FOUND)
+  if (libavutil_FOUND AND libavformat_FOUND AND libavcodec_FOUND AND
+      libswscale_FOUND)
     set (HAVE_FFMPEG TRUE)
   else ()
     set (HAVE_FFMPEG FALSE)
@@ -531,21 +584,35 @@ endif ()
 
 ########################################
 # Find SDFormat
-set (SDFormat_MIN_VERSION 4.1.0)
+set (SDFormat_MIN_VERSION 6)
 find_package(SDFormat ${SDFormat_MIN_VERSION})
-
-if (NOT SDFormat_FOUND)
-  message (STATUS "Looking for SDFormat - not found")
+if (SDFormat_FOUND)
+  message (STATUS "Looking for SDFormat ${SDFormat_MIN_VERSION} - found")
+else ()
+  message (STATUS "Looking for SDFormat ${SDFormat_MIN_VERSION} - not found")
   BUILD_ERROR ("Missing: SDF version >=${SDFormat_MIN_VERSION}. Required for reading and writing SDF files.")
-else()
-  message (STATUS "Looking for SDFormat - found")
 endif()
 
 ########################################
 # Find QT
-find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtXmlPatterns REQUIRED)
-if (NOT QT4_FOUND)
-  BUILD_ERROR("Missing: Qt4")
+find_package (Qt5Widgets)
+if (NOT Qt5Widgets_FOUND)
+  BUILD_ERROR("Missing: Qt5Widgets")
+endif()
+
+find_package (Qt5Core)
+if (NOT Qt5Core_FOUND)
+  BUILD_ERROR("Missing: Qt5Core")
+endif()
+
+find_package (Qt5OpenGL)
+if (NOT Qt5OpenGL_FOUND)
+  BUILD_ERROR("Missing: Qt5OpenGL")
+endif()
+
+find_package (Qt5Test)
+if (NOT Qt5Test_FOUND)
+  BUILD_ERROR("Missing: Qt5Test")
 endif()
 
 ########################################
@@ -657,34 +724,66 @@ else ()
 endif ()
 
 ########################################
-# Find ignition math in unix platforms
-# In Windows we expect a call from configure.bat script with the paths
-if (NOT WIN32)
-  find_package(ignition-math2 2.4 QUIET)
-  if (NOT ignition-math2_FOUND)
-    message(STATUS "Looking for ignition-math2-config.cmake - not found")
-    BUILD_ERROR ("Missing: Ignition math2 library.")
-  else()
-    message(STATUS "Looking for ignition-math2-config.cmake - found")
-  endif()
+# Find ignition msgs
+find_package(ignition-msgs1 1.0 QUIET)
+if (NOT ignition-msgs1_FOUND)
+  message(STATUS "Looking for ignition-msgs1-config.cmake - not found")
+  BUILD_ERROR ("Missing: Ignition msgs1 library (libignition-msgs-dev).")
+else()
+  message(STATUS "Looking for ignition-msgs1-config.cmake - found")
+  include_directories(${IGNITION-MSGS_INCLUDE_DIRS})
+  link_directories(${IGNITION-MSGS_LIBRARY_DIRS})
+endif()
+
+########################################
+# Find ignition math library
+find_package(ignition-math4 QUIET)
+if (NOT ignition-math4_FOUND)
+    message(STATUS "Looking for ignition-math4-config.cmake - not found")
+    BUILD_ERROR ("Missing: Ignition math (libignition-math4-dev)")
+else()
+  message(STATUS "Looking for ignition-math4-config.cmake - found")
 endif()
 
 ########################################
 # Find the Ignition_Transport library
-# In Windows we expect a call from configure.bat script with the paths
-if (NOT WIN32)
-  find_package(ignition-transport2 QUIET)
-  if (NOT ignition-transport2_FOUND)
-    find_package(ignition-transport1 QUIET)
-    if (NOT ignition-transport1_FOUND)
-      BUILD_WARNING ("Missing: Ignition Transport (libignition-transport-dev or libignition-transport2-dev")
-    endif()
-  endif()
+find_package(ignition-transport4 QUIET)
+if (NOT ignition-transport4_FOUND)
+  BUILD_ERROR ("Missing: Ignition Transport (libignition-transport4-dev)")
+else()
+  message(STATUS "Looking for ignition-transport4-config.cmake - found")
 
-  if (ignition-transport2_FOUND OR ignition-transport1_FOUND)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${IGNITION-TRANSPORT_CXX_FLAGS}")
-    include_directories(${IGNITION-TRANSPORT_INCLUDE_DIRS})
-    link_directories(${IGNITION-TRANSPORT_LIBRARY_DIRS})
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${IGNITION-TRANSPORT_CXX_FLAGS}")
+  include_directories(${IGNITION-TRANSPORT_INCLUDE_DIRS})
+  link_directories(${IGNITION-TRANSPORT_LIBRARY_DIRS})
+endif()
+
+################################################################################
+# Find the Ignition Fuel Tools library
+find_package(ignition-fuel_tools1 QUIET)
+if (NOT ignition-fuel_tools1_FOUND)
+  message (STATUS "Looking for libignition-fuel_tools1 - not found")
+  BUILD_WARNING ("Ignition Fuel Tools not found, Fuel support will be disabled")
+  set (HAVE_IGNITION_FUEL_TOOLS OFF CACHE BOOL "HAVE HAVE_IGNITION_FUEL_TOOLS" FORCE)
+  set (IGNITION_FUEL_TOOLS_PKGCONFIG "")
+else()
+  message (STATUS "Looking for libignition-fuel_tools1 - found")
+  # Ignition common is needed only if Ignition Fuel support is enabled.
+  find_package(ignition-common1 QUIET)
+  if (NOT ignition-common1_FOUND)
+    BUILD_WARNING ("Ignition Common not found, Fuel support will be disabled")
+    set (HAVE_IGNITION_FUEL_TOOLS OFF CACHE BOOL "HAVE HAVE_IGNITION_FUEL_TOOLS" FORCE)
+    set (IGNITION_FUEL_TOOLS_PKGCONFIG "")
+  else()
+    message (STATUS "Found Ignition Common")
+    set (HAVE_IGNITION_FUEL_TOOLS ON CACHE BOOL "HAVE HAVE_IGNITION_FUEL_TOOLS" FORCE)
+    set (IGNITION_FUEL_TOOLS_PKGCONFIG "ignition-fuel_tools1")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${IGNITION-FUEL_TOOLS_CXX_FLAGS}")
+    include_directories(${IGNITION-FUEL_TOOLS_INCLUDE_DIRS})
+    link_directories(${IGNITION-FUEL_TOOLS_LIBRARY_DIRS})
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ignition-common1_CXX_FLAGS}")
+    include_directories(${ignition-common1_INCLUDE_DIRS})
+    link_directories(${ignition-common1_LIBRARY_DIRS})
   endif()
 endif()
 
@@ -698,34 +797,61 @@ if (GAZEBO_RUN_VALGRIND_TESTS AND NOT VALGRIND_PROGRAM)
   BUILD_WARNING("valgrind not found. Memory check tests will be skipped.")
 endif()
 
+########################################
+# Find OSVR SDK
+find_library(OSVR_CLIENTKIT_LIBRARY NAMES osvrClientKit)
+find_file(OSVR_CLIENTKIT_HEADER NAMES osvr/ClientKit/ClientKit.h)
+if (OSVR_CLIENTKIT_LIBRARY AND OSVR_CLIENTKIT_HEADER)
+  message(STATUS "Looking for libosvrClientKit and ClientKit.h - found")
+  set(HAVE_OSVR TRUE)
+else()
+  message(STATUS "Looking for libosvrClientKit and ClientKit.h - not found")
+  BUILD_WARNING("OpenSource Virtual Reality (OSVR) support will be disabled.")
+  set(HAVE_OSVR FALSE)
+endif()
 
 ########################################
 # Find QWT (QT graphing library)
-#find_path(QWT_INCLUDE_DIR NAMES qwt.h PATHS
-#  /usr/include
-#  /usr/local/include
-#  "$ENV{LIB_DIR}/include"
-#  "$ENV{INCLUDE}"
-#  PATH_SUFFIXES qwt-qt4 qwt qwt5
-#  )
-#
-#find_library(QWT_LIBRARY NAMES qwt qwt6 qwt5 PATHS
-#  /usr/lib
-#  /usr/local/lib
-#  "$ENV{LIB_DIR}/lib"
-#  "$ENV{LIB}/lib"
-#  )
-#
-#if (QWT_INCLUDE_DIR AND QWT_LIBRARY)
-#  set(HAVE_QWT TRUE)
-#endif (QWT_INCLUDE_DIR AND QWT_LIBRARY)
-#
-#if (HAVE_QWT)
-#  if (NOT QWT_FIND_QUIETLY)
-#    message(STATUS "Found Qwt: ${QWT_LIBRARY}")
-#  endif (NOT QWT_FIND_QUIETLY)
-#else ()
-#  if (QWT_FIND_REQUIRED)
-#    BUILD_WARNING ("Could not find libqwt-dev. Plotting features will be disabled.")
-#  endif (QWT_FIND_REQUIRED)
-#endif ()
+find_path(QWT_INCLUDE_DIR NAMES qwt.h PATHS
+  /usr/include
+  /usr/local/include
+  /usr/local/lib/qwt.framework/Headers
+  ${QWT_WIN_INCLUDE_DIR}
+
+  PATH_SUFFIXES qwt qwt5
+)
+
+find_library(QWT_LIBRARY NAMES qwt-qt5 qwt PATHS
+  /usr/lib
+  /usr/local/lib
+  /usr/local/lib/qwt.framework
+  ${QWT_WIN_LIBRARY_DIR}
+)
+
+# version
+set ( _VERSION_FILE ${QWT_INCLUDE_DIR}/qwt_global.h )
+file ( STRINGS ${_VERSION_FILE} _VERSION_LINE REGEX "define[ ]+QWT_VERSION_STR" )
+if ( _VERSION_LINE )
+  string ( REGEX REPLACE ".*define[ ]+QWT_VERSION_STR[ ]+\"(.*)\".*" "\\1"
+      QWT_VERSION_STRING "${_VERSION_LINE}" )
+  string ( REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\1"
+      QWT_MAJOR_VERSION "${QWT_VERSION_STRING}" )
+  string ( REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\2"
+      QWT_MINOR_VERSION "${QWT_VERSION_STRING}" )
+  string ( REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\3"
+      QWT_PATCH_VERSION "${QWT_VERSION_STRING}" )
+  set(QWT_VERSION
+    ${QWT_MAJOR_VERSION}.${QWT_MINOR_VERSION}.${QWT_PATCH_VERSION})
+endif ()
+
+# in Windows, the path need to point to the parent to get correct qwt/foo headers
+if (WIN32)
+  SET(QWT_INCLUDE_DIR "${QWT_INCLUDE_DIR}\\..")
+endif()
+
+if (QWT_INCLUDE_DIR AND QWT_LIBRARY AND (NOT ${QWT_VERSION} VERSION_LESS 6.1.0))
+  message (STATUS "Looking for qwt - found: version ${QWT_VERSION}")
+else()
+  message (STATUS "Looking for qwt >= 6.1.0 - not found")
+  BUILD_ERROR ("Missing: libqwt-dev. Required for plotting.")
+endif ()

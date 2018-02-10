@@ -14,12 +14,12 @@
  * limitations under the License.
  *
 */
-#ifndef _LASERVIEW_HH_
-#define _LASERVIEW_HH_
+#ifndef GAZEBO_GUI_VIEWERS_LASERVIEW_HH_
+#define GAZEBO_GUI_VIEWERS_LASERVIEW_HH_
 
 #include <string>
 #include <vector>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 
 #include "gazebo/common/Time.hh"
 #include "gazebo/msgs/msgs.hh"
@@ -40,7 +40,7 @@ namespace gazebo
 
       /// \brief Constructor
       /// \param[in] _parent Pointer to the parent widget.
-      public: LaserView(QWidget *_parent = NULL);
+      public: explicit LaserView(QWidget *_parent = NULL);
 
       /// \brief Destructor
       public: virtual ~LaserView();
@@ -110,6 +110,9 @@ namespace gazebo
                              double _angleStep, double _rangeMax,
                              double _rangeMin);
 
+                 /// \brief Update Qt geometry and bounding box
+                 public: void UpdateGeometry();
+
                  /// \brief A QT pure virtual function that must be defined.
                  /// This calls GetBoundingRect.
                  private: virtual QRectF boundingRect() const;
@@ -177,7 +180,10 @@ namespace gazebo
                  public: bool radians;
 
                  /// \brief Mutex to protect the laser data.
-                 private: mutable boost::mutex mutex;
+                 private: mutable std::mutex mutex;
+
+                 /// \brief Flag to indicate there are new range values.
+                 private: bool dirty = false;
                };
 
       /// \brief This class exists so that we can properly capture the
@@ -186,7 +192,7 @@ namespace gazebo
                {
                  /// \brief Constructor
                  /// \param[in] _parent Pointer to the parent widget.
-                 public: CustomView(QWidget *_parent)
+                 public: explicit CustomView(QWidget *_parent)
                          : QGraphicsView(_parent), viewZoomed(false) {}
 
                  /// \brief QT callback. Used when a wheel event occurs.

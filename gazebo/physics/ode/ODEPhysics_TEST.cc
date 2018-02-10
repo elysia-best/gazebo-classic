@@ -44,15 +44,15 @@ TEST_F(ODEPhysics_TEST, PhysicsParam)
   std::string physicsEngineStr = "ode";
   Load("worlds/empty.world", true, physicsEngineStr);
   WorldPtr world = get_world("default");
-  ASSERT_TRUE(world != NULL);
+  ASSERT_TRUE(world != nullptr);
 
-  PhysicsEnginePtr physics = world->GetPhysicsEngine();
-  ASSERT_TRUE(physics != NULL);
+  PhysicsEnginePtr physics = world->Physics();
+  ASSERT_TRUE(physics != nullptr);
   EXPECT_EQ(physics->GetType(), physicsEngineStr);
 
   ODEPhysicsPtr odePhysics
       = boost::static_pointer_cast<ODEPhysics>(physics);
-  ASSERT_TRUE(odePhysics != NULL);
+  ASSERT_TRUE(odePhysics != nullptr);
 
   std::string type = "quick";
   int preconIters = 5;
@@ -301,6 +301,25 @@ TEST_F(ODEPhysics_TEST, PhysicsParam)
     EXPECT_EQ(param, frictionModel);
   }
 
+  // Test island_threads
+  {
+    // island_threads should be 0 by default
+    int islandThreads = 1;
+    EXPECT_NO_THROW(islandThreads =
+      boost::any_cast<int>(odePhysics->GetParam("island_threads")));
+    EXPECT_FALSE(islandThreads);
+
+    // try enabling threads, then disabling
+    std::vector<int> threads = {1, 2, 3, 0};
+    for (auto const islandThreadsSet : threads)
+    {
+      odePhysics->SetParam("island_threads", islandThreadsSet);
+      EXPECT_NO_THROW(islandThreads =
+        boost::any_cast<int>(odePhysics->GetParam("island_threads")));
+      EXPECT_EQ(islandThreads, islandThreadsSet);
+    }
+  }
+
   // Test ode_quiet
   // convenient for disabling LCP internal error messages from world solver
   {
@@ -371,10 +390,10 @@ void ODEPhysics_TEST::PhysicsMsgParam()
   std::string physicsEngineStr = "ode";
   Load("worlds/empty.world", false, physicsEngineStr);
   physics::WorldPtr world = physics::get_world("default");
-  ASSERT_TRUE(world != NULL);
+  ASSERT_TRUE(world != nullptr);
 
-  physics::PhysicsEnginePtr engine = world->GetPhysicsEngine();
-  ASSERT_TRUE(engine != NULL);
+  physics::PhysicsEnginePtr engine = world->Physics();
+  ASSERT_TRUE(engine != nullptr);
 
   transport::NodePtr phyNode;
   phyNode = transport::NodePtr(new transport::Node());

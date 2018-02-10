@@ -17,8 +17,8 @@ if(HAVE_BULLET)
   link_directories ( ${BULLET_LIBRARY_DIRS} )
 endif()
 if(HAVE_DART)
-  include_directories ( ${DARTCore_INCLUDE_DIRS} )
-  link_directories ( ${DARTCore_LIBRARY_DIRS} )
+  include_directories ( ${DART_INCLUDE_DIRS} )
+  link_directories ( ${DART_LIBRARY_DIRS} )
 endif()
 
 set(tests
@@ -54,8 +54,7 @@ set(dri_tests
 )
 gz_build_dri_tests(${dri_tests} EXTRA_LIBS gazebo_test_fixture)
 
-if (ENABLE_TESTS_COMPILATION)
-  add_dependencies(${TEST_TYPE}_1112_force_torque_model_removal
-                   ForceTorqueModelRemovalTestPlugin)
-  add_dependencies(${TEST_TYPE}_1208_world_plugin_init Issue1208Plugin)
-endif()
+add_dependencies(${TEST_TYPE}_1112_force_torque_model_removal
+                 ForceTorqueModelRemovalTestPlugin)
+add_dependencies(${TEST_TYPE}_1208_world_plugin_init
+                 Issue1208Plugin)

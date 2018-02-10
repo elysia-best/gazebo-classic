@@ -19,7 +19,10 @@
   // Ensure that Winsock2.h is included before Windows.h, which can get
   // pulled in by anybody (e.g., Boost).
   #include <Winsock2.h>
-  #define snprintf _snprintf
+  // snprintf is available since VS 2015
+  #if defined(_MSC_VER) && (_MSC_VER < 1900)
+    #define snprintf _snprintf
+  #endif
 #endif
 
 #include <stdio.h>
@@ -176,6 +179,8 @@ bool Server::ParseArgs(int _argc, char **_argv)
     // <some_gui_plugin.so> as a world file.
     ("gui-plugin,g", po::value<std::vector<std::string> >(),
      "Gui plugin ignored.")
+    ("gui-client-plugin", po::value<std::vector<std::string> >(),
+     "Gui plugin ignored.")
     ("world_file", po::value<std::string>(), "SDF world to load.")
     ("pass_through", po::value<std::vector<std::string> >(),
      "not used, passed through to system plugins.");
@@ -230,7 +235,6 @@ bool Server::ParseArgs(int _argc, char **_argv)
   {
     try
     {
-      math::Rand::SetSeed(this->dataPtr->vm["seed"].as<double>());
       ignition::math::Rand::Seed(this->dataPtr->vm["seed"].as<double>());
     }
     catch(boost::bad_any_cast &_e)
@@ -275,11 +279,6 @@ bool Server::ParseArgs(int _argc, char **_argv)
         this->dataPtr->vm["iters"].as<unsigned int>() << "]\n";
     }
   }
-
-  if (this->dataPtr->vm.count("pause"))
-    this->dataPtr->params["pause"] = "true";
-  else
-    this->dataPtr->params["pause"] = "false";
 
   if (!this->PreLoad())
   {
@@ -344,9 +343,9 @@ bool Server::ParseArgs(int _argc, char **_argv)
     if (this->dataPtr->vm.count("profile"))
     {
       std::string profileName = this->dataPtr->vm["profile"].as<std::string>();
-      if (physics::get_world()->GetPresetManager()->HasProfile(profileName))
+      if (physics::get_world()->PresetMgr()->HasProfile(profileName))
       {
-        physics::get_world()->GetPresetManager()->CurrentProfile(profileName);
+        physics::get_world()->PresetMgr()->CurrentProfile(profileName);
         gzmsg << "Setting physics profile to [" << profileName << "]."
               << std::endl;
       }
@@ -585,36 +584,14 @@ void Server::Run()
 /////////////////////////////////////////////////
 void Server::ProcessParams()
 {
+  bool p = this->dataPtr->vm.count("pause") > 0;
+  physics::pause_worlds(p);
   common::StrStr_M::const_iterator iter;
   for (iter = this->dataPtr->params.begin();
        iter != this->dataPtr->params.end();
        ++iter)
   {
-    if (iter->first == "pause")
-    {
-      bool p = false;
-      try
-      {
-        p = boost::lexical_cast<bool>(iter->second);
-      }
-      catch(...)
-      {
-        // Unable to convert via lexical_cast, so try "true/false" string
-        std::string str = iter->second;
-        boost::to_lower(str);
-
-        if (str == "true")
-          p = true;
-        else if (str == "false")
-          p = false;
-        else
-          gzerr << "Invalid param value[" << iter->first << ":"
-                << iter->second << "]\n";
-      }
-
-      physics::pause_worlds(p);
-    }
-    else if (iter->first == "record")
+    if (iter->first == "record")
     {
       util::LogRecordParams params;
 

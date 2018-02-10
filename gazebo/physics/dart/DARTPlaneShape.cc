@@ -27,7 +27,7 @@ using namespace gazebo;
 using namespace physics;
 
 //////////////////////////////////////////////////
-DARTPlaneShape::DARTPlaneShape(CollisionPtr _parent)
+DARTPlaneShape::DARTPlaneShape(DARTCollisionPtr _parent)
   : PlaneShape(_parent),
     dataPtr(new DARTPlaneShapePrivate())
 {
@@ -37,29 +37,38 @@ DARTPlaneShape::DARTPlaneShape(CollisionPtr _parent)
 DARTPlaneShape::~DARTPlaneShape()
 {
   delete this->dataPtr;
+  this->dataPtr = nullptr;
+}
+
+//////////////////////////////////////////////////
+void DARTPlaneShape::Init()
+{
+  BasePtr _parent = GetParent();
+  GZ_ASSERT(boost::dynamic_pointer_cast<DARTCollision>(_parent),
+            "Parent must be a DARTCollisionPtr");
+  DARTCollisionPtr _collisionParent =
+    boost::static_pointer_cast<DARTCollision>(_parent);
+
+  dart::dynamics::BodyNodePtr bodyNode = _collisionParent->DARTBodyNode();
+  if (!bodyNode) gzerr << "BodyNode is NULL in init!\n";
+  GZ_ASSERT(bodyNode, "BodyNode is NULL in init!");
+
+  this->dataPtr->CreateShape(bodyNode);
+
+  _collisionParent->SetDARTCollisionShapeNode(this->dataPtr->ShapeNode(),
+                                              false);
+
+  PlaneShape::Init();
 }
 
 //////////////////////////////////////////////////
 void DARTPlaneShape::CreatePlane()
 {
   PlaneShape::CreatePlane();
-
-  DARTCollisionPtr dartCollisionParent =
-      boost::dynamic_pointer_cast<DARTCollision>(this->collisionParent);
-
-  // math::Vector3 n = this->GetNormal();
-
-  dart::dynamics::BodyNode *dtBodyNode =
-      dartCollisionParent->GetDARTBodyNode();
-  dart::dynamics::BoxShape *dtBoxShape =
-      new dart::dynamics::BoxShape(Eigen::Vector3d(2100, 2100, 0.01));
-  dtBodyNode->addCollisionShape(dtBoxShape);
-  dtBoxShape->setOffset(Eigen::Vector3d(0.0, 0.0, -0.005));
-  dartCollisionParent->SetDARTCollisionShape(dtBoxShape, false);
 }
 
 //////////////////////////////////////////////////
-void DARTPlaneShape::SetAltitude(const math::Vector3 &_pos)
+void DARTPlaneShape::SetAltitude(const ignition::math::Vector3d &_pos)
 {
   PlaneShape::SetAltitude(_pos);
 }
