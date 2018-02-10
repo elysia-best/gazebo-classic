@@ -47,34 +47,17 @@ Last-Update: 2016-10-26
 +endif(GTEST_FOUND)
 
 diff --git a/cmake/GazeboUtils.cmake b/cmake/GazeboUtils.cmake
-index 495f06c..1fb5aee 100644
+index 974a6d2..764dd28 100644
 --- a/cmake/GazeboUtils.cmake
 +++ b/cmake/GazeboUtils.cmake
-@@ -197,11 +197,6 @@ macro (gz_setup_apple)
-   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined -Wl,dynamic_lookup")
- endmacro()
- 
--# This should be migrated to more fine control solution based on set_property APPEND
--# directories. It's present on cmake 2.8.8 while precise version is 2.8.7
--link_directories(${PROJECT_BINARY_DIR}/test)
+@@ -193,7 +193,6 @@ endmacro()
+ # This should be migrated to more fine control solution based on set_property APPEND
+ # directories. It's present on cmake 2.8.8 while precise version is 2.8.7
+ link_directories(${PROJECT_BINARY_DIR}/test)
 -include_directories("${PROJECT_SOURCE_DIR}/test/gtest/include")
--
- #################################################
- # Enable tests compilation by default
- if (NOT DEFINED ENABLE_TESTS_COMPILATION)
-diff --git a/gazebo/test/ServerFixtureRecord.cc b/gazebo/test/ServerFixtureRecord.cc
-index dba4a4f..01d2b4c 100644
---- a/gazebo/test/ServerFixtureRecord.cc
-+++ b/gazebo/test/ServerFixtureRecord.cc
-@@ -33,7 +33,7 @@ void ServerFixture::Record(const std::string &_name, const double _data)
- {
-   std::ostringstream stream;
-   stream << _data;
--  RecordProperty(_name, stream.str());
-+  RecordProperty(_name.c_str(), stream.str());
- }
+ include (${gazebo_cmake_dir}/GazeboTestUtils.cmake)
  
- /////////////////////////////////////////////////
+ #################################################
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
 index 975bed1..3331607 100644
 --- a/test/CMakeLists.txt
