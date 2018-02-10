@@ -43,8 +43,7 @@ class PhysicsCollisionTest : public ServerFixture,
 /////////////////////////////////////////////////
 void PhysicsCollisionTest::GetBoundingBox(const std::string &_physicsEngine)
 {
-  if (_physicsEngine == "simbody" ||
-      _physicsEngine == "dart")
+  if (_physicsEngine == "simbody")
   {
     gzerr << "Bounding boxes not yet working with "
           << _physicsEngine
@@ -57,16 +56,72 @@ void PhysicsCollisionTest::GetBoundingBox(const std::string &_physicsEngine)
   physics::WorldPtr world = physics::get_world("default");
   ASSERT_TRUE(world != NULL);
 
-  // Check bounding box of ground plane
+  // Check bounding box of ground plane.
+  // Skip this test for DART because planes aren't handled properly yet.
+  // For this test to pass for DART, the following values would need to be set:
+  //    big = 1049;
+  //    z = 1050;
+  if (_physicsEngine != "dart")
   {
-    physics::ModelPtr model = world->GetModel("ground_plane");
-    math::Box box = model->GetBoundingBox();
-    EXPECT_LT(box.min.x, -g_big);
-    EXPECT_LT(box.min.y, -g_big);
-    EXPECT_LT(box.min.z, -g_big);
-    EXPECT_GT(box.max.x, g_big);
-    EXPECT_GT(box.max.y, g_big);
-    EXPECT_DOUBLE_EQ(box.max.z, 0.0);
+    double big = g_big;
+    double z = 0.0;
+
+    physics::ModelPtr model = world->ModelByName("ground_plane");
+    ASSERT_TRUE(model != nullptr);
+    ignition::math::Box box = model->BoundingBox();
+    EXPECT_LT(box.Min().X(), -big);
+    EXPECT_LT(box.Min().Y(), -big);
+    EXPECT_LT(box.Min().Z(), -big);
+    EXPECT_GT(box.Max().X(), big);
+    EXPECT_GT(box.Max().Y(), big);
+    EXPECT_DOUBLE_EQ(box.Max().Z(), z);
+  }
+
+  // Insert model which forms a t-shape, made up of two long boxes.
+  // The second box will have to be translated relative to the first to
+  // form the "roof" of the T. This tests whether the relative transforms
+  // of the collision shapes are considered when computing the bounding box.
+  // If they are not, the result would be that of a cross-shape instead.
+
+  std::ostringstream sdfStream;
+  sdfStream << "<sdf version='" << SDF_VERSION << "'>"
+    << "<model name ='model_tshape'>"
+    << "<static> true </static>"
+    << "<pose>0 0 0 0 0 0</pose>"
+    << "<link name=\"link\">"
+      << "<collision name=\"pose\">"
+        << "<pose>0 0.5 0 0 0 0</pose>"
+        << "<geometry>"
+          << "<box>"
+            << "<size>0.1 1 0.1</size>"
+          << "</box>"
+        << "</geometry>"
+      << "</collision>"
+      << "<collision name=\"top\">"
+        << "<pose>0 0.95 0 0 0 0</pose>"
+        << "<geometry>"
+          << "<box>"
+            << "<size>1 0.1 0.1</size>"
+          << "</box>"
+        << "</geometry>"
+      << "</collision>"
+    << "</link>"
+    << "</model>"
+    << "</sdf>";
+  SpawnSDF(sdfStream.str());
+
+  {
+    physics::ModelPtr model = world->ModelByName("model_tshape");
+    ASSERT_TRUE(model != nullptr);
+    ignition::math::Box box = model->BoundingBox();
+    gzdbg << "Bounding box for " << _physicsEngine << ": " << box << std::endl;
+    static double tol = 1e-03;
+    EXPECT_NEAR(box.Min().X(), -0.5, tol);
+    EXPECT_NEAR(box.Min().Y(), 0, tol);
+    EXPECT_NEAR(box.Min().Z(), -0.05, tol);
+    EXPECT_NEAR(box.Max().X(), 0.5, tol);
+    EXPECT_NEAR(box.Max().Y(), 1, tol);
+    EXPECT_NEAR(box.Max().Z(), 0.05, tol);
   }
 }
 
@@ -82,7 +137,7 @@ void PhysicsCollisionTest::PoseOffsets(const std::string &_physicsEngine)
   const double dz = 0.9;
 
   int modelCount = 0;
-  auto models = world->GetModels();
+  auto models = world->Models();
   for (auto model : models)
   {
     ASSERT_TRUE(model != nullptr);
@@ -98,38 +153,58 @@ void PhysicsCollisionTest::PoseOffsets(const std::string &_physicsEngine)
     auto link = model->GetLink();
     ASSERT_TRUE(link != nullptr);
 
-    const unsigned int index = 0;
+    // The following line used to be
+    // const unsigned int index = 0;
+    // but for some reason that version caused a C2666 error
+    // (overloading ambiguity) in Visual Studio 2015 in the following call:
+    // auto collision = link->GetCollision(index);
+    unsigned int index = 0;
     auto collision = link->GetCollision(index);
     ASSERT_TRUE(collision != nullptr);
+
+    // for box_3, also get link_2 and its collision
+    auto link2 = model->GetLink("link_2");
+    physics::CollisionPtr collision2;
+    if (i == 3)
+    {
+      EXPECT_NE(link2, nullptr);
+      collision2 = link2->GetCollision(index);
+      EXPECT_NE(collision2, nullptr);
+    }
+    else
+    {
+      EXPECT_EQ(link2, nullptr);
+    }
 
     // i=0: rotated model pose
     //  expect collision pose to match model pose
     if (i == 0)
     {
-      EXPECT_EQ(model->GetWorldPose(),
-                collision->GetWorldPose());
+      EXPECT_EQ(model->WorldPose(), collision->WorldPose());
     }
     // i=1: rotated link pose
     //  expect collision pose to match link pose
     else if (i == 1)
     {
-      EXPECT_EQ(link->GetWorldPose(),
-                collision->GetWorldPose());
+      EXPECT_EQ(link->WorldPose(), collision->WorldPose());
     }
     // i=2: rotated collision pose
     //  expect collision position to match link position
     else if (i == 2)
     {
-      EXPECT_EQ(link->GetWorldPose().pos,
-                collision->GetWorldPose().pos);
+      EXPECT_EQ(link->WorldPose().Pos(), collision->WorldPose().Pos());
     }
     // i=3: offset collision pose
     //  expect collision postion to match link position plus offset
     else if (i == 3)
     {
       ignition::math::Pose3d collisionPose(0, 0, dz, 0, 0, 0);
-      EXPECT_EQ(link->GetWorldPose().Ign().Pos() + collisionPose.Pos(),
-                collision->GetWorldPose().Ign().Pos());
+      EXPECT_EQ(link->WorldPose().Pos() + collisionPose.Pos(),
+                collision->WorldPose().Pos());
+
+      // collision2 pose should match link2 pose
+      EXPECT_EQ(link2->WorldPose().Pos(),
+                collision2->WorldPose().Pos());
     }
   }
   EXPECT_EQ(modelCount, 4);
@@ -157,14 +232,29 @@ void PhysicsCollisionTest::PoseOffsets(const std::string &_physicsEngine)
     auto collision = link->GetCollision(index);
     ASSERT_TRUE(collision != nullptr);
 
-    // For 0-2, drop and expect box to rest at specific height
-    if (i <= 2)
+    // for box_3, also get link_2 and its collision
+    auto link2 = model->GetLink("link_2");
+    physics::CollisionPtr collision2;
+    if (i == 3)
     {
-      EXPECT_NEAR(collision->GetWorldPose().pos.z, dy/2, g_physics_tol);
+      EXPECT_NE(link2, nullptr);
+      collision2 = link2->GetCollision(index);
+      EXPECT_NE(collision2, nullptr);
     }
     else
     {
-      EXPECT_NEAR(collision->GetWorldPose().pos.z, dz/2, g_physics_tol);
+      EXPECT_EQ(link2, nullptr);
+    }
+
+    // For 0-2, drop and expect box to rest at specific height
+    if (i <= 2)
+    {
+      EXPECT_NEAR(collision->WorldPose().Pos().Z(), dy/2, g_physics_tol);
+    }
+    else
+    {
+      EXPECT_NEAR(collision->WorldPose().Pos().Z(), dz/2, g_physics_tol);
+      EXPECT_NEAR(collision2->WorldPose().Pos().Z(), dz/2, g_physics_tol);
     }
   }
 }
@@ -178,14 +268,14 @@ TEST_F(PhysicsCollisionTest, ModelSelfCollide)
   ASSERT_TRUE(world != NULL);
 
   // check the gravity vector
-  physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+  physics::PhysicsEnginePtr physics = world->Physics();
   ASSERT_TRUE(physics != NULL);
 
-  math::Vector3 g = physics->GetGravity();
+  auto g = world->Gravity();
   // Assume gravity vector points down z axis only.
-  EXPECT_EQ(g.x, 0);
-  EXPECT_EQ(g.y, 0);
-  EXPECT_LE(g.z, -9.8);
+  EXPECT_EQ(g.X(), 0);
+  EXPECT_EQ(g.Y(), 0);
+  EXPECT_LE(g.Z(), -9.8);
 
   // get physics time step
   double dt = physics->GetMaxStepSize();
@@ -200,7 +290,7 @@ TEST_F(PhysicsCollisionTest, ModelSelfCollide)
   for (auto &iter : models)
   {
     gzdbg << "Getting model " << iter.first << std::endl;
-    iter.second = world->GetModel(iter.first);
+    iter.second = world->ModelByName(iter.first);
     ASSERT_TRUE(iter.second != NULL);
   }
 
@@ -210,7 +300,7 @@ TEST_F(PhysicsCollisionTest, ModelSelfCollide)
   world->Step(steps);
 
   // Expect boxes to be falling
-  double fallVelocity = g.z * stepTime;
+  double fallVelocity = g.Z() * stepTime;
   for (auto &iter : models)
   {
     auto links = iter.second->GetLinks();
@@ -218,7 +308,7 @@ TEST_F(PhysicsCollisionTest, ModelSelfCollide)
     {
       ASSERT_TRUE(link != NULL);
       gzdbg << "Check falling: " << link->GetScopedName() << std::endl;
-      EXPECT_LT(link->GetWorldLinearVel().z, fallVelocity*(1-g_physics_tol));
+      EXPECT_LT(link->WorldLinearVel().Z(), fallVelocity*(1-g_physics_tol));
     }
   }
 
@@ -233,27 +323,27 @@ TEST_F(PhysicsCollisionTest, ModelSelfCollide)
     {
       ASSERT_TRUE(link != NULL);
       gzdbg << "Check resting: " << link->GetScopedName() << std::endl;
-      EXPECT_NEAR(link->GetWorldLinearVel().z, 0, g_physics_tol);
+      EXPECT_NEAR(link->WorldLinearVel().Z(), 0, g_physics_tol);
     }
   }
 
   gzdbg << "Check resting positions" << std::endl;
 
   // link2 of all_collide should have the highest z-coordinate (around 3)
-  EXPECT_NEAR(models["all_collide"]->GetLink("link2")->GetWorldPose().pos.z,
+  EXPECT_NEAR(models["all_collide"]->GetLink("link2")->WorldPose().Pos().Z(),
               2.5, g_physics_tol);
 
   // link2 of some_collide should have a middling z-coordinate (around 2)
-  EXPECT_NEAR(models["some_collide"]->GetLink("link2")->GetWorldPose().pos.z,
+  EXPECT_NEAR(models["some_collide"]->GetLink("link2")->WorldPose().Pos().Z(),
               1.5, g_physics_tol);
 
   // link2 of no_collide should have a low z-coordinate (around 1)
-  EXPECT_NEAR(models["no_collide"]->GetLink("link2")->GetWorldPose().pos.z,
+  EXPECT_NEAR(models["no_collide"]->GetLink("link2")->WorldPose().Pos().Z(),
               0.5, g_physics_tol);
 
   // link2 of explicit_no_collide should have the same z-coordinate as above
-  EXPECT_NEAR(models["no_collide"]->GetLink("link2")->GetWorldPose().pos.z,
-     models["explicit_no_collide"]->GetLink("link2")->GetWorldPose().pos.z,
+  EXPECT_NEAR(models["no_collide"]->GetLink("link2")->WorldPose().Pos().Z(),
+     models["explicit_no_collide"]->GetLink("link2")->WorldPose().Pos().Z(),
      g_physics_tol);
 
   Unload();

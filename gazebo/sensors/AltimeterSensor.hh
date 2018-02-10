@@ -23,7 +23,6 @@
 #include <sdf/sdf.hh>
 
 #include "gazebo/sensors/Sensor.hh"
-#include "gazebo/common/CommonTypes.hh"
 #include "gazebo/physics/PhysicsTypes.hh"
 #include "gazebo/sensors/SensorTypes.hh"
 #include "gazebo/transport/TransportTypes.hh"
@@ -40,7 +39,7 @@ namespace gazebo
     /// \{
 
     /// \brief AltimeterSensor to provide vertical position and velocity
-    class GAZEBO_VISIBLE AltimeterSensor: public Sensor
+    class GZ_SENSORS_VISIBLE AltimeterSensor: public Sensor
     {
       /// \brief Constructor.
       public: AltimeterSensor();

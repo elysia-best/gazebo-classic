@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 */
-
-#ifndef _SIMBODY_PLANESHAPE_HH_
-#define _SIMBODY_PLANESHAPE_HH_
+#ifndef GAZEBO_PHYSICS_SIMBODY_SIMBODYPLANESHAPE_HH_
+#define GAZEBO_PHYSICS_SIMBODY_SIMBODYPLANESHAPE_HH_
 
 #include "gazebo/physics/PlaneShape.hh"
 #include "gazebo/util/system.hh"
@@ -33,13 +32,13 @@ namespace gazebo
     class GZ_PHYSICS_VISIBLE SimbodyPlaneShape : public PlaneShape
     {
       /// \brief Constructor
-      public: SimbodyPlaneShape(CollisionPtr _parent);
+      public: explicit SimbodyPlaneShape(CollisionPtr _parent);
 
       /// \brief Destructor
       public: virtual ~SimbodyPlaneShape();
 
       // Documentation inherited
-      public: virtual void SetAltitude(const math::Vector3 &_pos);
+      public: virtual void SetAltitude(const ignition::math::Vector3d &_pos);
 
       // Documentation inherited
       public: virtual void CreatePlane();

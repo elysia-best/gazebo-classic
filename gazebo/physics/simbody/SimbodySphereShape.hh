@@ -34,7 +34,8 @@ namespace gazebo
     {
       /// \brief Constructor
       /// \param[in] _parent Collision parent pointer
-      public: SimbodySphereShape(CollisionPtr _parent) : SphereShape(_parent) {}
+      public: explicit SimbodySphereShape(CollisionPtr _parent)
+              : SphereShape(_parent) {}
 
       /// \brief Destructor
       public: virtual ~SimbodySphereShape() {}
@@ -47,7 +48,7 @@ namespace gazebo
                   gzerr << "Sphere shape does not support negative radius\n";
                   return;
                 }
-                if (math::equal(_radius, 0.0))
+                if (ignition::math::equal(_radius, 0.0))
                 {
                   // Warn user, but still create shape with very small value
                   // otherwise later resize operations using setLocalScaling

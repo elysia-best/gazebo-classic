@@ -16,8 +16,8 @@
  */
 
 #include <gazebo/gazebo.hh>
-#include <gazebo/math/Vector3.hh>
-#include <gazebo/common/Color.hh>
+#include <ignition/math/Color.hh>
+#include <ignition/math/Vector3.hh>
 
 namespace gazebo
 {
@@ -25,8 +25,8 @@ namespace gazebo
   {
     public: WorldPluginTutorial() : WorldPlugin()
             {
-              common::Color c(0, 0, 0);
-              math::Vector3 v;
+              ignition::math::Color c(0, 0, 0);
+              ignition::math::Vector3d v;
               printf("Hello World!\n");
             }
 

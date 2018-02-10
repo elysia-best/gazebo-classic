@@ -146,8 +146,10 @@ void DepthCamera::CreateDepthTexture(const std::string &_textureName)
     this->dataPtr->pcdViewport =
         this->dataPtr->pcdTarget->addViewport(this->camera);
     this->dataPtr->pcdViewport->setClearEveryFrame(true);
+
+    auto const &ignBG = this->scene->BackgroundColor();
     this->dataPtr->pcdViewport->setBackgroundColour(
-        Conversions::Convert(this->scene->BackgroundColor()));
+        Conversions::Convert(ignBG));
     this->dataPtr->pcdViewport->setOverlaysEnabled(false);
     this->dataPtr->pcdViewport->setVisibilityMask(
         GZ_VISIBILITY_ALL & ~(GZ_VISIBILITY_GUI | GZ_VISIBILITY_SELECTABLE));
@@ -271,8 +273,9 @@ void DepthCamera::UpdateRenderTarget(Ogre::RenderTarget *_target,
 
   vp = _target->getViewport(0);
 
-  // return 0 in case no renderable object is inside frustrum
-  vp->setBackgroundColour(Ogre::ColourValue(Ogre::ColourValue(0, 0, 0)));
+  // return farClip in case no renderable object is inside frustrum
+  vp->setBackgroundColour(Ogre::ColourValue(this->FarClip(),
+      this->FarClip(), this->FarClip()));
 
   Ogre::CompositorManager::getSingleton().setCompositorEnabled(
                                                 vp, _matName, true);
@@ -368,12 +371,6 @@ void DepthCamera::RenderImpl()
 }
 
 //////////////////////////////////////////////////
-const float* DepthCamera::GetDepthData()
-{
-  return this->DepthData();
-}
-
-//////////////////////////////////////////////////
 const float* DepthCamera::DepthData() const
 {
   return this->dataPtr->depthBuffer;
@@ -389,8 +386,8 @@ void DepthCamera::SetDepthTarget(Ogre::RenderTarget *_target)
     // Setup the viewport to use the texture
     this->depthViewport = this->depthTarget->addViewport(this->camera);
     this->depthViewport->setClearEveryFrame(true);
-    this->depthViewport->setBackgroundColour(
-        Conversions::Convert(this->scene->BackgroundColor()));
+    auto const &ignBG = this->scene->BackgroundColor();
+    this->depthViewport->setBackgroundColour(Conversions::Convert(ignBG));
     this->depthViewport->setVisibilityMask(
         GZ_VISIBILITY_ALL & ~(GZ_VISIBILITY_GUI | GZ_VISIBILITY_SELECTABLE));
 
@@ -414,21 +411,9 @@ event::ConnectionPtr DepthCamera::ConnectNewDepthFrame(
 }
 
 //////////////////////////////////////////////////
-void DepthCamera::DisconnectNewDepthFrame(event::ConnectionPtr &_c)
-{
-  this->dataPtr->newDepthFrame.Disconnect(_c);
-}
-
-//////////////////////////////////////////////////
 event::ConnectionPtr DepthCamera::ConnectNewRGBPointCloud(
     std::function<void (const float *, unsigned int, unsigned int, unsigned int,
     const std::string &)>  _subscriber)
 {
   return this->dataPtr->newRGBPointCloud.Connect(_subscriber);
-}
-
-//////////////////////////////////////////////////
-void DepthCamera::DisconnectNewRGBPointCloud(event::ConnectionPtr &_c)
-{
-  this->dataPtr->newRGBPointCloud.Disconnect(_c);
 }

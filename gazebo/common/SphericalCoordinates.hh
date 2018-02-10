@@ -23,9 +23,6 @@
 #include <ignition/math/Vector3.hh>
 
 #include "gazebo/common/CommonTypes.hh"
-#include "gazebo/math/Angle.hh"
-#include "gazebo/math/Vector3.hh"
-#include "gazebo/math/Matrix3.hh"
 #include "gazebo/util/system.hh"
 
 namespace gazebo
@@ -72,7 +69,7 @@ namespace gazebo
 
       /// \brief Constructor with surface type input.
       /// \param[in] _type SurfaceType specification.
-      public: SphericalCoordinates(const SurfaceType _type);
+      public: explicit SphericalCoordinates(const SurfaceType _type);
 
       /// \brief Constructor with surface type, angle, and elevation inputs.
       /// \param[in] _type SurfaceType specification.

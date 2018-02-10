@@ -29,21 +29,21 @@ class Issue346Test : public ServerFixture
 // \brief Test for issue #346
 TEST_F(Issue346Test, SaveLights)
 {
-  Load("worlds/empty.world", true);
+  this->Load("worlds/empty.world", true);
   physics::WorldPtr world = physics::get_world("default");
   ASSERT_TRUE(world != NULL);
 
   std::string spotLightName = "spot_light";
-  math::Vector3 spotLightPos(1, 2, 5);
-  math::Vector3 spotLightRot(0, 0, 0.5);
+  ignition::math::Vector3d spotLightPos(1, 2, 5);
+  ignition::math::Vector3d spotLightRot(0, 0, 0.5);
 
   std::string pointLightName = "point_light";
-  math::Vector3 pointLightPos(4, 3, 8);
-  math::Vector3 pointLightRot(0, 0.8, 0.1);
+  ignition::math::Vector3d pointLightPos(4, 3, 8);
+  ignition::math::Vector3d pointLightRot(0, 0.8, 0.1);
 
   // Spawn two lights: one spot light and one point light
-  SpawnLight(spotLightName, "spot", spotLightPos, spotLightRot);
-  SpawnLight(pointLightName, "point", pointLightPos, pointLightRot);
+  this->SpawnLight(spotLightName, "spot", spotLightPos, spotLightRot);
+  this->SpawnLight(pointLightName, "point", pointLightPos, pointLightRot);
 
   boost::filesystem::path pathOut(boost::filesystem::current_path());
   boost::filesystem::create_directories(pathOut /
@@ -69,18 +69,19 @@ TEST_F(Issue346Test, SaveLights)
   while (lightElem)
   {
     std::string name = lightElem->Get<std::string>("name");
-    math::Pose pose = lightElem->Get<math::Pose>("pose");
+    ignition::math::Pose3d pose =
+      lightElem->Get<ignition::math::Pose3d>("pose");
     if (name == spotLightName)
     {
       hasSpotLight++;
-      EXPECT_TRUE(pose.pos == spotLightPos);
-      EXPECT_TRUE(pose.rot == spotLightRot);
+      EXPECT_TRUE(pose.Pos() == spotLightPos);
+      EXPECT_TRUE(pose.Rot() == ignition::math::Quaterniond(spotLightRot));
     }
     else if (name == pointLightName)
     {
       hasPointLight++;
-      EXPECT_TRUE(pose.pos == pointLightPos);
-      EXPECT_TRUE(pose.rot == pointLightRot);
+      EXPECT_TRUE(pose.Pos() == pointLightPos);
+      EXPECT_TRUE(pose.Rot() == ignition::math::Quaterniond(pointLightRot));
     }
     lightElem = lightElem->GetNextElement("light");
   }

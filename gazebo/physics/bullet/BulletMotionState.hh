@@ -24,8 +24,6 @@
 
 #include "gazebo/physics/bullet/bullet_inc.h"
 #include "gazebo/physics/PhysicsTypes.hh"
-#include "gazebo/math/MathTypes.hh"
-#include "gazebo/math/Pose.hh"
 #include "gazebo/util/system.hh"
 
 namespace gazebo
@@ -42,7 +40,7 @@ namespace gazebo
     class GZ_PHYSICS_VISIBLE BulletMotionState : public btMotionState
     {
       /// \brief Constructor
-      public: BulletMotionState(LinkPtr _link);
+      public: explicit BulletMotionState(LinkPtr _link);
 
       /// \brief Destructor
       public: virtual ~BulletMotionState();

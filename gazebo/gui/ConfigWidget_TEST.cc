@@ -18,10 +18,6 @@
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>
 
-#include "gazebo/math/Box.hh"
-#include "gazebo/math/Vector3.hh"
-#include "gazebo/math/Pose.hh"
-
 #include "gazebo/msgs/msgs.hh"
 
 #include "gazebo/gui/GuiIface.hh"
@@ -124,11 +120,11 @@ void ConfigWidget_TEST::JointMsgWidget()
     QCOMPARE(posMsg.y(), -1.0);
     QCOMPARE(posMsg.z(), 3.5);
     const gazebo::msgs::Quaternion quatMsg = poseMsg.orientation();
-    gazebo::math::Quaternion quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
+    ignition::math::Quaterniond quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
         quatMsg.z());
-    QCOMPARE(quat.GetAsEuler().x, 0.0);
-    QCOMPARE(quat.GetAsEuler().y, 1.57);
-    QCOMPARE(quat.GetAsEuler().z, 0.0);
+    QCOMPARE(quat.Euler().X(), 0.0);
+    QCOMPARE(quat.Euler().Y(), 1.57);
+    QCOMPARE(quat.Euler().Z(), 0.0);
 
     // axis1
     gazebo::msgs::Axis *axisMsg = jointMsg.mutable_axis1();
@@ -294,11 +290,11 @@ void ConfigWidget_TEST::JointMsgWidget()
     QCOMPARE(posMsg.y(), 9.0);
     QCOMPARE(posMsg.z(), -4.0);
     const gazebo::msgs::Quaternion quatMsg = poseMsg.orientation();
-    gazebo::math::Quaternion quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
+    ignition::math::Quaterniond quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
         quatMsg.z());
-    QCOMPARE(quat.GetAsEuler().x, 0.0);
-    QCOMPARE(quat.GetAsEuler().y, 0.0);
-    QCOMPARE(quat.GetAsEuler().z, 1.57);
+    QCOMPARE(quat.Euler().X(), 0.0);
+    QCOMPARE(quat.Euler().Y(), 0.0);
+    QCOMPARE(quat.Euler().Z(), 1.57);
 
     // axis1
     gazebo::msgs::Axis *axisMsg = retJointMsg->mutable_axis1();
@@ -430,11 +426,11 @@ void ConfigWidget_TEST::JointMsgWidget()
     QCOMPARE(posMsg.y(), 1.0);
     QCOMPARE(posMsg.z(), 2.0);
     const gazebo::msgs::Quaternion quatMsg = poseMsg.orientation();
-    gazebo::math::Quaternion quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
+    ignition::math::Quaterniond quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
         quatMsg.z());
-    QCOMPARE(quat.GetAsEuler().x, 0.0);
-    QCOMPARE(quat.GetAsEuler().y, 0.0);
-    QCOMPARE(quat.GetAsEuler().z, 0.0);
+    QCOMPARE(quat.Euler().X(), 0.0);
+    QCOMPARE(quat.Euler().Y(), 0.0);
+    QCOMPARE(quat.Euler().Z(), 0.0);
 
     // other joint physics properties
     QCOMPARE(retJointMsg->cfm(), 0.19);
@@ -492,13 +488,13 @@ void ConfigWidget_TEST::VisualMsgWidget()
         gazebo::msgs::Material::Material::VERTEX);
     materialMsg->set_normal_map("test_normal_map");
     gazebo::msgs::Set(materialMsg->mutable_ambient(),
-        gazebo::common::Color(0.0, 1.0, 0.0, 1.0));
+        ignition::math::Color(0.0, 1.0, 0.0, 1.0));
     gazebo::msgs::Set(materialMsg->mutable_diffuse(),
-        gazebo::common::Color(0.0, 1.0, 1.0, 0.4));
+        ignition::math::Color(0.0, 1.0, 1.0, 0.4));
     gazebo::msgs::Set(materialMsg->mutable_specular(),
-        gazebo::common::Color(1.0, 1.0, 1.0, 0.6));
+        ignition::math::Color(1.0, 1.0, 1.0, 0.6));
     gazebo::msgs::Set(materialMsg->mutable_emissive(),
-        gazebo::common::Color(0.0, 0.5, 0.2, 1.0));
+        ignition::math::Color(0.0, 0.5, 0.2, 1.0));
     materialMsg->set_lighting(true);
     // material::script
     gazebo::msgs::Material::Script *scriptMsg = materialMsg->mutable_script();
@@ -537,11 +533,11 @@ void ConfigWidget_TEST::VisualMsgWidget()
     QCOMPARE(posMsg.y(), 3.0);
     QCOMPARE(posMsg.z(), 4.0);
     const gazebo::msgs::Quaternion quatMsg = poseMsg.orientation();
-    gazebo::math::Quaternion quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
+    ignition::math::Quaterniond quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
         quatMsg.z());
-    QCOMPARE(quat.GetAsEuler().x, 1.57);
-    QCOMPARE(quat.GetAsEuler().y, 0.0);
-    QCOMPARE(quat.GetAsEuler().z, 0.0);
+    QCOMPARE(quat.Euler().X(), 1.57);
+    QCOMPARE(quat.Euler().Y(), 0.0);
+    QCOMPARE(quat.Euler().Z(), 0.0);
 
     // geometry
     const gazebo::msgs::Geometry geometryMsg = retVisualMsg->geometry();
@@ -614,13 +610,13 @@ void ConfigWidget_TEST::VisualMsgWidget()
     visualConfigWidget->SetStringWidgetValue("material::normal_map",
         "test_normal_map_updated");
     visualConfigWidget->SetColorWidgetValue("material::ambient",
-        gazebo::common::Color(0.2, 0.3, 0.4, 0.5));
+        ignition::math::Color(0.2, 0.3, 0.4, 0.5));
     visualConfigWidget->SetColorWidgetValue("material::diffuse",
-        gazebo::common::Color(0.1, 0.8, 0.6, 0.4));
+        ignition::math::Color(0.1, 0.8, 0.6, 0.4));
     visualConfigWidget->SetColorWidgetValue("material::specular",
-        gazebo::common::Color(0.5, 0.4, 0.3, 0.2));
+        ignition::math::Color(0.5, 0.4, 0.3, 0.2));
     visualConfigWidget->SetColorWidgetValue("material::emissive",
-        gazebo::common::Color(0.4, 0.6, 0.8, 0.1));
+        ignition::math::Color(0.4, 0.6, 0.8, 0.1));
     visualConfigWidget->SetBoolWidgetValue("material::lighting", false);
     // material::script
     visualConfigWidget->SetStringWidgetValue("material::script::name",
@@ -660,13 +656,13 @@ void ConfigWidget_TEST::VisualMsgWidget()
     QVERIFY(visualConfigWidget->StringWidgetValue("material::normal_map") ==
         "test_normal_map_updated");
     QCOMPARE(visualConfigWidget->ColorWidgetValue("material::ambient"),
-        gazebo::common::Color(0.2, 0.3, 0.4, 0.5));
+        ignition::math::Color(0.2, 0.3, 0.4, 0.5));
     QCOMPARE(visualConfigWidget->ColorWidgetValue("material::diffuse"),
-        gazebo::common::Color(0.1, 0.8, 0.6, 0.4));
+        ignition::math::Color(0.1, 0.8, 0.6, 0.4));
     QCOMPARE(visualConfigWidget->ColorWidgetValue("material::specular"),
-        gazebo::common::Color(0.5, 0.4, 0.3, 0.2));
+        ignition::math::Color(0.5, 0.4, 0.3, 0.2));
     QCOMPARE(visualConfigWidget->ColorWidgetValue("material::emissive"),
-        gazebo::common::Color(0.4, 0.6, 0.8, 0.1));
+        ignition::math::Color(0.4, 0.6, 0.8, 0.1));
     QCOMPARE(visualConfigWidget->BoolWidgetValue("material::lighting"),
         false);
     // material::script
@@ -702,11 +698,11 @@ void ConfigWidget_TEST::VisualMsgWidget()
     QCOMPARE(posMsg.y(), -3.0);
     QCOMPARE(posMsg.z(), -4.0);
     const gazebo::msgs::Quaternion quatMsg = poseMsg.orientation();
-    gazebo::math::Quaternion quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
+    ignition::math::Quaterniond quat(quatMsg.w(), quatMsg.x(), quatMsg.y(),
         quatMsg.z());
-    QCOMPARE(quat.GetAsEuler().x, 0.0);
-    QCOMPARE(quat.GetAsEuler().y, 1.57);
-    QCOMPARE(quat.GetAsEuler().z, 0.0);
+    QCOMPARE(quat.Euler().X(), 0.0);
+    QCOMPARE(quat.Euler().Y(), 1.57);
+    QCOMPARE(quat.Euler().Z(), 0.0);
 
     // geometry
     const gazebo::msgs::Geometry geometryMsg = retVisualMsg->geometry();
@@ -847,9 +843,9 @@ void ConfigWidget_TEST::ConfigWidgetVisible()
     // material
     gazebo::msgs::Material *materialMsg = visualMsg.mutable_material();
     gazebo::msgs::Set(materialMsg->mutable_ambient(),
-        gazebo::common::Color(0.0, 1.0, 0.0, 1.0));
+        ignition::math::Color(0.0, 1.0, 0.0, 1.0));
     gazebo::msgs::Set(materialMsg->mutable_diffuse(),
-        gazebo::common::Color(0.0, 1.0, 1.0, 0.4));
+        ignition::math::Color(0.0, 1.0, 1.0, 0.4));
 
     // material::script
     gazebo::msgs::Material::Script *scriptMsg = materialMsg->mutable_script();
@@ -1047,9 +1043,9 @@ void ConfigWidget_TEST::ConfigWidgetReadOnly()
     // material
     gazebo::msgs::Material *materialMsg = visualMsg.mutable_material();
     gazebo::msgs::Set(materialMsg->mutable_ambient(),
-        gazebo::common::Color(0.0, 1.0, 0.0, 1.0));
+        ignition::math::Color(0.0, 1.0, 0.0, 1.0));
     gazebo::msgs::Set(materialMsg->mutable_diffuse(),
-        gazebo::common::Color(0.0, 1.0, 1.0, 0.4));
+        ignition::math::Color(0.0, 1.0, 1.0, 0.4));
 
     // material::script
     gazebo::msgs::Material::Script *scriptMsg = materialMsg->mutable_script();
@@ -1197,7 +1193,7 @@ void ConfigWidget_TEST::CreatedExternally()
   std::string stringValue("123");
   bool boolValue = true;
   ignition::math::Vector3d vector3dValue(1, 2, 3);
-  gazebo::common::Color colorValue(0.1, 0.2, 0.3, 0.4);
+  ignition::math::Color colorValue(0.1, 0.2, 0.3, 0.4);
   ignition::math::Pose3d poseValue(1, 2, 3, 0.1, 0.2, 0.3);
   std::string enumValue("value2");
   std::string customValue("123456789");
@@ -1615,13 +1611,13 @@ void ConfigWidget_TEST::ChildColorSignal()
 
   // Connect signals
   connect(configWidget,
-      SIGNAL(ColorValueChanged(const QString, const gazebo::common::Color)),
+      SIGNAL(ColorValueChanged(const QString, const ignition::math::Color)),
       this,
-      SLOT(OnColorValueChanged(const QString, const gazebo::common::Color)));
+      SLOT(OnColorValueChanged(const QString, const ignition::math::Color)));
 
   // Check default color
-  QVERIFY(configWidget->ColorWidgetValue("color") ==
-      gazebo::common::Color());
+  QCOMPARE(configWidget->ColorWidgetValue("color"),
+      ignition::math::Color(0, 0, 0, 0));
 
   // Get signal emitting widgets
   QList<QDoubleSpinBox *> spins =
@@ -1638,10 +1634,10 @@ void ConfigWidget_TEST::ChildColorSignal()
 
 /////////////////////////////////////////////////
 void ConfigWidget_TEST::OnColorValueChanged(const QString &_name,
-    const gazebo::common::Color &_color)
+    const ignition::math::Color &_color)
 {
   QVERIFY(_name == "color");
-  QVERIFY(_color == gazebo::common::Color(0.5, 0.0, 0.0, 0.0));
+  QCOMPARE(_color, ignition::math::Color(0.5, 0.0, 0.0, 0.0));
   g_colorSignalReceived = true;
 }
 

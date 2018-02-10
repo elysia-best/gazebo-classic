@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 */
-
-#ifndef _GAZEBO_EDITOR_MATERIAL_SWITCHER_HH_
-#define _GAZEBO_EDITOR_MATERIAL_SWITCHER_HH_
+#ifndef GAZEBO_GUI_MODEL_EDITORMATERIALSWITCHER_HH_
+#define GAZEBO_GUI_MODEL_EDITORMATERIALSWITCHER_HH_
 
 #include <string>
 
@@ -45,7 +44,8 @@ namespace gazebo
       /// \brief Constructor
       /// \param[in] _camera Pointer to the camera whose viewport will be
       /// updated to see the effect of the material switch.
-      public: EditorMaterialSwitcher(const rendering::CameraPtr &_camera);
+      public: explicit EditorMaterialSwitcher(
+                  const rendering::CameraPtr &_camera);
 
       /// \brief Destructor
       public: ~EditorMaterialSwitcher() = default;
@@ -84,8 +84,8 @@ namespace gazebo
       /// \brief Constructor
       /// \param[in] _switcher Material listener that will be added to or
       /// removed from Ogre material manager's list of listeners.
-      public: EditorRenderTargetListener(
-          const EditorMaterialListenerPtr &_switcher);
+      public: explicit EditorRenderTargetListener(
+                  const EditorMaterialListenerPtr &_switcher);
 
       /// \brief Destructor
       public: ~EditorRenderTargetListener() = default;
@@ -113,7 +113,8 @@ namespace gazebo
       /// \brief Constructor
       /// \param[in] _camera Pointer to the camera whose viewport will be
       /// updated to see the effect of the material switch.
-      public: EditorMaterialListener(const rendering::CameraPtr &_camera);
+      public: explicit EditorMaterialListener(
+                  const rendering::CameraPtr &_camera);
 
       /// \brief Destructor
       public: ~EditorMaterialListener() = default;

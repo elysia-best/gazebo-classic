@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <sstream>
+#include <ignition/math/Color.hh>
 #include "gazebo/rendering/ogre_gazebo.h"
 
 #include "gazebo/common/Console.hh"
@@ -29,8 +30,17 @@ using namespace rendering;
 
 enum {POSITION_BINDING, TEXCOORD_BINDING};
 
+
+/// \brief Private implementation
+class gazebo::rendering::DynamicLinesPrivate
+{
+  /// \brief list of colors at each point
+  public: std::vector<ignition::math::Color> colors;
+};
+
 /////////////////////////////////////////////////
 DynamicLines::DynamicLines(RenderOpType opType)
+  : dataPtr(new DynamicLinesPrivate)
 {
   this->Init(opType, false);
   this->setCastShadows(false);
@@ -56,18 +66,18 @@ const Ogre::String &DynamicLines::getMovableType() const
 }
 
 /////////////////////////////////////////////////
-void DynamicLines::AddPoint(const math::Vector3 &_pt,
+void DynamicLines::AddPoint(const ignition::math::Vector3d &_pt,
                             const common::Color &_color)
 {
-  this->AddPoint(_pt.Ign(), _color);
+  this->AddPoint(_pt, _color.Ign());
 }
 
 /////////////////////////////////////////////////
 void DynamicLines::AddPoint(const ignition::math::Vector3d &_pt,
-                            const common::Color &_color)
+                            const ignition::math::Color &_color)
 {
   this->points.push_back(_pt);
-  this->colors.push_back(_color);
+  this->dataPtr->colors.push_back(_color);
   this->dirty = true;
 }
 
@@ -75,13 +85,14 @@ void DynamicLines::AddPoint(const ignition::math::Vector3d &_pt,
 void DynamicLines::AddPoint(double _x, double _y, double _z,
                             const common::Color &_color)
 {
-  this->AddPoint(ignition::math::Vector3d(_x, _y, _z), _color);
+  this->AddPoint(_x, _y, _z, _color.Ign());
 }
 
 /////////////////////////////////////////////////
-void DynamicLines::SetPoint(unsigned int _index, const math::Vector3 &_value)
+void DynamicLines::AddPoint(const double _x, const double _y, const double _z,
+                            const ignition::math::Color &_color)
 {
-  this->SetPoint(_index, _value.Ign());
+  this->AddPoint(ignition::math::Vector3d(_x, _y, _z), _color);
 }
 
 /////////////////////////////////////////////////
@@ -103,17 +114,15 @@ void DynamicLines::SetPoint(const unsigned int _index,
 /////////////////////////////////////////////////
 void DynamicLines::SetColor(unsigned int _index, const common::Color &_color)
 {
-  this->colors[_index] = _color;
-  this->dirty = true;
+  this->SetColor(_index, _color.Ign());
 }
 
 /////////////////////////////////////////////////
-math::Vector3 DynamicLines::GetPoint(unsigned int _index) const
+void DynamicLines::SetColor(const unsigned int _index,
+                            const ignition::math::Color &_color)
 {
-  if (_index >= this->points.size())
-    gzthrow("Point index is out of bounds");
-
-  return this->points[_index];
+  this->dataPtr->colors[_index] = _color;
+  this->dirty = true;
 }
 
 /////////////////////////////////////////////////
@@ -125,7 +134,9 @@ ignition::math::Vector3d DynamicLines::Point(
     gzerr << "Point index[" << _index << "] is out of bounds[0-"
            << this->points.size()-1 << "]\n";
 
-    return ignition::math::Vector3d(IGN_DBL_INF, IGN_DBL_INF, IGN_DBL_INF);
+    return ignition::math::Vector3d(ignition::math::INF_D,
+                                    ignition::math::INF_D,
+                                    ignition::math::INF_D);
   }
 
   return this->points[_index];
@@ -200,7 +211,7 @@ void DynamicLines::FillHardwareBuffers()
         Ogre::Root::getSingleton().getRenderSystem();
   for (int i = 0; i < size; ++i)
   {
-    Ogre::ColourValue color = Conversions::Convert(this->colors[i]);
+    Ogre::ColourValue color = Conversions::Convert(this->dataPtr->colors[i]);
     renderSystemForVertex->convertColourValue(color, &colorArrayBuffer[i]);
   }
   cbuf->unlock();

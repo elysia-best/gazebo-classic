@@ -76,9 +76,6 @@ void Material::CreateMaterials()
   texState->setColourOperationEx(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL,
       Ogre::LBS_CURRENT, Ogre::ColourValue(0, 0, 1));
 
-
-
-
   mat = Ogre::MaterialManager::getSingleton().create(
       "__GAZEBO_TRANS_RED_MATERIAL__", "General");
   tech = mat->getTechnique(0);
@@ -154,26 +151,30 @@ void Material::Update(const gazebo::common::Material *_mat)
 
   Ogre::Pass *pass = matPtr->getTechnique(0)->getPass(0);
 
-  common::Color ambient =  _mat->GetAmbient();
-  common::Color diffuse =  _mat->GetDiffuse();
-  common::Color specular = _mat->GetSpecular();
-  common::Color emissive = _mat->GetEmissive();
+  auto ambient =  _mat->Ambient();
+  auto diffuse =  _mat->Diffuse();
+  auto specular = _mat->Specular();
+  auto emissive = _mat->Emissive();
+  float transparency = _mat->GetTransparency();
 
+  // use transparency value if specified otherwise use diffuse alpha value
+  double alpha = transparency > 0 ? 1.0 - transparency : diffuse.A();
+  diffuse.A() = alpha;
+  pass->setDiffuse(diffuse.R(), diffuse.G(), diffuse.B(), diffuse.A());
+  pass->setAmbient(ambient.R(), ambient.G(), ambient.B());
+  pass->setDepthWriteEnabled(_mat->GetDepthWrite());
 
-  pass->setLightingEnabled(_mat->GetLighting());
-  pass->setDiffuse(diffuse.r, diffuse.g, diffuse.b, diffuse.a);
-  pass->setAmbient(ambient.r, ambient.g, ambient.b);
-
-  if (diffuse.a < 1.0)
+  if (diffuse.A() < 1.0)
   {
+    // set up pass for rendering transparency
     pass->setDepthWriteEnabled(false);
     pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
   }
 
-  pass->setSpecular(specular.r, specular.g, specular.b, specular.a);
-  pass->setSelfIllumination(emissive.r, emissive.g, emissive.b);
-
+  pass->setSpecular(specular.R(), specular.G(), specular.B(), specular.A());
+  pass->setSelfIllumination(emissive.R(), emissive.G(), emissive.B());
   pass->setShininess(_mat->GetShininess());
+  pass->setLightingEnabled(_mat->GetLighting());
 
   // Only add the texture unit if it's not present in the material
   if (!_mat->GetTextureImage().empty() &&
@@ -192,6 +193,31 @@ void Material::Update(const gazebo::common::Material *_mat)
 bool Material::GetMaterialAsColor(const std::string &_materialName,
           common::Color &_ambient, common::Color &_diffuse,
           common::Color &_specular, common::Color &_emissive)
+{
+  ignition::math::Color ambient;
+  ignition::math::Color diffuse;
+  ignition::math::Color specular;
+  ignition::math::Color emissive;
+  bool success = MaterialAsColor(_materialName, ambient, diffuse, specular,
+      emissive);
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  _ambient = ambient;
+  _diffuse = diffuse;
+  _specular = specular;
+  _emissive = emissive;
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+  return success;
+}
+
+//////////////////////////////////////////////////
+bool Material::MaterialAsColor(const std::string &_materialName,
+          ignition::math::Color &_ambient, ignition::math::Color &_diffuse,
+          ignition::math::Color &_specular, ignition::math::Color &_emissive)
 {
   Ogre::MaterialPtr matPtr;
 

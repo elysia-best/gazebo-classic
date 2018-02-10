@@ -19,16 +19,9 @@
 
 #include <string>
 #include <vector>
+#include <ignition/math/Spline.hh>
+#include <ignition/math/RotationSpline.hh>
 #include "gazebo/util/system.hh"
-
-namespace ignition
-{
-  namespace math
-  {
-    class Spline;
-    class RotationSpline;
-  }
-}
 
 namespace gazebo
 {
@@ -84,7 +77,7 @@ namespace gazebo
 
       /// \brief Get a key frame using an index value
       /// \param[in] _index The index of the key frame
-      /// \return A pointer the keyframe, NULL if the _index is invalid
+      /// \return A pointer the keyframe, nullptr if the _index is invalid
       public: KeyFrame* GetKeyFrame(unsigned int _index) const;
 
       /// \brief Get the two key frames that bound a time value

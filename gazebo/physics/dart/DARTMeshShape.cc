@@ -31,7 +31,7 @@ using namespace gazebo;
 using namespace physics;
 
 //////////////////////////////////////////////////
-DARTMeshShape::DARTMeshShape(CollisionPtr _parent)
+DARTMeshShape::DARTMeshShape(DARTCollisionPtr _parent)
   : MeshShape(_parent),
     dataPtr(new DARTMeshShapePrivate())
 {
@@ -41,6 +41,7 @@ DARTMeshShape::DARTMeshShape(CollisionPtr _parent)
 DARTMeshShape::~DARTMeshShape()
 {
   delete this->dataPtr;
+  this->dataPtr = nullptr;
 }
 
 //////////////////////////////////////////////////
@@ -60,16 +61,32 @@ void DARTMeshShape::Init()
 {
   MeshShape::Init();
 
+
   if (this->submesh)
   {
     this->dataPtr->dartMesh->Init(this->submesh,
         boost::dynamic_pointer_cast<DARTCollision>(this->collisionParent),
-        this->sdf->Get<math::Vector3>("scale"));
+        this->sdf->Get<ignition::math::Vector3d>("scale"));
   }
   else
   {
+    if (!this->mesh)
+    {
+      gzerr << "No DART mesh specified\n";
+      return;
+    }
     this->dataPtr->dartMesh->Init(this->mesh,
         boost::dynamic_pointer_cast<DARTCollision>(this->collisionParent),
-        this->sdf->Get<math::Vector3>("scale"));
+        this->sdf->Get<ignition::math::Vector3d>("scale"));
   }
+
+  BasePtr _parent = GetParent();
+  GZ_ASSERT(boost::dynamic_pointer_cast<DARTCollision>(_parent),
+            "Parent must be a DARTCollisionPtr");
+  DARTCollisionPtr _collisionParent =
+    boost::static_pointer_cast<DARTCollision>(_parent);
+
+  GZ_ASSERT(this->dataPtr->dartMesh->ShapeNode(), "Must have a shape node");
+  _collisionParent->SetDARTCollisionShapeNode
+     (this->dataPtr->dartMesh->ShapeNode());
 }

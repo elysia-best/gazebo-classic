@@ -14,17 +14,18 @@
  * limitations under the License.
  *
  */
+#ifndef GAZEBO_GUI_OCULUS_WINDOW_HH_
+#define GAZEBO_GUI_OCULUS_WINDOW_HH_
 
-#ifndef _GAZEBO_OCULUS_WINDOW_HH_
-#define _GAZEBO_OCULUS_WINDOW_HH_
-
-#include <boost/thread.hpp>
 #include <string>
+#include <thread>
 
+#ifndef Q_MOC_RUN
 #include "gazebo/transport/TransportTypes.hh"
 #include "gazebo/rendering/RenderTypes.hh"
 #include "gazebo/msgs/msgs.hh"
 #include "gazebo/gui/qt.h"
+#endif
 
 namespace gazebo
 {
@@ -92,7 +93,7 @@ namespace gazebo
       private: std::string visualName;
 
       /// \brief Thread to attach oculus camera to visual
-      private: boost::thread *attachCameraThread;
+      private: std::thread *attachCameraThread;
     };
   }
 }

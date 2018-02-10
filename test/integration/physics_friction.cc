@@ -48,7 +48,7 @@ class PhysicsFrictionTest : public ServerFixture,
             : modelName(_name), world(_world), friction(0.0)
             {
               // Get the model pointer
-              model = world->GetModel(modelName);
+              model = world->ModelByName(modelName);
 
               // Get the friction coefficient
               physics::LinkPtr link = model->GetLink();
@@ -197,15 +197,15 @@ void PhysicsFrictionTest::FrictionDemo(const std::string &_physicsEngine,
   ASSERT_TRUE(world != NULL);
 
   // check the gravity vector
-  physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+  physics::PhysicsEnginePtr physics = world->Physics();
   ASSERT_TRUE(physics != NULL);
   EXPECT_EQ(physics->GetType(), _physicsEngine);
-  math::Vector3 g = physics->GetGravity();
+  auto g = world->Gravity();
 
   // Custom gravity vector for this demo world.
-  EXPECT_DOUBLE_EQ(g.x, 0);
-  EXPECT_DOUBLE_EQ(g.y, -1.0);
-  EXPECT_DOUBLE_EQ(g.z, -1.0);
+  EXPECT_DOUBLE_EQ(g.X(), 0);
+  EXPECT_DOUBLE_EQ(g.Y(), -1.0);
+  EXPECT_DOUBLE_EQ(g.Z(), -1.0);
 
   if (_physicsEngine == "ode")
   {
@@ -236,11 +236,11 @@ void PhysicsFrictionTest::FrictionDemo(const std::string &_physicsEngine,
     ASSERT_GT(box->friction, 0.0);
   }
 
-  common::Time t = world->GetSimTime();
+  common::Time t = world->SimTime();
   while (t.sec < 10)
   {
     world->Step(500);
-    t = world->GetSimTime();
+    t = world->SimTime();
 
     double yTolerance = g_friction_tolerance;
     if (_solverType == "world")
@@ -253,15 +253,15 @@ void PhysicsFrictionTest::FrictionDemo(const std::string &_physicsEngine,
 
     for (box = boxes.begin(); box != boxes.end(); ++box)
     {
-      math::Vector3 vel = box->model->GetWorldLinearVel();
-      EXPECT_NEAR(vel.x, 0, g_friction_tolerance);
-      EXPECT_NEAR(vel.z, 0, yTolerance);
+      ignition::math::Vector3d vel = box->model->WorldLinearVel();
+      EXPECT_NEAR(vel.X(), 0, g_friction_tolerance);
+      EXPECT_NEAR(vel.Z(), 0, yTolerance);
 
       // Coulomb friction model
       if (box->friction >= 1.0)
       {
         // Friction is large enough to prevent motion
-        EXPECT_NEAR(vel.y, 0, yTolerance);
+        EXPECT_NEAR(vel.Y(), 0, yTolerance);
       }
       else
       {
@@ -274,7 +274,7 @@ void PhysicsFrictionTest::FrictionDemo(const std::string &_physicsEngine,
           vyTolerance *= 22;
         }
 #endif
-        EXPECT_NEAR(vel.y, (g.y + box->friction) * t.Double(),
+        EXPECT_NEAR(vel.Y(), (g.Y() + box->friction) * t.Double(),
                     vyTolerance);
       }
     }
@@ -298,7 +298,7 @@ void PhysicsFrictionTest::MaximumDissipation(const std::string &_physicsEngine)
   ASSERT_TRUE(world != NULL);
 
   // Verify physics engine type
-  physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+  physics::PhysicsEnginePtr physics = world->Physics();
   ASSERT_TRUE(physics != NULL);
   EXPECT_EQ(physics->GetType(), _physicsEngine);
 
@@ -313,7 +313,7 @@ void PhysicsFrictionTest::MaximumDissipation(const std::string &_physicsEngine)
   // Get pointers to boxes and their polar coordinate angle
   std::map<physics::ModelPtr, double> modelAngles;
 
-  auto models = world->GetModels();
+  auto models = world->Models();
   for (auto model : models)
   {
     ASSERT_TRUE(model != nullptr);
@@ -322,7 +322,7 @@ void PhysicsFrictionTest::MaximumDissipation(const std::string &_physicsEngine)
     {
       continue;
     }
-    auto pos = model->GetWorldPose().Ign().Pos();
+    auto pos = model->WorldPose().Pos();
     double angle = std::atan2(pos.Y(), pos.X());
     modelAngles[model] = angle;
 
@@ -332,7 +332,7 @@ void PhysicsFrictionTest::MaximumDissipation(const std::string &_physicsEngine)
     EXPECT_NEAR(9.0, radius, 1e-5);
 
     // Radial velocity should already be set
-    auto vel = model->GetWorldLinearVel().Ign();
+    auto vel = model->WorldLinearVel();
     EXPECT_GE(vel.Length(), radius*0.95);
     EXPECT_NEAR(angle, atan2(vel.Y(), vel.X()), 1e-6);
   }
@@ -346,7 +346,7 @@ void PhysicsFrictionTest::MaximumDissipation(const std::string &_physicsEngine)
   for (iter = modelAngles.begin(); iter != modelAngles.end(); ++iter)
   {
     double angle = iter->second;
-    ignition::math::Vector3d pos = iter->first->GetWorldPose().Ign().Pos();
+    ignition::math::Vector3d pos = iter->first->WorldPose().Pos();
     pos.Z(0);
     double radius = pos.Length();
     double polarAngle = atan2(pos.Y(), pos.X());
@@ -394,7 +394,7 @@ void PhysicsFrictionTest::BoxDirectionRing(const std::string &_physicsEngine)
   ASSERT_TRUE(world != NULL);
 
   // Verify physics engine type
-  physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+  physics::PhysicsEnginePtr physics = world->Physics();
   ASSERT_TRUE(physics != NULL);
   EXPECT_EQ(physics->GetType(), _physicsEngine);
 
@@ -405,7 +405,7 @@ void PhysicsFrictionTest::BoxDirectionRing(const std::string &_physicsEngine)
   // Pointers and location of concentric semi-circles of boxes
   std::map<physics::ModelPtr, double> modelAngles;
 
-  auto models = world->GetModels();
+  auto models = world->Models();
   for (auto model : models)
   {
     ASSERT_TRUE(model != nullptr);
@@ -414,15 +414,27 @@ void PhysicsFrictionTest::BoxDirectionRing(const std::string &_physicsEngine)
     {
       continue;
     }
-    auto pos = model->GetWorldPose().Ign().Pos();
+    auto pos = model->WorldPose().Pos();
     double angle = std::atan2(pos.Y(), pos.X());
     modelAngles[model] = angle;
   }
   EXPECT_EQ(modelAngles.size(), 44u);
 
+  // Pointers to spheres model and its links
+  physics::ModelPtr spheres = world->ModelByName("spheres");
+  ASSERT_TRUE(spheres != nullptr);
+  auto sphereLinks = spheres->GetLinks();
+  EXPECT_EQ(sphereLinks.size(), 2u);
+  for (auto link : sphereLinks)
+  {
+    ASSERT_TRUE(link != nullptr);
+    // spin spheres about vertical axis
+    link->SetAngularVel(ignition::math::Vector3d::UnitZ);
+  }
+
   // Step forward
   world->Step(1500);
-  double t = world->GetSimTime().Double();
+  double t = world->SimTime().Double();
 
   gzdbg << "Checking velocity after " << t << " seconds" << std::endl;
   std::map<physics::ModelPtr, double>::iterator iter;
@@ -431,9 +443,18 @@ void PhysicsFrictionTest::BoxDirectionRing(const std::string &_physicsEngine)
     double cosAngle = cos(iter->second);
     double sinAngle = sin(iter->second);
     double velMag = g.Y() * sinAngle * t;
-    ignition::math::Vector3d vel = iter->first->GetWorldLinearVel().Ign();
+    ignition::math::Vector3d vel = iter->first->WorldLinearVel();
     EXPECT_NEAR(velMag*cosAngle, vel.X(), 5*g_friction_tolerance);
     EXPECT_NEAR(velMag*sinAngle, vel.Y(), 5*g_friction_tolerance);
+  }
+  for (auto link : sphereLinks)
+  {
+    ASSERT_TRUE(link != nullptr);
+    // the friction direction should be in a body-fixed frame
+    // so spinning the spheres should cause them to start rolling
+    // check that spheres are spinning about the X axis
+    auto w = link->WorldAngularVel();
+    EXPECT_LT(w.X(), -4) << "Checking " << link->GetScopedName() << std::endl;
   }
 }
 
@@ -470,14 +491,14 @@ void PhysicsFrictionTest::DirectionNaN(const std::string &_physicsEngine)
   ASSERT_TRUE(world != NULL);
 
   // Verify physics engine type
-  physics::PhysicsEnginePtr physics = world->GetPhysicsEngine();
+  physics::PhysicsEnginePtr physics = world->Physics();
   ASSERT_TRUE(physics != NULL);
   EXPECT_EQ(physics->GetType(), _physicsEngine);
 
   // set the gravity vector
   // small positive y component
-  math::Vector3 g(0.0, 1.5, -1.0);
-  physics->SetGravity(g);
+  ignition::math::Vector3d g(0.0, 1.5, -1.0);
+  world->SetGravity(g);
 
   // Spawn a single box
   double dx = 0.5;
@@ -495,13 +516,13 @@ void PhysicsFrictionTest::DirectionNaN(const std::string &_physicsEngine)
 
   // Step forward
   world->Step(1500);
-  double t = world->GetSimTime().Double();
+  double t = world->SimTime().Double();
 
   gzdbg << "Checking velocity after " << t << " seconds" << std::endl;
-  double velMag = (g.y+g.z) * t;
-  math::Vector3 vel = model->GetWorldLinearVel();
-  EXPECT_NEAR(0.0, vel.x, g_friction_tolerance);
-  EXPECT_NEAR(velMag, vel.y, g_friction_tolerance);
+  double velMag = (g.Y()+g.Z()) * t;
+  ignition::math::Vector3d vel = model->WorldLinearVel();
+  EXPECT_NEAR(0.0, vel.X(), g_friction_tolerance);
+  EXPECT_NEAR(velMag, vel.Y(), g_friction_tolerance);
 }
 
 /////////////////////////////////////////////////
@@ -546,7 +567,7 @@ void PhysicsFrictionTest::SphereSlip(const std::string &_physicsEngine)
   std::map<physics::ModelPtr, double> twoballMassSlip;
   std::map<physics::ModelPtr, double> triballMassSlip;
 
-  auto models = world->GetModels();
+  auto models = world->Models();
   for (auto model : models)
   {
     ASSERT_TRUE(model != nullptr);
@@ -591,7 +612,7 @@ void PhysicsFrictionTest::SphereSlip(const std::string &_physicsEngine)
   {
     auto model = lowball.first;
     double massSlip = lowball.second;
-    auto vel = model->GetWorldLinearVel().Ign();
+    auto vel = model->WorldLinearVel();
     EXPECT_NEAR(vel.X(), 0, g_friction_tolerance);
     EXPECT_NEAR(vel.Z(), 0, g_friction_tolerance);
     double velExpected = grav.Y() * massSlip / 1.0;
@@ -604,7 +625,7 @@ void PhysicsFrictionTest::SphereSlip(const std::string &_physicsEngine)
   {
     auto model = twoball.first;
     double massSlip = twoball.second;
-    auto vel = model->GetWorldLinearVel().Ign();
+    auto vel = model->WorldLinearVel();
     EXPECT_NEAR(vel.X(), 0, g_friction_tolerance);
     EXPECT_NEAR(vel.Z(), 0, g_friction_tolerance);
     double velExpected = grav.Y() * massSlip / 2.0;
@@ -617,7 +638,7 @@ void PhysicsFrictionTest::SphereSlip(const std::string &_physicsEngine)
   {
     auto model = triball.first;
     double massSlip = triball.second;
-    auto vel = model->GetWorldLinearVel().Ign();
+    auto vel = model->WorldLinearVel();
     EXPECT_NEAR(vel.X(), 0, g_friction_tolerance);
     EXPECT_NEAR(vel.Z(), 0, g_friction_tolerance);
     double velExpected = grav.Y() * massSlip / 3.0;

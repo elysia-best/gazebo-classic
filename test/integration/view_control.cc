@@ -40,7 +40,7 @@ void MouseZoom(QWidget *_widget)
 
   // move the cursor in y for a quarter of the widget height
   double destY = 0.25;
-  unsigned int steps = 10;
+  unsigned int steps = 30;
   for (unsigned int i = 0; i < steps; ++i)
   {
     // compute the next y pos to move the mouse cursor to.
@@ -93,7 +93,7 @@ void ViewControlTest::MouseZoomSimulation()
 
   cam->SetWorldPose(ignition::math::Pose3d(
       ignition::math::Vector3d(-1.5, 0.0, 0.5),
-      ignition::math::Quaterniond(0, 0, 0)));
+      ignition::math::Quaterniond::Identity));
 
   // Process some events and draw the screen
   this->ProcessEventsAndDraw(mainWindow);
@@ -149,8 +149,7 @@ void ViewControlTest::MouseZoomModelEditor()
 
   // create the model editor
   std::unique_ptr<gazebo::gui::ModelCreator> modelCreator(
-      new gazebo::gui::ModelCreator());
-
+                                              new gazebo::gui::ModelCreator());
   // Inserting a link
   modelCreator->AddShape(gazebo::gui::ModelCreator::ENTITY_CYLINDER);
   gazebo::rendering::VisualPtr cylinder =
@@ -162,7 +161,7 @@ void ViewControlTest::MouseZoomModelEditor()
 
   cam->SetWorldPose(ignition::math::Pose3d(
       ignition::math::Vector3d(-1.5, 0.0, 0.5),
-      ignition::math::Quaterniond(0, 0, 0)));
+      ignition::math::Quaterniond::Identity));
 
   // Process some events and draw the screen
   this->ProcessEventsAndDraw(mainWindow);
@@ -184,6 +183,72 @@ void ViewControlTest::MouseZoomModelEditor()
   QVERIFY(cam->IsVisible(cylinder));
 
   // Clean up
+  cam->Fini();
+  mainWindow->close();
+  delete mainWindow;
+}
+
+/////////////////////////////////////////////////
+void ViewControlTest::MouseZoomTerrain()
+{
+  this->resMaxPercentChange = 5.0;
+  this->shareMaxPercentChange = 2.0;
+
+  this->Load("worlds/heightmap.world", false, false, false);
+
+  gazebo::gui::MainWindow *mainWindow = new gazebo::gui::MainWindow();
+  QVERIFY(mainWindow != nullptr);
+  // Create the main window.
+  mainWindow->Load();
+  mainWindow->Init();
+  mainWindow->show();
+
+  std::string boxName = "box4";
+
+  // Get the user camera and scene
+  gazebo::rendering::UserCameraPtr cam = gazebo::gui::get_active_camera();
+  QVERIFY(cam != nullptr);
+  gazebo::rendering::ScenePtr scene = cam->GetScene();
+  QVERIFY(scene != nullptr);
+
+  this->ProcessEventsAndDraw(mainWindow);
+
+  gazebo::rendering::VisualPtr boxVis = scene->GetVisual(boxName);
+  QVERIFY(boxVis != nullptr);
+
+  auto glWidget = mainWindow->findChild<gazebo::gui::GLWidget *>("GLWidget");
+  QVERIFY(glWidget != nullptr);
+
+  // move camera so that it faces the box but partially occluded by terrain
+  cam->SetWorldPose(ignition::math::Pose3d(
+      ignition::math::Vector3d(62.93, -65.14, 9.49),
+      ignition::math::Quaterniond(0, -0.5, 1.57)));
+
+  this->ProcessEventsAndDraw(mainWindow);
+
+  // make sure the box is visible and not completely occluded
+  QVERIFY(cam->IsVisible(boxVis));
+  ignition::math::Pose3d boxPt =
+      ignition::math::Pose3d(0.0, -0.5, 0.4, 0.0, 0.0, 0.0) +
+      boxVis->WorldPose();
+  auto vis = cam->Visual(cam->Project(boxPt.Pos()));
+  QVERIFY(vis != nullptr);
+  QCOMPARE(vis->GetRootVisual(), boxVis);
+
+  // zoom in. It should not zoom pass the terrain.
+  QTest::mouseClick(glWidget, Qt::LeftButton, 0,
+      QPoint(glWidget->width()*0.5, glWidget->height()*0.5));
+  MouseZoom(glWidget);
+
+  // Process some events and draw the screen
+  this->ProcessEventsAndDraw(mainWindow);
+
+  // Make sure the box is still in the frustum but it should now be
+  // completely occluded.
+  QVERIFY(cam->IsVisible(boxVis));
+  vis = cam->Visual(cam->Project(boxPt.Pos()));
+  QVERIFY(vis == nullptr);
+
   cam->Fini();
   mainWindow->close();
   delete mainWindow;

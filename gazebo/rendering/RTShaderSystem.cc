@@ -23,10 +23,27 @@
 
 #include <sys/stat.h>
 
+#if defined(HAVE_OPENGL)
+
+#if defined(__APPLE__)
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#else
+#if defined(_WIN32)
+  #include <windows.h>
+#endif /* _WIN32 */
+#include <GL/gl.h>
+#include <GL/glext.h>
+#endif /* __APPLE__ */
+
+#endif /* HAVE_OPENGL */
+
+
 #include "gazebo/common/Console.hh"
 #include "gazebo/common/Exception.hh"
 #include "gazebo/common/SystemPaths.hh"
 #include "gazebo/rendering/ogre_gazebo.h"
+#include "gazebo/rendering/CustomPSSMShadowCameraSetup.hh"
 #include "gazebo/rendering/RenderEngine.hh"
 #include "gazebo/rendering/Scene.hh"
 #include "gazebo/rendering/Visual.hh"
@@ -83,7 +100,18 @@ void RTShaderSystem::Init()
     // Set shader cache path.
     this->dataPtr->shaderGenerator->setShaderCachePath(cachePath);
 
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR <= 8
+    this->dataPtr->programWriterFactory =
+        OGRE_NEW CustomGLSLProgramWriterFactory();
+    Ogre::RTShader::ProgramWriterManager::getSingletonPtr()->addFactory(
+        this->dataPtr->programWriterFactory);
+#endif
+
     this->dataPtr->shaderGenerator->setTargetLanguage("glsl");
+
+    Ogre::RTShader::SubRenderStateFactory* factory =
+        OGRE_NEW CustomPSSM3Factory;
+    this->dataPtr->shaderGenerator->addSubRenderStateFactory(factory);
   }
   else
     gzerr << "RT Shader system failed to initialize\n";
@@ -103,12 +131,15 @@ void RTShaderSystem::Fini()
   // Finalize RTShader system.
   if (this->dataPtr->shaderGenerator != NULL)
   {
-    // On Windows, we're using 1.9RC1, which doesn't have a bunch of changes.
-#if (OGRE_VERSION < ((1 << 16) | (9 << 8) | 0)) || defined(_WIN32)
+#if (OGRE_VERSION < ((1 << 16) | (9 << 8) | 0))
     Ogre::RTShader::ShaderGenerator::finalize();
 #else
     Ogre::RTShader::ShaderGenerator::destroy();
 #endif
+
+    if (this->dataPtr->programWriterFactory)
+      delete this->dataPtr->programWriterFactory;
+
     this->dataPtr->shaderGenerator = NULL;
   }
 
@@ -178,23 +209,6 @@ void RTShaderSystem::RemoveScene(const std::string &_scene)
 }
 
 //////////////////////////////////////////////////
-void RTShaderSystem::AttachEntity(Visual * /*_vis*/)
-{
-  return;
-}
-
-//////////////////////////////////////////////////
-void RTShaderSystem::DetachEntity(Visual * /*_vis*/)
-{
-  return;
-}
-
-//////////////////////////////////////////////////
-void RTShaderSystem::Clear()
-{
-}
-
-//////////////////////////////////////////////////
 void RTShaderSystem::AttachViewport(Ogre::Viewport *_viewport, ScenePtr _scene)
 {
 #if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 7
@@ -229,13 +243,6 @@ void RTShaderSystem::UpdateShaders(VisualPtr _vis)
     for (unsigned int i = 0; i < _vis->GetChildCount(); ++i)
       this->UpdateShaders(_vis->GetChild(i));
   }
-}
-
-//////////////////////////////////////////////////
-void RTShaderSystem::GenerateShaders(Visual *_vis)
-{
-  VisualPtr vis(_vis);
-  this->GenerateShaders(vis);
 }
 
 //////////////////////////////////////////////////
@@ -403,7 +410,7 @@ bool RTShaderSystem::GetPaths(std::string &coreLibsPath, std::string &cachePath)
           if (!tmpdir)
           {
             common::SystemPaths *paths = common::SystemPaths::Instance();
-            tmpdir = const_cast<char*>(paths->GetTmpPath().c_str());
+            tmpdir = const_cast<char*>(paths->TmpPath().c_str());
           }
           // Get the user
           user = getenv("USER");
@@ -413,7 +420,7 @@ bool RTShaderSystem::GetPaths(std::string &coreLibsPath, std::string &cachePath)
           cachePath = stream.str();
           // Create the directory
 #ifdef _WIN32
-          if (mkdir(cachePath.c_str()) != 0)
+          if (_mkdir(cachePath.c_str()) != 0)
 #else
           if (mkdir(cachePath.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) != 0)
 #endif
@@ -492,15 +499,36 @@ void RTShaderSystem::ApplyShadows(ScenePtr _scene)
   sceneMgr->setShadowTextureCountPerLightType(Ogre::Light::LT_POINT, 0);
   sceneMgr->setShadowTextureCountPerLightType(Ogre::Light::LT_SPOTLIGHT, 0);
   sceneMgr->setShadowTextureCount(3);
+
+  unsigned int texSize = this->dataPtr->shadowTextureSize;
+#if defined(__APPLE__)
+  // workaround a weird but on OSX if texture size at 2 and 3 splits are not
+  // halved
+  texSize = this->dataPtr->shadowTextureSize/2;
+#endif
   sceneMgr->setShadowTextureConfig(0,
       this->dataPtr->shadowTextureSize, this->dataPtr->shadowTextureSize,
       Ogre::PF_FLOAT32_R);
-  sceneMgr->setShadowTextureConfig(1,
-      this->dataPtr->shadowTextureSize/2, this->dataPtr->shadowTextureSize/2,
-      Ogre::PF_FLOAT32_R);
-  sceneMgr->setShadowTextureConfig(2,
-      this->dataPtr->shadowTextureSize/2, this->dataPtr->shadowTextureSize/2,
-      Ogre::PF_FLOAT32_R);
+  sceneMgr->setShadowTextureConfig(1, texSize, texSize, Ogre::PF_FLOAT32_R);
+  sceneMgr->setShadowTextureConfig(2, texSize, texSize, Ogre::PF_FLOAT32_R);
+
+#if defined(HAVE_OPENGL)
+  // Enable shadow map comparison, so shader can use
+  // float texture(sampler2DShadow, vec3, [float]) instead of
+  // vec4 texture(sampler2D, vec2, [float]).
+  // NVidia, AMD, and Intel all take this as a cue to provide "hardware PCF",
+  // a driver hack that softens shadow edges with 4-sample interpolation.
+  for (size_t i = 0; i < sceneMgr->getShadowTextureCount(); ++i)
+  {
+    const Ogre::TexturePtr tex = sceneMgr->getShadowTexture(i);
+    // This will fail if not using OpenGL as the rendering backend.
+    GLuint texId;
+    tex->getCustomAttribute("GLID", &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
+        GL_COMPARE_R_TO_TEXTURE);
+  }
+#endif
 
   sceneMgr->setShadowTextureSelfShadow(false);
   sceneMgr->setShadowCasterRenderBackFaces(true);
@@ -522,42 +550,31 @@ void RTShaderSystem::ApplyShadows(ScenePtr _scene)
   if (this->dataPtr->pssmSetup.isNull())
   {
     this->dataPtr->pssmSetup =
-        Ogre::ShadowCameraSetupPtr(new Ogre::PSSMShadowCameraSetup());
+        Ogre::ShadowCameraSetupPtr(new CustomPSSMShadowCameraSetup());
   }
 
-  double shadowFarDistance = 500;
-  double cameraNearClip = 0.01;
-  sceneMgr->setShadowFarDistance(shadowFarDistance);
+  sceneMgr->setShadowFarDistance(this->dataPtr->shadowFar);
 
-  Ogre::PSSMShadowCameraSetup *cameraSetup =
-      dynamic_cast<Ogre::PSSMShadowCameraSetup*>(
+  CustomPSSMShadowCameraSetup *cameraSetup =
+      dynamic_cast<CustomPSSMShadowCameraSetup*>(
       this->dataPtr->pssmSetup.get());
 
-  cameraSetup->calculateSplitPoints(3, cameraNearClip, shadowFarDistance);
-  cameraSetup->setSplitPadding(4);
-  cameraSetup->setOptimalAdjustFactor(0, 2);
-  cameraSetup->setOptimalAdjustFactor(1, 1);
-  cameraSetup->setOptimalAdjustFactor(2, .5);
+  cameraSetup->calculateSplitPoints(3, this->dataPtr->shadowNear,
+    this->dataPtr->shadowFar, this->dataPtr->shadowSplitLambda);
+  cameraSetup->setSplitPadding(this->dataPtr->shadowSplitPadding);
 
   sceneMgr->setShadowCameraSetup(this->dataPtr->pssmSetup);
 
-  // These values do not seem to help at all. Leaving here until I have time
-  // to properly fix shadow z-fighting.
-  // cameraSetup->setOptimalAdjustFactor(0, 4);
-  // cameraSetup->setOptimalAdjustFactor(1, 1);
-  // cameraSetup->setOptimalAdjustFactor(2, 0.5);
-
   this->dataPtr->shadowRenderState =
       this->dataPtr->shaderGenerator->createSubRenderState(
-      Ogre::RTShader::IntegratedPSSM3::Type);
-  Ogre::RTShader::IntegratedPSSM3 *pssm3SubRenderState =
-      static_cast<Ogre::RTShader::IntegratedPSSM3*>(
-      this->dataPtr->shadowRenderState);
+      CustomPSSM3::Type);
+  CustomPSSM3 *pssm3SubRenderState =
+      static_cast<CustomPSSM3 *>(this->dataPtr->shadowRenderState);
 
   const Ogre::PSSMShadowCameraSetup::SplitPointList &srcSplitPoints =
     cameraSetup->getSplitPoints();
 
-  Ogre::RTShader::IntegratedPSSM3::SplitPointList dstSplitPoints;
+  CustomPSSM3::SplitPointList dstSplitPoints;
 
   for (unsigned int i = 0; i < srcSplitPoints.size(); ++i)
   {
@@ -573,6 +590,19 @@ void RTShaderSystem::ApplyShadows(ScenePtr _scene)
   this->UpdateShaders();
 
   this->dataPtr->shadowsApplied = true;
+}
+
+/////////////////////////////////////////////////
+void RTShaderSystem::ReapplyShadows()
+{
+  if (this->dataPtr->shadowsApplied)
+  {
+    for (unsigned int i = 0; i < this->dataPtr->scenes.size(); i++)
+    {
+      RemoveShadows(this->dataPtr->scenes[i]);
+      ApplyShadows(this->dataPtr->scenes[i]);
+    }
+  }
 }
 
 /////////////////////////////////////////////////
@@ -617,4 +647,50 @@ bool RTShaderSystem::SetShadowTextureSize(const unsigned int _size)
 unsigned int RTShaderSystem::ShadowTextureSize() const
 {
   return this->dataPtr->shadowTextureSize;
+}
+
+/////////////////////////////////////////////////
+void RTShaderSystem::SetShadowClipDist(const double _near, const double _far)
+{
+  this->dataPtr->shadowNear = _near;
+  this->dataPtr->shadowFar = _far;
+  ReapplyShadows();
+}
+
+/////////////////////////////////////////////////
+double RTShaderSystem::ShadowNearClip() const
+{
+  return this->dataPtr->shadowNear;
+}
+
+/////////////////////////////////////////////////
+double RTShaderSystem::ShadowFarClip() const
+{
+  return this->dataPtr->shadowFar;
+}
+
+/////////////////////////////////////////////////
+void RTShaderSystem::SetShadowSplitLambda(const double _lambda)
+{
+  this->dataPtr->shadowSplitLambda = _lambda;
+  ReapplyShadows();
+}
+
+/////////////////////////////////////////////////
+double RTShaderSystem::ShadowSplitLambda() const
+{
+  return this->dataPtr->shadowSplitLambda;
+}
+
+/////////////////////////////////////////////////
+void RTShaderSystem::SetShadowSplitPadding(const double _padding)
+{
+  this->dataPtr->shadowSplitPadding = _padding;
+  ReapplyShadows();
+}
+
+/////////////////////////////////////////////////
+double RTShaderSystem::ShadowSplitPadding() const
+{
+  return this->dataPtr->shadowSplitPadding;
 }

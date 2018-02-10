@@ -17,6 +17,7 @@
 
 #include <google/protobuf/descriptor.h>
 #include <algorithm>
+#include <ignition/math/MassMatrix3.hh>
 #include <ignition/math/Rand.hh>
 
 #include "gazebo/common/CommonIface.hh"
@@ -162,10 +163,16 @@ namespace gazebo
     /////////////////////////////////////////////
     void Set(msgs::Color *_c, const common::Color &_v)
     {
-      _c->set_r(_v.r);
-      _c->set_g(_v.g);
-      _c->set_b(_v.b);
-      _c->set_a(_v.a);
+      Set(_c, _v.Ign());
+    }
+
+    /////////////////////////////////////////////
+    void Set(msgs::Color *_c, const ignition::math::Color &_v)
+    {
+      _c->set_r(_v.R());
+      _c->set_g(_v.G());
+      _c->set_b(_v.B());
+      _c->set_a(_v.A());
     }
 
     /////////////////////////////////////////////
@@ -310,6 +317,14 @@ namespace gazebo
     /////////////////////////////////////////////////
     msgs::Any ConvertAny(const common::Color &_c)
     {
+      gzwarn << "ConvertAny(common::Color) is deprecated, use "
+             << "ConvertAny(ignition::math::Color) instead" << std::endl;
+      return ConvertAny(_c.Ign());
+    }
+
+    /////////////////////////////////////////////////
+    msgs::Any ConvertAny(const ignition::math::Color &_c)
+    {
       msgs::Any result;
       result.set_type(msgs::Any::COLOR);
       result.mutable_color_value()->CopyFrom(Convert(_c));
@@ -385,11 +400,17 @@ namespace gazebo
     /////////////////////////////////////////////
     msgs::Color Convert(const common::Color &_c)
     {
+      return Convert(_c.Ign());
+    }
+
+    /////////////////////////////////////////////
+    msgs::Color Convert(const ignition::math::Color &_c)
+    {
       msgs::Color result;
-      result.set_r(_c.r);
-      result.set_g(_c.g);
-      result.set_b(_c.b);
-      result.set_a(_c.a);
+      result.set_r(_c.R());
+      result.set_g(_c.G());
+      result.set_b(_c.B());
+      result.set_a(_c.A());
       return result;
     }
 
@@ -670,9 +691,9 @@ namespace gazebo
     }
 
     /////////////////////////////////////////////
-    common::Color Convert(const msgs::Color &_c)
+    ignition::math::Color Convert(const msgs::Color &_c)
     {
-      return common::Color(_c.r(), _c.g(), _c.b(), _c.a());
+      return ignition::math::Color(_c.r(), _c.g(), _c.b(), _c.a());
     }
 
     /////////////////////////////////////////////
@@ -775,6 +796,21 @@ namespace gazebo
       if (_sdf->HasElement("max_dist"))
         result.set_max_dist(_sdf->GetElement("max_dist")->Get<double>());
 
+      if (_sdf->HasElement("static"))
+        result.set_static_(_sdf->Get<bool>("static"));
+
+      if (_sdf->HasElement("use_model_frame"))
+        result.set_use_model_frame(_sdf->Get<bool>("use_model_frame"));
+
+      if (_sdf->HasElement("inherit_yaw"))
+        result.set_inherit_yaw(_sdf->Get<bool>("inherit_yaw"));
+
+      if (_sdf->HasElement("xyz"))
+      {
+        msgs::Set(result.mutable_xyz(),
+            _sdf->Get<ignition::math::Vector3d>("xyz"));
+      }
+
       return result;
     }
 
@@ -807,13 +843,13 @@ namespace gazebo
       if (_sdf->HasElement("diffuse"))
       {
         result.mutable_diffuse()->CopyFrom(
-            Convert(_sdf->Get<common::Color>("diffuse")));
+            Convert(_sdf->Get<ignition::math::Color>("diffuse")));
       }
 
       if (_sdf->HasElement("specular"))
       {
         result.mutable_specular()->CopyFrom(
-            Convert(_sdf->Get<common::Color>("specular")));
+            Convert(_sdf->Get<ignition::math::Color>("specular")));
       }
 
       if (_sdf->HasElement("attenuation"))
@@ -1098,16 +1134,16 @@ namespace gazebo
 
         if (elem->HasElement("ambient"))
           msgs::Set(matMsg->mutable_ambient(),
-              elem->Get<common::Color>("ambient"));
+              elem->Get<ignition::math::Color>("ambient"));
         if (elem->HasElement("diffuse"))
           msgs::Set(matMsg->mutable_diffuse(),
-              elem->Get<common::Color>("diffuse"));
+              elem->Get<ignition::math::Color>("diffuse"));
         if (elem->HasElement("specular"))
           msgs::Set(matMsg->mutable_specular(),
-              elem->Get<common::Color>("specular"));
+              elem->Get<ignition::math::Color>("specular"));
         if (elem->HasElement("emissive"))
           msgs::Set(matMsg->mutable_emissive(),
-              elem->Get<common::Color>("emissive"));
+              elem->Get<ignition::math::Color>("emissive"));
       }
 
       // Set the origin of the visual
@@ -1125,12 +1161,6 @@ namespace gazebo
         {
           msgs::Plugin *pluginMsg = result.add_plugin();
           pluginMsg->CopyFrom(PluginFromSDF(pluginElem));
-
-          // DEPRECATED in Gazebo7, remove in Gazebo8
-          // duplicate innerxml contents into an <sdf> tag to keep backwards
-          // compatibility
-          pluginMsg->set_innerxml(pluginMsg->innerxml() +
-              "\n<sdf>" + pluginMsg->innerxml() + "</sdf>");
 
           pluginElem = pluginElem->GetNextElement("plugin");
         }
@@ -1697,7 +1727,7 @@ namespace gazebo
         gzthrow(std::string("Unknown fog type[") + type + "]");
 
       result.mutable_color()->CopyFrom(
-          Convert(_sdf->Get<common::Color>("color")));
+          Convert(_sdf->Get<ignition::math::Color>("color")));
 
       result.set_density(_sdf->Get<double>("density"));
       result.set_start(_sdf->Get<double>("start"));
@@ -1724,12 +1754,12 @@ namespace gazebo
 
       if (_sdf->HasElement("ambient"))
         result.mutable_ambient()->CopyFrom(
-            Convert(_sdf->Get<common::Color>("ambient")));
+            Convert(_sdf->Get<ignition::math::Color>("ambient")));
 
       if (_sdf->HasElement("background"))
       {
         result.mutable_background()->CopyFrom(
-            Convert(_sdf->Get<common::Color>("background")));
+            Convert(_sdf->Get<ignition::math::Color>("background")));
       }
 
       if (_sdf->HasElement("sky"))
@@ -1748,7 +1778,7 @@ namespace gazebo
           skyMsg->set_humidity(cloudsElem->Get<double>("humidity"));
           skyMsg->set_mean_cloud_size(cloudsElem->Get<double>("mean_size"));
           msgs::Set(skyMsg->mutable_cloud_ambient(),
-                    cloudsElem->Get<common::Color>("ambient"));
+                    cloudsElem->Get<ignition::math::Color>("ambient"));
         }
       }
 
@@ -1802,10 +1832,94 @@ namespace gazebo
         result.mutable_contact()->CopyFrom(
           msgs::ContactSensorFromSDF(_sdf->GetElement("contact")));
       }
+      else if (type == "gps")
+      {
+        result.mutable_gps()->CopyFrom(
+          msgs::GPSSensorFromSDF(_sdf->GetElement("gps")));
+      }
+      else if (type == "logical_camera")
+      {
+        result.mutable_logical_camera()->CopyFrom(
+          msgs::LogicalCameraSensorFromSDF(_sdf->GetElement("logical_camera")));
+      }
+      else if (type == "imu")
+      {
+        result.mutable_imu()->CopyFrom(
+          msgs::IMUSensorFromSDF(_sdf->GetElement("imu")));
+      }
       else
       {
-        gzwarn << "Conversion of sensor type[" << type << "] not suppported."
+        gzwarn << "Conversion of sensor type[" << type << "] not supported."
           << std::endl;
+      }
+
+      return result;
+    }
+
+    /////////////////////////////////////////////////
+    msgs::IMUSensor IMUSensorFromSDF(sdf::ElementPtr _sdf)
+    {
+      msgs::IMUSensor result;
+
+      std::array<std::string, 2> senses =
+        {{"angular_velocity", "linear_acceleration"}};
+
+      std::array<std::string, 3> dimensions = {{"x", "y", "z"}};
+
+      for (auto const &sense : senses)
+      {
+        if (_sdf->HasElement(sense))
+        {
+          auto senseElem = _sdf->GetElement(sense);
+          for (auto const &dim : dimensions)
+          {
+            if (senseElem->HasElement(dim))
+            {
+              auto dimElem = senseElem->GetElement(dim);
+              auto noiseElem = dimElem->GetElement("noise");
+              msgs::SensorNoise *noiseMsg;
+
+              if (sense == "angular_velocity")
+              {
+                if (dim == "x")
+                {
+                  noiseMsg = result.mutable_angular_velocity()->
+                    mutable_x_noise();
+                }
+                else if (dim == "y")
+                {
+                  noiseMsg = result.mutable_angular_velocity()->
+                    mutable_y_noise();
+                }
+                else
+                {
+                  noiseMsg = result.mutable_angular_velocity()->
+                    mutable_z_noise();
+                }
+              }
+              else
+              {
+                if (dim == "x")
+                {
+                  noiseMsg = result.mutable_linear_acceleration()->
+                    mutable_x_noise();
+                }
+                else if (dim == "y")
+                {
+                  noiseMsg = result.mutable_linear_acceleration()->
+                    mutable_y_noise();
+                }
+                else
+                {
+                  noiseMsg = result.mutable_linear_acceleration()->
+                    mutable_z_noise();
+                }
+              }
+
+              noiseMsg->CopyFrom(SensorNoiseFromSDF(noiseElem));
+            }
+          }
+        }
       }
 
       return result;
@@ -1906,6 +2020,87 @@ namespace gazebo
     }
 
     /////////////////////////////////////////////////
+    msgs::GPSSensor GPSSensorFromSDF(sdf::ElementPtr _sdf)
+    {
+      msgs::GPSSensor result;
+
+      // The two types of sensing
+      std::array<std::string, 2> sensing =
+        {{"position_sensing", "velocity_sensing"}};
+
+      // The two dimensions for each of sensing types.
+      std::array<std::string, 2> dimensions = {{"horizontal", "vertical"}};
+
+      // Process each sensing
+      for (auto const &sense : sensing)
+      {
+        // Make sure the element exists
+        if (_sdf->HasElement(sense))
+        {
+          auto senseElem = _sdf->GetElement(sense);
+
+          // Process each dimension
+          for (auto const &dim : dimensions)
+          {
+            if (senseElem->HasElement(dim))
+            {
+              auto dimElem = senseElem->GetElement(dim);
+
+              // Add noise
+              if (dimElem->HasElement("noise"))
+              {
+                auto noiseElem = dimElem->GetElement("noise");
+                msgs::SensorNoise *noiseMsg;
+
+                if (sense == "position_sensing")
+                {
+                  if (dim == "horizontal")
+                  {
+                    noiseMsg = result.mutable_position()->
+                      mutable_horizontal_noise();
+                  }
+                  else
+                  {
+                    noiseMsg = result.mutable_position()->
+                      mutable_vertical_noise();
+                  }
+                }
+                else
+                {
+                  if (dim == "horizontal")
+                  {
+                    noiseMsg = result.mutable_velocity()->
+                      mutable_horizontal_noise();
+                  }
+                  else
+                  {
+                    noiseMsg = result.mutable_velocity()->
+                      mutable_vertical_noise();
+                  }
+                }
+
+                noiseMsg->CopyFrom(SensorNoiseFromSDF(noiseElem));
+              }
+            }
+          }
+        }
+      }
+
+      return result;
+    }
+
+    /////////////////////////////////////////////////
+    msgs::LogicalCameraSensor LogicalCameraSensorFromSDF(sdf::ElementPtr _sdf)
+    {
+      msgs::LogicalCameraSensor result;
+      result.set_near_clip(_sdf->Get<double>("near"));
+      result.set_far_clip(_sdf->Get<double>("far"));
+      result.set_horizontal_fov(_sdf->Get<double>("horizontal_fov"));
+      result.set_aspect_ratio(_sdf->Get<double>("aspect_ratio"));
+      return result;
+    }
+
+    /////////////////////////////////////////////////
     sdf::ElementPtr LightToSDF(const msgs::Light &_msg, sdf::ElementPtr _sdf)
     {
       sdf::ElementPtr lightSDF;
@@ -1994,6 +2189,198 @@ namespace gazebo
         elem->GetElement("falloff")->Set(_msg.spot_falloff());
       }
       return lightSDF;
+    }
+
+    /////////////////////////////////////////////////
+    sdf::ElementPtr SensorNoiseToSDF(const msgs::SensorNoise &_msg,
+        sdf::ElementPtr _sdf)
+    {
+      sdf::ElementPtr noiseSDF;
+
+      if (_sdf)
+      {
+        noiseSDF = _sdf;
+      }
+      else
+      {
+        noiseSDF.reset(new sdf::Element);
+        sdf::initFile("noise.sdf", noiseSDF);
+      }
+
+      if (_msg.type() == msgs::SensorNoise::NONE)
+      {
+        noiseSDF->GetAttribute("type")->Set("none");
+      }
+      else if (_msg.type() == msgs::SensorNoise::GAUSSIAN)
+      {
+        noiseSDF->GetAttribute("type")->Set("gaussian");
+      }
+      else if (_msg.type() == msgs::SensorNoise::GAUSSIAN_QUANTIZED)
+      {
+        noiseSDF->GetAttribute("type")->Set("gaussian_quantized");
+      }
+
+      if (_msg.has_mean())
+        noiseSDF->GetElement("mean")->Set(_msg.mean());
+
+      if (_msg.has_stddev())
+        noiseSDF->GetElement("stddev")->Set(_msg.stddev());
+
+      if (_msg.has_bias_mean())
+        noiseSDF->GetElement("bias_mean")->Set(_msg.bias_mean());
+
+      if (_msg.has_bias_stddev())
+        noiseSDF->GetElement("bias_stddev")->Set(_msg.bias_stddev());
+
+      if (_msg.has_precision())
+        noiseSDF->GetElement("precision")->Set(_msg.precision());
+
+      return noiseSDF;
+    }
+
+    /////////////////////////////////////////////////
+    sdf::ElementPtr GPSSensorToSDF(const msgs::GPSSensor &_msg,
+        sdf::ElementPtr _sdf)
+    {
+      sdf::ElementPtr gpsSDF;
+
+      if (_sdf)
+      {
+        gpsSDF = _sdf;
+      }
+      else
+      {
+        gpsSDF.reset(new sdf::Element);
+        sdf::initFile("gps.sdf", gpsSDF);
+      }
+
+      if (_msg.has_position())
+      {
+        if (_msg.position().has_horizontal_noise())
+        {
+          auto noiseElem = gpsSDF->GetElement("position_sensing")->GetElement(
+              "horizontal")->GetElement("noise");
+          noiseElem->PrintValues("  ");
+          SensorNoiseToSDF(_msg.position().horizontal_noise(), noiseElem);
+        }
+
+        if (_msg.position().has_vertical_noise())
+        {
+          auto noiseElem = gpsSDF->GetElement("position_sensing")->GetElement(
+              "vertical")->GetElement("noise");
+          SensorNoiseToSDF(_msg.position().vertical_noise(), noiseElem);
+        }
+      }
+
+      if (_msg.has_velocity())
+      {
+        if (_msg.velocity().has_horizontal_noise())
+        {
+          auto noiseElem = gpsSDF->GetElement("velocity_sensing")->GetElement(
+              "horizontal")->GetElement("noise");
+          SensorNoiseToSDF(_msg.velocity().horizontal_noise(), noiseElem);
+        }
+
+        if (_msg.velocity().has_vertical_noise())
+        {
+          auto noiseElem = gpsSDF->GetElement("velocity_sensing")->GetElement(
+              "vertical")->GetElement("noise");
+          SensorNoiseToSDF(_msg.velocity().vertical_noise(), noiseElem);
+        }
+      }
+
+      return gpsSDF;
+    }
+
+    /////////////////////////////////////////////////
+    sdf::ElementPtr IMUSensorToSDF(const msgs::IMUSensor &_msg,
+        sdf::ElementPtr _sdf)
+    {
+      sdf::ElementPtr imuSDF;
+
+      if (_sdf)
+      {
+        imuSDF = _sdf;
+      }
+      else
+      {
+        imuSDF.reset(new sdf::Element);
+        sdf::initFile("imu.sdf", imuSDF);
+      }
+
+      if (_msg.has_angular_velocity())
+      {
+        if (_msg.angular_velocity().has_x_noise())
+        {
+          auto noiseElem = imuSDF->GetElement("angular_velocity")->GetElement(
+              "x")->GetElement("noise");
+          SensorNoiseToSDF(_msg.angular_velocity().x_noise(), noiseElem);
+        }
+
+        if (_msg.angular_velocity().has_y_noise())
+        {
+          auto noiseElem = imuSDF->GetElement("angular_velocity")->GetElement(
+              "y")->GetElement("noise");
+          SensorNoiseToSDF(_msg.angular_velocity().y_noise(), noiseElem);
+        }
+
+        if (_msg.angular_velocity().has_z_noise())
+        {
+          auto noiseElem = imuSDF->GetElement("angular_velocity")->GetElement(
+              "z")->GetElement("noise");
+          SensorNoiseToSDF(_msg.angular_velocity().z_noise(), noiseElem);
+        }
+      }
+
+      if (_msg.has_linear_acceleration())
+      {
+        if (_msg.linear_acceleration().has_x_noise())
+        {
+          auto noiseElem = imuSDF->GetElement(
+              "linear_acceleration")->GetElement("x")->GetElement("noise");
+          SensorNoiseToSDF(_msg.linear_acceleration().x_noise(), noiseElem);
+        }
+
+        if (_msg.linear_acceleration().has_y_noise())
+        {
+          auto noiseElem = imuSDF->GetElement(
+              "linear_acceleration")->GetElement("y")->GetElement("noise");
+          SensorNoiseToSDF(_msg.linear_acceleration().y_noise(), noiseElem);
+        }
+
+        if (_msg.linear_acceleration().has_z_noise())
+        {
+          auto noiseElem = imuSDF->GetElement(
+              "linear_acceleration")->GetElement("z")->GetElement("noise");
+          SensorNoiseToSDF(_msg.linear_acceleration().z_noise(), noiseElem);
+        }
+      }
+
+      return imuSDF;
+    }
+
+    /////////////////////////////////////////////////
+    sdf::ElementPtr LogicalCameraSensorToSDF(
+        const msgs::LogicalCameraSensor &_msg, sdf::ElementPtr _sdf)
+    {
+      sdf::ElementPtr logicalSDF;
+
+      if (_sdf)
+      {
+        logicalSDF = _sdf;
+      }
+      else
+      {
+        logicalSDF.reset(new sdf::Element);
+        sdf::initFile("logical_camera.sdf", logicalSDF);
+      }
+
+      logicalSDF->GetElement("horizontal_fov")->Set(_msg.horizontal_fov());
+      logicalSDF->GetElement("aspect_ratio")->Set(_msg.aspect_ratio());
+      logicalSDF->GetElement("near")->Set(_msg.near_clip());
+      logicalSDF->GetElement("far")->Set(_msg.far_clip());
+
+      return logicalSDF;
     }
 
     /////////////////////////////////////////////////
@@ -2134,6 +2521,8 @@ namespace gazebo
         linkSDF->GetElement("self_collide")->Set(_msg.self_collide());
       if (_msg.has_kinematic())
         linkSDF->GetElement("kinematic")->Set(_msg.kinematic());
+      if (_msg.has_enable_wind())
+        linkSDF->GetElement("enable_wind")->Set(_msg.enable_wind());
       if (_msg.has_pose())
         linkSDF->GetElement("pose")->Set(ConvertIgn(_msg.pose()));
       if (_msg.has_inertial())
@@ -2599,21 +2988,14 @@ namespace gazebo
       int linkCount = _model.link_size();
       auto link = _model.mutable_link(linkCount-1);
 
-      auto inertial = link->mutable_inertial();
-      inertial->set_mass(_mass);
+      ignition::math::MassMatrix3d m;
+      if (!m.SetFromBox(_mass, _size))
       {
-        double dx = _size.X();
-        double dy = _size.Y();
-        double dz = _size.Z();
-        double ixx = _mass/12.0 * (dy*dy + dz*dz);
-        double iyy = _mass/12.0 * (dz*dz + dx*dx);
-        double izz = _mass/12.0 * (dx*dx + dy*dy);
-        inertial->set_ixx(ixx);
-        inertial->set_iyy(iyy);
-        inertial->set_izz(izz);
-        inertial->set_ixy(0.0);
-        inertial->set_ixz(0.0);
-        inertial->set_iyz(0.0);
+        gzerr << "Error computing inertia, not setting" << std::endl;
+      }
+      else
+      {
+        msgs::Set(link->mutable_inertial(), m);
       }
     }
 
@@ -2632,17 +3014,15 @@ namespace gazebo
       int linkCount = _model.link_size();
       auto link = _model.mutable_link(linkCount-1);
 
-      auto inertial = link->mutable_inertial();
-      inertial->set_mass(_mass);
-      const double r2 = _radius * _radius;
-      const double ixx = _mass * (0.25 * r2 + _length*_length / 12.0);
-      const double izz = _mass * 0.5 * r2;
-      inertial->set_ixx(ixx);
-      inertial->set_iyy(ixx);
-      inertial->set_izz(izz);
-      inertial->set_ixy(0.0);
-      inertial->set_ixz(0.0);
-      inertial->set_iyz(0.0);
+      ignition::math::MassMatrix3d m;
+      if (!m.SetFromCylinderZ(_mass, _length, _radius))
+      {
+        gzerr << "Error computing inertia, not setting" << std::endl;
+      }
+      else
+      {
+        msgs::Set(link->mutable_inertial(), m);
+      }
     }
 
     ////////////////////////////////////////////////////////
@@ -2657,15 +3037,15 @@ namespace gazebo
       int linkCount = _model.link_size();
       auto link = _model.mutable_link(linkCount-1);
 
-      auto inertial = link->mutable_inertial();
-      inertial->set_mass(_mass);
-      const double ixx = _mass * 0.4 * _radius * _radius;
-      inertial->set_ixx(ixx);
-      inertial->set_iyy(ixx);
-      inertial->set_izz(ixx);
-      inertial->set_ixy(0.0);
-      inertial->set_ixz(0.0);
-      inertial->set_iyz(0.0);
+      ignition::math::MassMatrix3d m;
+      if (!m.SetFromSphere(_mass, _radius))
+      {
+        gzerr << "Error computing inertia, not setting" << std::endl;
+      }
+      else
+      {
+        msgs::Set(link->mutable_inertial(), m);
+      }
     }
 
     ////////////////////////////////////////////////////////
@@ -2688,6 +3068,8 @@ namespace gazebo
       // ignore the id field, since it's not used in sdformat
       if (_msg.has_is_static())
         modelSDF->GetElement("static")->Set(_msg.is_static());
+      if (_msg.has_enable_wind())
+        modelSDF->GetElement("enable_wind")->Set(_msg.enable_wind());
       if (_msg.has_pose())
         modelSDF->GetElement("pose")->Set(msgs::ConvertIgn(_msg.pose()));
 
@@ -2698,6 +3080,18 @@ namespace gazebo
       {
         sdf::ElementPtr jointElem = modelSDF->AddElement("joint");
         jointElem = JointToSDF(_msg.joint(i), jointElem);
+      }
+
+      if (_msg.plugin_size() > 0)
+      {
+        while (modelSDF->HasElement("plugin"))
+          modelSDF->GetElement("plugin")->RemoveFromParent();
+      }
+
+      for (int i = 0; i < _msg.plugin_size(); ++i)
+      {
+        sdf::ElementPtr pluginElem = modelSDF->AddElement("plugin");
+        pluginElem = PluginToSDF(_msg.plugin(i), pluginElem);
       }
 
       if (_msg.link_size())
@@ -2840,6 +3234,221 @@ namespace gazebo
         if (_msg.has_limit_velocity())
           limitElem->GetElement("velocity")->Set(_msg.limit_velocity());
       }
+    }
+
+    /////////////////////////////////////////////
+    msgs::SensorNoise SensorNoiseFromSDF(sdf::ElementPtr _elem)
+    {
+      msgs::SensorNoise result;
+
+      auto noiseType = _elem->Get<std::string>("type");
+
+      if (noiseType == "none")
+        result.set_type(msgs::SensorNoise::NONE);
+      else if (noiseType == "gaussian")
+        result.set_type(msgs::SensorNoise::GAUSSIAN);
+      else if (noiseType == "gaussian_quantized")
+        result.set_type(msgs::SensorNoise::GAUSSIAN_QUANTIZED);
+      else
+      {
+        gzerr << "Invalid sensor noise type["
+          << noiseType << "]. Using 'none'.\n";
+
+        result.set_type(msgs::SensorNoise::NONE);
+      }
+
+      if (_elem->HasElement("mean"))
+        result.set_mean(_elem->Get<double>("mean"));
+
+      if (_elem->HasElement("stddev"))
+        result.set_stddev(_elem->Get<double>("stddev"));
+
+      if (_elem->HasElement("bias_mean"))
+        result.set_bias_mean(_elem->Get<double>("bias_mean"));
+
+      if (_elem->HasElement("bias_stddev"))
+        result.set_bias_stddev(_elem->Get<double>("bias_stddev"));
+
+      if (_elem->HasElement("precision"))
+        result.set_precision(_elem->Get<double>("precision"));
+
+      return result;
+    }
+
+    /////////////////////////////////////////////
+    ignition::msgs::Color ConvertIgnMsg(const msgs::Color &_msg)
+    {
+      ignition::msgs::Color result;
+
+      if (_msg.has_r())
+        result.set_r(_msg.r());
+      if (_msg.has_g())
+        result.set_g(_msg.g());
+      if (_msg.has_b())
+        result.set_b(_msg.b());
+      if (_msg.has_a())
+        result.set_a(_msg.a());
+
+      return result;
+    }
+
+    /////////////////////////////////////////////
+    msgs::Color ConvertIgnMsg(const ignition::msgs::Color &_msg)
+    {
+      msgs::Color result;
+
+      if (_msg.has_r())
+        result.set_r(_msg.r());
+      if (_msg.has_g())
+        result.set_g(_msg.g());
+      if (_msg.has_b())
+        result.set_b(_msg.b());
+      if (_msg.has_a())
+        result.set_a(_msg.a());
+
+      return result;
+    }
+
+    /////////////////////////////////////////////////
+    ignition::msgs::Material::ShaderType ConvertIgnMsg(
+        const msgs::Material::ShaderType &_type)
+    {
+      auto result = ignition::msgs::Material::VERTEX;
+
+      if (_type == msgs::Material::VERTEX)
+      {
+        result = ignition::msgs::Material::VERTEX;
+      }
+      else if (_type == msgs::Material::PIXEL)
+      {
+        result = ignition::msgs::Material::PIXEL;
+      }
+      else if (_type == msgs::Material::NORMAL_MAP_OBJECT_SPACE)
+      {
+        result = ignition::msgs::Material::NORMAL_MAP_OBJECT_SPACE;
+      }
+      else if (_type == msgs::Material::NORMAL_MAP_TANGENT_SPACE)
+      {
+        result = ignition::msgs::Material::NORMAL_MAP_TANGENT_SPACE;
+      }
+      else
+      {
+        gzerr << "Unrecognized ShaderType, returning VERTEX" << std::endl;
+      }
+      return result;
+    }
+
+    /////////////////////////////////////////////////
+    msgs::Material::ShaderType ConvertIgnMsg(
+        const ignition::msgs::Material::ShaderType &_type)
+    {
+      auto result = msgs::Material::VERTEX;
+
+      if (_type == ignition::msgs::Material::VERTEX)
+      {
+        result = msgs::Material::VERTEX;
+      }
+      else if (_type == ignition::msgs::Material::PIXEL)
+      {
+        result = msgs::Material::PIXEL;
+      }
+      else if (_type == ignition::msgs::Material::NORMAL_MAP_OBJECT_SPACE)
+      {
+        result = msgs::Material::NORMAL_MAP_OBJECT_SPACE;
+      }
+      else if (_type == ignition::msgs::Material::NORMAL_MAP_TANGENT_SPACE)
+      {
+        result = msgs::Material::NORMAL_MAP_TANGENT_SPACE;
+      }
+      else
+      {
+        gzerr << "Unrecognized ShaderType, returning VERTEX" << std::endl;
+      }
+      return result;
+    }
+
+    /////////////////////////////////////////////////
+    ignition::msgs::Material::Script ConvertIgnMsg(
+        const msgs::Material::Script &_script)
+    {
+      ignition::msgs::Material::Script result;
+
+      for (auto s : _script.uri())
+      {
+        result.add_uri(s);
+      }
+
+      if (_script.has_name())
+        result.set_name(_script.name());
+
+      return result;
+    }
+
+    /////////////////////////////////////////////////
+    msgs::Material::Script ConvertIgnMsg(
+        const ignition::msgs::Material::Script &_script)
+    {
+      msgs::Material::Script result;
+
+      for (auto s : _script.uri())
+      {
+        result.add_uri(s);
+      }
+
+      if (_script.has_name())
+        result.set_name(_script.name());
+
+      return result;
+    }
+
+    /////////////////////////////////////////////
+    ignition::msgs::Material ConvertIgnMsg(const msgs::Material &_msg)
+    {
+      ignition::msgs::Material result;
+
+      if (_msg.has_script())
+        result.mutable_script()->CopyFrom(ConvertIgnMsg(_msg.script()));
+      if (_msg.has_shader_type())
+        result.set_shader_type(ConvertIgnMsg(_msg.shader_type()));
+      if (_msg.has_normal_map())
+        result.set_normal_map(_msg.normal_map());
+      if (_msg.has_ambient())
+        result.mutable_ambient()->CopyFrom(ConvertIgnMsg(_msg.ambient()));
+      if (_msg.has_diffuse())
+        result.mutable_diffuse()->CopyFrom(ConvertIgnMsg(_msg.diffuse()));
+      if (_msg.has_specular())
+        result.mutable_specular()->CopyFrom(ConvertIgnMsg(_msg.specular()));
+      if (_msg.has_emissive())
+        result.mutable_emissive()->CopyFrom(ConvertIgnMsg(_msg.emissive()));
+      if (_msg.has_lighting())
+        result.set_lighting(_msg.lighting());
+
+      return result;
+    }
+
+    /////////////////////////////////////////////
+    msgs::Material ConvertIgnMsg(const ignition::msgs::Material &_msg)
+    {
+      msgs::Material result;
+
+      if (_msg.has_script())
+        result.mutable_script()->CopyFrom(ConvertIgnMsg(_msg.script()));
+      if (_msg.has_shader_type())
+        result.set_shader_type(ConvertIgnMsg(_msg.shader_type()));
+      if (_msg.has_normal_map())
+        result.set_normal_map(_msg.normal_map());
+      if (_msg.has_ambient())
+        result.mutable_ambient()->CopyFrom(ConvertIgnMsg(_msg.ambient()));
+      if (_msg.has_diffuse())
+        result.mutable_diffuse()->CopyFrom(ConvertIgnMsg(_msg.diffuse()));
+      if (_msg.has_specular())
+        result.mutable_specular()->CopyFrom(ConvertIgnMsg(_msg.specular()));
+      if (_msg.has_emissive())
+        result.mutable_emissive()->CopyFrom(ConvertIgnMsg(_msg.emissive()));
+      if (_msg.has_lighting())
+        result.set_lighting(_msg.lighting());
+
+      return result;
     }
   }
 }

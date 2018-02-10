@@ -14,11 +14,13 @@
  * limitations under the License.
  *
 */
+
+#include <sstream>
 #include <boost/bind.hpp>
 
-#include "gazebo/math/Angle.hh"
+#include <ignition/math/Vector2.hh>
 
-#include "gazebo/common/Color.hh"
+#include <ignition/math/Color.hh>
 
 #include "gazebo/gui/Conversions.hh"
 #include "gazebo/gui/building/ImportImageDialog.hh"
@@ -41,7 +43,7 @@ using namespace gui;
 
 /////////////////////////////////////////////////
 EditorView::EditorView(QWidget *_parent)
-  : QGraphicsView(_parent), currentMouseItem(0)
+: QGraphicsView(_parent)
 {
   this->setObjectName("editorView");
 
@@ -188,7 +190,8 @@ void EditorView::contextMenuEvent(QContextMenuEvent *_event)
     return;
   }
 
-  QGraphicsItem *item = this->scene()->itemAt(this->mapToScene(_event->pos()));
+  QGraphicsItem *item = this->scene()->itemAt(
+      this->mapToScene(_event->pos()), QTransform());
   if (item && item != this->levels[this->currentLevel]->backgroundPixmap)
   {
     _event->ignore();
@@ -251,7 +254,7 @@ void EditorView::mousePressEvent(QMouseEvent *_event)
       && this->drawMode != TEXTURE && (_event->button() != Qt::RightButton))
   {
     QGraphicsItem *mouseItem =
-        this->scene()->itemAt(this->mapToScene(_event->pos()));
+        this->scene()->itemAt(this->mapToScene(_event->pos()), QTransform());
     if (mouseItem && !mouseItem->isSelected())
     {
       EditorItem *editorItem = dynamic_cast<EditorItem*>(mouseItem);
@@ -291,7 +294,7 @@ void EditorView::mouseReleaseEvent(QMouseEvent *_event)
         StairsItem *stairsItem = dynamic_cast<StairsItem *>(
             this->currentMouseItem);
         stairsItem->SetTexture3d("");
-        stairsItem->SetColor3d(common::Color::White);
+        stairsItem->SetColor3d(ignition::math::Color::White);
         this->stairsList.push_back(stairsItem);
         if ((this->currentLevel) < static_cast<int>(floorList.size()))
         {
@@ -376,8 +379,8 @@ void EditorView::mouseMoveEvent(QMouseEvent *_event)
           {
             // Snap to angular increments
             QLineF newLine(p1, p2);
-            double angle = GZ_DTOR(QLineF(p1, p2).angle());
-            double range = GZ_DTOR(SegmentItem::SnapAngle);
+            double angle = IGN_DTOR(QLineF(p1, p2).angle());
+            double range = IGN_DTOR(SegmentItem::SnapAngle);
             int angleIncrement = angle / range;
 
             if ((angle - range*angleIncrement) > range*0.5)
@@ -478,6 +481,7 @@ void EditorView::mouseMoveEvent(QMouseEvent *_event)
                                        absPositionOnWall.y());
           editorItem->SetPositionOnWall(positionLength /
               wallSegmentItem->line().length());
+          editorItem->SetRotation(editorItem->Rotation());
         }
         return;
       }
@@ -600,7 +604,7 @@ void EditorView::mouseDoubleClickEvent(QMouseEvent *_event)
   }
   else
   {
-    if (!this->scene()->itemAt(this->mapToScene(_event->pos())))
+    if (!this->scene()->itemAt(this->mapToScene(_event->pos()), QTransform()))
       this->OnOpenLevelInspector();
   }
 
@@ -748,7 +752,7 @@ void EditorView::DrawWall(const QPoint &_pos)
 
     wallSegmentItem = dynamic_cast<WallSegmentItem*>(this->currentMouseItem);
     wallSegmentItem->SetTexture3d("");
-    wallSegmentItem->SetColor3d(common::Color::White);
+    wallSegmentItem->SetColor3d(ignition::math::Color::White);
     wallSegmentItem->SetHighlighted(false);
     this->wallSegmentList.push_back(wallSegmentItem);
     if (wallSegmentItem->Level() > 0)
@@ -1094,7 +1098,7 @@ void EditorView::OnAddLevel()
 
     floorItem->AttachWallSegment(wallSegmentItem);
     wallSegmentItem->SetTexture3d("");
-    wallSegmentItem->SetColor3d(common::Color::White);
+    wallSegmentItem->SetColor3d(ignition::math::Color::White);
     wallSegmentItem->SetHighlighted(false);
   }
 
@@ -1140,7 +1144,7 @@ void EditorView::OnAddLevel()
   this->scene()->addItem(floorItem);
   this->floorList.push_back(floorItem);
   floorItem->SetTexture3d("");
-  floorItem->SetColor3d(common::Color::White);
+  floorItem->SetColor3d(ignition::math::Color::White);
   floorItem->SetHighlighted(false);
 }
 

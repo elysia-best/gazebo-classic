@@ -94,7 +94,7 @@ namespace gazebo
 
       /// \brief Constructor.
       /// \param[in] _world The World that uses this physics engine.
-      public: ODEPhysics(WorldPtr _world);
+      public: explicit ODEPhysics(WorldPtr _world);
 
       /// \brief Destructor.
       public: virtual ~ODEPhysics();
@@ -140,7 +140,7 @@ namespace gazebo
                                            ModelPtr _parent);
 
       // Documentation inherited
-      public: virtual void SetGravity(const gazebo::math::Vector3 &_gravity);
+      public: virtual void SetGravity(const ignition::math::Vector3d &_gravity);
 
       // Documentation inherited
       public: virtual void SetWorldCFM(double cfm);

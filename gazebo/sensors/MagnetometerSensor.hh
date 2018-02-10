@@ -23,7 +23,6 @@
 #include <ignition/math/Vector3.hh>
 
 #include "gazebo/sensors/Sensor.hh"
-#include "gazebo/common/CommonTypes.hh"
 #include "gazebo/sensors/SensorTypes.hh"
 #include "gazebo/util/system.hh"
 
@@ -38,7 +37,7 @@ namespace gazebo
     /// \{
 
     /// \brief MagnetometerSensor to provide magnetic field measurement.
-    class GAZEBO_VISIBLE MagnetometerSensor: public Sensor
+    class GZ_SENSORS_VISIBLE MagnetometerSensor: public Sensor
     {
       /// \brief Constructor.
       public: MagnetometerSensor();

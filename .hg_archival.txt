@@ -1,6 +1,0 @@
-repo: e803bb5fe03c1370cbb9f434912cd73fd1e7942d
-node: a24b331f8ebfd712a226ba73b7f43d2d4c14fe15
-branch: gazebo7
-latesttag: gazebo7_7.8.0
-latesttagdistance: 12
-changessincelatesttag: 29

@@ -1,6 +1,684 @@
+## Gazebo 9
+
+## Gazebo 9.0.0 (2018-01-25)
+
+1. Update to `ign-transport4`, `ign-msgs1`, `ign-math4`. Added dependency on
+   only `sdformat6`, removing `sdformat5`.
+    * [Pull request #2843](https://bitbucket.org/osrf/gazebo/pull-request/2843)
+
+1. Provide option to preserve world velocity in Joint::SetPosition
+    * [Pull request #2814](https://bitbucket.org/osrf/gazebo/pull-requests/2814)
+    * [Issue 2111](https://bitbucket.org/osrf/gazebo/issues/2111)
+
+1. Rename `BUILD_TYPE_*` macros to `GAZEBO_BUILD_TYPE_*`
+    * [Pull request #2846](https://bitbucket.org/osrf/gazebo/pull-requests/2846)
+    * [Issue 2343](https://bitbucket.org/osrf/gazebo/issues/2343)
+
+1. Added World::SDF()
+    * [Pull request #2708](https://bitbucket.org/osrf/gazebo/pull-requests/2708)
+
+1. Fix compile error with due to using gazebo::common::Color with sdformat 6
+    * [Pull request #2786](https://bitbucket.org/osrf/gazebo/pull-request/2786)
+
+1. [Ignition Fuel Tools](https://ignitionrobotics.org/libs/fuel%20tools) integration:
+  1. Ignition Fuel support - model list
+      * [Pull request #2796](https://bitbucket.org/osrf/gazebo/pull-requests/2796)
+  1. Download a model from Ignition Fuel
+      * [Pull request #2800](https://bitbucket.org/osrf/gazebo/pull-requests/2800)
+  1. Export dependency on ignition-fuel-tools in cmake and pkgconfig files if it's found
+      * [Pull request #2850](https://bitbucket.org/osrf/gazebo/pull-request/2850)
+
+1. Avoid race condition between multiple writers to the same connection
+    * A contribution from Hendrik Skubch
+    * [Pull request #2826](https://bitbucket.org/osrf/gazebo/pull-requests/2826)
+
+1. Deprecate gazebo::common::Color
+    * [Pull request #2818](https://bitbucket.org/osrf/gazebo/pull-request/2818)
+    * [Pull request #2831](https://bitbucket.org/osrf/gazebo/pull-request/2831)
+    * [Pull request #2837](https://bitbucket.org/osrf/gazebo/pull-request/2837)
+    * [Pull request #2838](https://bitbucket.org/osrf/gazebo/pull-request/2838)
+    * [Pull request #2842](https://bitbucket.org/osrf/gazebo/pull-request/2842)
+
+1. Updates to MovableText
+    * [Pull request #2839](https://bitbucket.org/osrf/gazebo/pull-request/2839)
+
+1. Mark constructors as explicit to fix cppcheck warnings
+    * [Pull request #2790](https://bitbucket.org/osrf/gazebo/pull-request/2790)
+    * [Pull request #2792](https://bitbucket.org/osrf/gazebo/pull-request/2792)
+    * [Pull request #2795](https://bitbucket.org/osrf/gazebo/pull-request/2795)
+    * [Pull request #2822](https://bitbucket.org/osrf/gazebo/pull-request/2822)
+
+1. Try finding both ignition math 3 or 4 until we switch to 4
+    * [Pull request #2783](https://bitbucket.org/osrf/gazebo/pull-request/2783)
+
+1. Replaced use of ignition::msgs::ImageStamped with ignition::msgs::Image
+    * [Pull request #2781](https://bitbucket.org/osrf/gazebo/pull-request/2781)
+
+1. Fix missing includes for boost lexical cast
+    * [Pull request #2784](https://bitbucket.org/osrf/gazebo/pull-request/2784)
+
+1. Try finding both sdformat 5 and 6 until we switch to 6
+    * [Pull request #2750](https://bitbucket.org/osrf/gazebo/pull-request/2750)
+
+1. HarnessPlugin: PIMPL and allow re-attaching
+    * [Pull request #2697](https://bitbucket.org/osrf/gazebo/pull-request/2697)
+
+1. DART: Update contact information also if physics engine is disabled
+    * [Pull request #2704](https://bitbucket.org/osrf/gazebo/pull-requests/2704)
+
+1. Integration of DART-6
+    * [Pull request #2547](https://bitbucket.org/osrf/gazebo/
+
+1. Image Viewer: fix QImage::Format used to display grayscale images
+    * A contribution from Julien Lecoeur
+    * [Pull request #2812](https://bitbucket.org/osrf/gazebo/pull-requests/2812)
+
+1. Fix compilation of some tests on Windows
+    * A contribution from Silvio Traversaro
+    * [Pull request #2699](https://bitbucket.org/osrf/gazebo/pull-requests/2699)
+
+1. Remove Gazebo 8 deprecations
+    * [Pull request #2605](https://bitbucket.org/osrf/gazebo/pull-request/2605)
+    * [Pull request #2607](https://bitbucket.org/osrf/gazebo/pull-request/2607)
+    * [Pull request #2603](https://bitbucket.org/osrf/gazebo/pull-request/2603)
+    * [Pull request #2604](https://bitbucket.org/osrf/gazebo/pull-request/2604)
+    * [Pull request #2627](https://bitbucket.org/osrf/gazebo/pull-request/2627)
+
+1. Bullet: sending feedback on contact points on depth 0 as well
+    * [Pull request #2630](https://bitbucket.org/osrf/gazebo/pull-requests/2630/)
+
+1. Deprecate functions to set linear/angular acceleration
+    * [Pull request #2622](https://bitbucket.org/osrf/gazebo/pull-request/2622)
+
+1. Added GpuLaserDataIterator
+    * [Pull request #2637](https://bitbucket.org/osrf/gazebo/pull-request/2637)
+
+1. Added possibility to enforce contact computation
+    * [Pull request #2629](https://bitbucket.org/osrf/gazebo/pull-requests/2629/)
+
+1. Add function to retrieve scoped sensors name in multi-nested model
+    * [Pull request #2676](https://bitbucket.org/osrf/gazebo/pull-request/2676)
+
+## Gazebo 8
+
+## Gazebo 8.x.x (2017-xx-xx)
+
+1. Fix inserting models with invalid submesh
+    * [Pull request 2828](https://bitbucket.org/osrf/gazebo/pull-request/2828)
+
+1. Move Connection header buffer from heap to stack to avoid race condition.
+    * [Pull request 2844](https://bitbucket.org/osrf/gazebo/pull-requests/2844)
+
+1. Shadow improvements
+    * [Pull request 2805](https://bitbucket.org/osrf/gazebo/pull-requests/2805)
+
+1. Add light as child of link
+    * [Pull request 2807](https://bitbucket.org/osrf/gazebo/pull-requests/2807)
+    * [Issue 900](https://bitbucket.org/osrf/gazebo/issues/900)
+
+1. Add camera lens flare effect
+    * [Pull request 2806](https://bitbucket.org/osrf/gazebo/pull-request/2806)
+    * [Pull request 2829](https://bitbucket.org/osrf/gazebo/pull-request/2829)
+
+1. Image Viewer: fix QImage::Format used to display grayscale images
+    * [Pull request #2813](https://bitbucket.org/osrf/gazebo/pull-requests/2813)
+
+1. Fix gazebo8 homebrew build (support tinyxml2 6.0.0)
+    * [Pull request 2823](https://bitbucket.org/osrf/gazebo/pull-request/2823)
+    * [ign-common issue 28](https://bitbucket.org/ignitionrobotics/ign-common/issues/28)
+
+
+## Gazebo 8.2.0 (2017-12-10)
+
+1. Fix Collision::GetWorldPose for non-canonical links (and friction directions)
+    * [Pull request 2702](https://bitbucket.org/osrf/gazebo/pull-request/2702)
+    * [Issue 2068](https://bitbucket.org/osrf/gazebo/issues/2068)
+
+1. Joint control menu highlight active
+    * [Pull request 2747](https://bitbucket.org/osrf/gazebo/pull-requests/2747)
+    * [Issue 2307](https://bitbucket.org/osrf/gazebo/issues/2307)
+
+1. Fix inserted mesh scale during log playback
+    * [Pull request #2723](https://bitbucket.org/osrf/gazebo/pull-request/2723)
+
+1. rendering/UNIT_Grid_TEST: Fix test failure due to EXPECT_EQ on floats
+    * [Pull request 2802](https://bitbucket.org/osrf/gazebo/pull-requests/2802)
+
+1. Diagnostics: enable test and don't create so many empty folders
+    * [Pull request 2798](https://bitbucket.org/osrf/gazebo/pull-requests/2798)
+
+1. RenderEngine::SetupResources(): Fix resource locations being added multiple times
+    * [Pull request 2801](https://bitbucket.org/osrf/gazebo/pull-request/2801)
+
+1. Fix gui and rendering tests for gazebo8 + ogre1.9 on OSX
+    * [Pull request 2793](https://bitbucket.org/osrf/gazebo/pull-request/2793)
+
+1. Support off-diagonal inertia terms in bullet
+    * [Pull request 2757](https://bitbucket.org/osrf/gazebo/pull-requests/2757)
+
+1. Parallelize ODE physics with threaded islands parameter
+    * [Pull request 2775](https://bitbucket.org/osrf/gazebo/pull-requests/2775)
+
+1. Disable broken dart5 tests on gazebo8 branch
+    * [Pull request 2771](https://bitbucket.org/osrf/gazebo/pull-request/2771)
+
+1. Fix gazebo7 compile error with boost 1.58 for oculus support
+    * [Pull request 2788](https://bitbucket.org/osrf/gazebo/pull-request/2788)
+    * [Issue 2356](https://bitbucket.org/osrf/gazebo/issues/2356)
+
+1. Logical Camera sees nested models
+    * [Pull request 2776](https://bitbucket.org/osrf/gazebo/pull-request/2776)
+    * [Issue 2342](https://bitbucket.org/osrf/gazebo/issues/2342)
+
+1. Logical camera uses <topic>
+    * [Pull request 2777](https://bitbucket.org/osrf/gazebo/pull-requests/2777)
+
+1. Removed std::cout logging output on deferred shading
+    * [Pull request 2779](https://bitbucket.org/osrf/gazebo/pull-request/2779)
+
+1. Update depth camera shaders version
+    * [Pull request 2767](https://bitbucket.org/osrf/gazebo/pull-request/2767)
+    * [Issue 2323](https://bitbucket.org/osrf/gazebo/issues/2323)
+
+1. Replaced Ogre::SharedPtr constructor calls with 0 arguments
+    * [Pull request 2772](https://bitbucket.org/osrf/gazebo/pull-request/2772)
+
+1. Send message to subscribers only once per connection
+    * [Pull request 2763](https://bitbucket.org/osrf/gazebo/pull-request/2763)
+
+1. Fix disabling mesh cast shadows
+    * [Pull request 2710](https://bitbucket.org/osrf/gazebo/pull-request/2710)
+
+1. Fix gzclient shutdown segmentation fault with ogre 1.10
+    * [Pull request 2761](https://bitbucket.org/osrf/gazebo/pull-request/2761)
+    * [Issue 2324](https://bitbucket.org/osrf/gazebo/issues/2324)
+
+1. Fix right-click segfault
+    * [Pull request 2809](https://bitbucket.org/osrf/gazebo/pull-request/2809)
+    * [Issue 2377](https://bitbucket.org/osrf/gazebo/issues/2377)
+
+1. Joint control menu highlight active
+    * [Pull request 2747](https://bitbucket.org/osrf/gazebo/pull-requests/2747)
+    * [Issue 2307](https://bitbucket.org/osrf/gazebo/issues/2307)
+
+1. Don't use lib prefix for ogre plugins as of ogre1.9
+    * [Pull request 2803](https://bitbucket.org/osrf/gazebo/pull-request/2803)
+
+1. RenderEngine::SetupResources(): Fix resource locations being added multiple times
+    * [Pull request 2801](https://bitbucket.org/osrf/gazebo/pull-request/2801)
+
+1. Added and improved communications between the JointControlWidget and JointController
+    * [Pull request 2730](https://bitbucket.org/osrf/gazebo/pull-request/2730)
+    * [Issue 295](https://bitbucket.org/osrf/gazebo/issues/295)
+
+1. Add function to retrieve scoped sensors name in multi-nested model
+    * [Pull request 2674](https://bitbucket.org/osrf/gazebo/pull-request/2674)
+
+1. Backport wide angle camera VM FSAA fix
+    * [Pull request 2711](https://bitbucket.org/osrf/gazebo/pull-request/2711)
+
+1. Add log record filter options
+    * [Pull request 2715](https://bitbucket.org/osrf/gazebo/pull-request/2715)
+    * [Pull request 2725](https://bitbucket.org/osrf/gazebo/pull-request/2725)
+
+1. Fix inertia parameters in friction_spheres.world
+    * [Pull request 2724](https://bitbucket.org/osrf/gazebo/pull-request/2724)
+
+1. ODE slip parameter example world and test
+    * [Pull request 2717](https://bitbucket.org/osrf/gazebo/pull-request/2717)
+
+1. Aligned collision and visual geometries for friction_dir_test.world
+    * [Pull request 2726](https://bitbucket.org/osrf/gazebo/pull-request/2726)
+
+1. Do not display COM or inertia visualizations for static models
+    * [Pull request 2727](https://bitbucket.org/osrf/gazebo/pull-request/2727)
+    * [Issue 2286](https://bitbucket.org/osrf/gazebo/issues/2286)
+
+1. Fix index error in VClouds/DataManager.cpp
+    * [Pull request 2722](https://bitbucket.org/osrf/gazebo/pull-request/2722)
+
+1. Fix orbiting view around heightmap
+    * [Pull request 2688](https://bitbucket.org/osrf/gazebo/pull-request/2688)
+    * [Issue 2049](https://bitbucket.org/osrf/gazebo/issues/2049)
+
+1. Fix configure script on windows
+    * [Pull request 2735](https://bitbucket.org/osrf/gazebo/pull-request/2735)
+
+1. Add option in gui.ini to disable the use of spacenav
+    * [Pull request 2754](https://bitbucket.org/osrf/gazebo/pull-requests/2754)
+
+1. Test which demonstrates Simbody exception when manipulating object twice while paused
+    * [Pull request 2737](https://bitbucket.org/osrf/gazebo/pull-request/2737)
+
+## Gazebo 8.1.1 (2017-06-05)
+
+1. Add the option --gui-client-plugin to load GUI plugins. Leave -g to load System Plugins.
+    * [Pull request 2716](https://bitbucket.org/osrf/gazebo/pull-requests/2716)
+    * [Issue 2279](https://bitbucket.org/osrf/gazebo/issues/2279)
+
+1. Remove duplicate material block in ShadowCaster.material
+    * [Pull request 2721](https://bitbucket.org/osrf/gazebo/pull-request/2721)
+
+1. Fix race condition during Detach of HarnessPlugin
+    * [Pull request 2696](https://bitbucket.org/osrf/gazebo/pull-request/2696)
+
+1. Added support for pincushion distortion model; fixed bug where
+   cameras with different distortion models would have the same distortion.
+    * [Pull request 2678](https://bitbucket.org/osrf/gazebo/pull-requests/2678)
+
+1. Add actors in World as models so they get returned with World::Models()
+    * [Pull request 2706](https://bitbucket.org/osrf/gazebo/pull-request/2706)
+    * [Issue 2271](https://bitbucket.org/osrf/gazebo/issues/2271)
+
+1. Refactor tests to use models from world file instead of dynamically spawning models
+    * [Pull request 2689](https://bitbucket.org/osrf/gazebo/pull-request/2689)
+
+## Gazebo 8.1.0 (2017-05-04)
+
+1. Fixed precompiled headers to work in more use-cases.
+    * [Pull request 2662](https://bitbucket.org/osrf/gazebo/pull-request/2662)
+
+1. Subdivide large heightmaps to fix LOD and support global texture mapping
+    * [Pull request 2655](https://bitbucket.org/osrf/gazebo/pull-request/2655)
+
+1. Added <collide_bitmask> support to bullet
+    * [Pull request 2649](https://bitbucket.org/osrf/gazebo/pull-request/2649)
+
+1. Fix linking when using HDF5_INSTRUMENT for logging ODE data
+    * [Pull request 2669](https://bitbucket.org/osrf/gazebo/pull-request/2669)
+    * [Issue 1841](https://bitbucket.org/osrf/gazebo/issues/1841)
+
+1. Force / torque sensor visualization using WrenchVisual
+    * [Pull request 2653](https://bitbucket.org/osrf/gazebo/pull-request/2653)
+
+1. Cache heightmap tile data
+    * [Pull request 2645](https://bitbucket.org/osrf/gazebo/pull-request/2645)
+
+1. Add plugin for attaching lights to links in a model
+    * [Pull request 2647](https://bitbucket.org/osrf/gazebo/pull-request/2647)
+
+1. Support Heightmap LOD
+    * [Pull request 2636](https://bitbucket.org/osrf/gazebo/pull-request/2636)
+
+1. Support setting shadow texture size
+    * [Pull request 2644](https://bitbucket.org/osrf/gazebo/pull-request/2644)
+
+1. Fix deprecated sdf warnings produced by PluginToSDF
+    * [Pull request 2646](https://bitbucket.org/osrf/gazebo/pull-request/2646)
+    * [Issue 2202](https://bitbucket.org/osrf/gazebo/issues/2202)
+
+1. Added TouchPlugin, which checks if a model has been in contact with another
+   model exclusively for a certain time.
+    * [Pull request 2651](https://bitbucket.org/osrf/gazebo/pull-request/2651)
+
+1. Fixes -inf laser reading being displayed as +inf
+    * [Pull request 2641](https://bitbucket.org/osrf/gazebo/pull-request/2641)
+
+1. Proper exception handling for animated box example
+    * [Pull request 2618](https://bitbucket.org/osrf/gazebo/pull-request/2618)
+
+1. Fix examples compilation (#2177)
+    * [Pull request 2634](https://bitbucket.org/osrf/gazebo/pull-request/2634)
+    * [Issue 2177](https://bitbucket.org/osrf/gazebo/issues/2177)
+
+1. Fix loading gui plugins and OSX framerate issue
+    * [Pull request 2631](https://bitbucket.org/osrf/gazebo/pull-request/2631)
+    * [Issue 1311](https://bitbucket.org/osrf/gazebo/issues/1311)
+    * [Issue 2133](https://bitbucket.org/osrf/gazebo/issues/2133)
+
+1. Fix ign-math3 deprecation warnings
+    * [Pull request 2612](https://bitbucket.org/osrf/gazebo/pull-request/2612)
+    * [Pull request 2626](https://bitbucket.org/osrf/gazebo/pull-request/2626)
+    * [Pull request 2648](https://bitbucket.org/osrf/gazebo/pull-request/2648)
+
+1. Re-order some gui tests to fix osx failures
+    * [Pull request 2650](https://bitbucket.org/osrf/gazebo/pull-request/2650)
+    * [Issue 2197](https://bitbucket.org/osrf/gazebo/issues/2197)
+
+
+## Gazebo 8.0.0 (2017-01-25)
+
+1. Depend on ignition math3
+    * [Pull request #2588](https://bitbucket.org/osrf/gazebo/pull-request/2588)
+
+1. Use ignition math with ServerFixture
+    * [Pull request #2552](https://bitbucket.org/osrf/gazebo/pull-request/2552)
+
+1. Changed the type of `FrictionPyramid::direction1` from `gazebo::math::Vector3` to `ignition::math::Vector3d`.
+    * [Pull request #2548](https://bitbucket.org/osrf/gazebo/pull-request/2548)
+
+1. Added igntition::transport interfaces to header files
+    * [Pull request #2559](https://bitbucket.org/osrf/gazebo/pull-request/2559)
+
+1. Added ignition transport dependency, and output camera sensor images on
+   an ignition transport topic.
+    * [Pull request #2544](https://bitbucket.org/osrf/gazebo/pull-request/2544)
+
+1. Fix restoring submesh material transparency
+    * [Pull request #2536](https://bitbucket.org/osrf/gazebo/pull-request/2536)
+
+1. Updated `gz_log` tool to use `ignition::math`.
+    * [Pull request #2532](https://bitbucket.org/osrf/gazebo/pull-request/2532)
+
+1. Updated the following rendering classes to use `ignition::math`:
+   `FPSViewController`, `JointVisual`, `OculusCamera`, `OrbitViewController`,
+   `OrthoViewController`, `Projector`, `UserCamera`, `ViewController`.
+    * [Pull request #2551](https://bitbucket.org/osrf/gazebo/pull-request/2551)
+
+1. Update examples to use ign-math.
+    * [Pull request #2539](https://bitbucket.org/osrf/gazebo/pull-request/2539)
+
+1. Update plugins to use ign-math.
+    * [Pull request #2531](https://bitbucket.org/osrf/gazebo/pull-request/2531)
+    * [Pull request #2534](https://bitbucket.org/osrf/gazebo/pull-request/2534)
+    * [Pull request #2538](https://bitbucket.org/osrf/gazebo/pull-request/2538)
+
+1. Use ignition math with `rendering/Distortion` and update function names.
+    * [Pull request #2529](https://bitbucket.org/osrf/gazebo/pull-request/2529)
+
+1. Updated COMVisual class to use `ignition::math`.
+    * [Pull request #2528](https://bitbucket.org/osrf/gazebo/pull-request/2528)
+
+1. Deprecate angle API from physics::Joint, in favor of using doubles
+    * [Pull request #2568](https://bitbucket.org/osrf/gazebo/pull-request/2568)
+    * [Issue #553](https://bitbucket.org/osrf/gazebo/issues/553)
+    * [Issue #1108](https://bitbucket.org/osrf/gazebo/issues/1108)
+
+1. PIMPL-ize `gazebo/physics/Gripper` and use ignition-math.
+    * [Pull request #2523](https://bitbucket.org/osrf/gazebo/pull-request/2523)
+
+1. Added VisualMarkers to the rendering engine. Visual markers support
+   programmatic rendering of various shapes in a scene.
+    * [Pull request 2541](https://bitbucket.org/osrf/gazebo/pull-request/2541)
+
+1. Support version 5 of the DART Physics Engine.
+    * [Pull request #2459](https://bitbucket.org/osrf/gazebo/pull-request/2459)
+
+1. UserCamera overrides `Camera::Render` to reduce CPU usage.
+    * [Pull request 2480](https://bitbucket.org/osrf/gazebo/pull-request/2480)
+
+1. Static links no longer subscribe to wrench topics.
+    * [Pull request #2452]((https://bitbucket.org/osrf/gazebo/pull-request/2452)
+
+1. Add Gazebo math helper functions to convert to and from Ignition Math
+   objects.
+    * [Pull request #2461](https://bitbucket.org/osrf/gazebo/pull-request/2461)
+
+1. Add video recording of user camera. This change added an optional
+   dependency on libavdevice>=56.4.100 for linux systems. When installed,
+   libavdevice will allow a user to stream a simulated camera to a video4linux2
+   loopback device.
+    * [Pull request #2443](https://bitbucket.org/osrf/gazebo/pull-request/2443)
+
+1. Removed deprecations
+    * [Pull request #2427]((https://bitbucket.org/osrf/gazebo/pull-request/2427)
+
+1. Include basic support for GNU Precompiled Headers to reduce compile time
+    * [Pull request #2268](https://bitbucket.org/osrf/gazebo/pull-request/2268)
+
+1. Plotting utility
+    * [Pull request #2348](https://bitbucket.org/osrf/gazebo/pull-request/2348)
+    * [Pull request #2325](https://bitbucket.org/osrf/gazebo/pull-request/2325)
+    * [Pull request #2382](https://bitbucket.org/osrf/gazebo/pull-request/2382)
+    * [Pull request #2448](https://bitbucket.org/osrf/gazebo/pull-request/2448)
+
+1. Renamed `gazebo/gui/SaveDialog` to `gazebo/gui/SaveEntityDialog`. A new
+   `SaveDialog` class will be added in a future pull request. The migration
+   guide will be updated with that pull request.
+    * [Pull request #2384](https://bitbucket.org/osrf/gazebo/pull-request/2384)
+
+1. Add FiducialCameraPlugin for Camera Sensors
+    * [Pull request #2350](https://bitbucket.org/osrf/gazebo/pull-request/2350)
+
+1. Fix Road2d vertices and shadows
+    * [Pull request #2362](https://bitbucket.org/osrf/gazebo/pull-request/2362)
+
+1. Rearrange GLWidget::OnMouseMove so that the more common use cases it
+   fewer if statements. Use std::thread in place of boost in OculusWindow.
+   Pragma statements to prevent warnings. Prevent variable hiding in
+   WallSegmentItem.
+    * [Pull request #2376](https://bitbucket.org/osrf/gazebo/pull-request/2376)
+
+1. Use single pixel selection buffer for mouse picking
+    * [Pull request #2335](https://bitbucket.org/osrf/gazebo/pull-request/2335)
+
+1. Refactor Visual classes
+  * [Pull request #2331](https://bitbucket.org/osrf/gazebo/pull-requests/2331)
+
+1. Windows plugins (with .dll extension) now accepted
+    * [Pull request #2311](https://bitbucket.org/osrf/gazebo/pull-requests/2311)
+    * Writing libMyPlugin.so in the sdf file will look for MyPlugin.dll on windows.
+
+1. Add Introspection Manager and Client util
+    * [Pull request #2304](https://bitbucket.org/osrf/gazebo/pull-request/2304)
+
+1. Refactor Event classes and improve memory management.
+    * [Pull request #2277](https://bitbucket.org/osrf/gazebo/pull-request/2277)
+    * [Pull request #2317](https://bitbucket.org/osrf/gazebo/pull-request/2317)
+    * [Pull request #2329](https://bitbucket.org/osrf/gazebo/pull-request/2329)
+    * [gazebo_design Pull request #33](https://bitbucket.org/osrf/gazebo_design/pull-requests/33)
+
+1. Remove EntityMakerPrivate and move its members to derived classes
+    * [Pull request #2310](https://bitbucket.org/osrf/gazebo/pull-request/2310)
+
+1. Conversion between ign-msgs and sdf, for plugin
+    * [Pull request #2403](https://bitbucket.org/osrf/gazebo/pull-request/2403)
+
+1. Change NULL to nullptr.
+    * [Pull request #2294](https://bitbucket.org/osrf/gazebo/pull-request/2294)
+    * [Pull request #2297](https://bitbucket.org/osrf/gazebo/pull-request/2297)
+    * [Pull request #2298](https://bitbucket.org/osrf/gazebo/pull-request/2298)
+    * [Pull request #2302](https://bitbucket.org/osrf/gazebo/pull-request/2302)
+    * [Pull request #2295](https://bitbucket.org/osrf/gazebo/pull-request/2295)
+    * [Pull request #2300](https://bitbucket.org/osrf/gazebo/pull-request/2300)
+
+1. Fix memory and other issues found from running Coverity.
+    * A contribution from Olivier Crave
+    * [Pull request #2241](https://bitbucket.org/osrf/gazebo/pull-request/2241)
+    * [Pull request #2242](https://bitbucket.org/osrf/gazebo/pull-request/2242)
+    * [Pull request #2243](https://bitbucket.org/osrf/gazebo/pull-request/2243)
+    * [Pull request #2244](https://bitbucket.org/osrf/gazebo/pull-request/2244)
+    * [Pull request #2245](https://bitbucket.org/osrf/gazebo/pull-request/2245)
+
+1. Deprecate gazebo::math
+    * [Pull request #2594](https://bitbucket.org/osrf/gazebo/pull-request/2594)
+    * [Pull request #2513](https://bitbucket.org/osrf/gazebo/pull-request/2513)
+    * [Pull request #2586](https://bitbucket.org/osrf/gazebo/pull-request/2586)
+    * [Pull request #2326](https://bitbucket.org/osrf/gazebo/pull-request/2326)
+    * [Pull request #2579](https://bitbucket.org/osrf/gazebo/pull-request/2579)
+    * [Pull request #2574](https://bitbucket.org/osrf/gazebo/pull-request/2574)
+    * [Pull request #2426](https://bitbucket.org/osrf/gazebo/pull-request/2426)
+    * [Pull request #2567](https://bitbucket.org/osrf/gazebo/pull-request/2567)
+    * [Pull request #2355](https://bitbucket.org/osrf/gazebo/pull-request/2355)
+    * [Pull request #2407](https://bitbucket.org/osrf/gazebo/pull-request/2407)
+    * [Pull request #2564](https://bitbucket.org/osrf/gazebo/pull-request/2564)
+    * [Pull request #2591](https://bitbucket.org/osrf/gazebo/pull-request/2591)
+    * [Pull request #2425](https://bitbucket.org/osrf/gazebo/pull-request/2425)
+    * [Pull request #2570](https://bitbucket.org/osrf/gazebo/pull-request/2570)
+    * [Pull request #2436](https://bitbucket.org/osrf/gazebo/pull-request/2436)
+    * [Pull request #2556](https://bitbucket.org/osrf/gazebo/pull-request/2556)
+    * [Pull request #2472](https://bitbucket.org/osrf/gazebo/pull-request/2472)
+    * [Pull request #2505](https://bitbucket.org/osrf/gazebo/pull-request/2505)
+    * [Pull request #2583](https://bitbucket.org/osrf/gazebo/pull-request/2583)
+    * [Pull request #2514](https://bitbucket.org/osrf/gazebo/pull-request/2514)
+    * [Pull request #2522](https://bitbucket.org/osrf/gazebo/pull-request/2522)
+    * [Pull request #2565](https://bitbucket.org/osrf/gazebo/pull-request/2565)
+    * [Pull request #2525](https://bitbucket.org/osrf/gazebo/pull-request/2525)
+    * [Pull request #2533](https://bitbucket.org/osrf/gazebo/pull-request/2533)
+    * [Pull request #2543](https://bitbucket.org/osrf/gazebo/pull-request/2543)
+    * [Pull request #2549](https://bitbucket.org/osrf/gazebo/pull-request/2549)
+    * [Pull request #2554](https://bitbucket.org/osrf/gazebo/pull-request/2554)
+    * [Pull request #2560](https://bitbucket.org/osrf/gazebo/pull-request/2560)
+    * [Pull request #2585](https://bitbucket.org/osrf/gazebo/pull-request/2585)
+    * [Pull request #2575](https://bitbucket.org/osrf/gazebo/pull-request/2575)
+    * [Pull request #2563](https://bitbucket.org/osrf/gazebo/pull-request/2563)
+    * [Pull request #2573](https://bitbucket.org/osrf/gazebo/pull-request/2573)
+    * [Pull request #2577](https://bitbucket.org/osrf/gazebo/pull-request/2577)
+    * [Pull request #2581](https://bitbucket.org/osrf/gazebo/pull-request/2581)
+    * [Pull request #2566](https://bitbucket.org/osrf/gazebo/pull-request/2566)
+    * [Pull request #2578](https://bitbucket.org/osrf/gazebo/pull-request/2578)
+
+1. Add Wind support
+    * [Pull request #1985](https://bitbucket.org/osrf/gazebo/pull-request/1985)
+    * A contribution from Olivier Crave
+
+1. Add const accessors to uri path and query
+    * [Pull request #2400](https://bitbucket.org/osrf/gazebo/pull-request/2400)
+
+1. Server generates unique model names in case of overlap, and added allow_renaming field to factory message.
+    * [Pull request 2301](https://bitbucket.org/osrf/gazebo/pull-request/2301)
+    * [Issue 510](https://bitbucket.org/osrf/gazebo/issues/510)
+
+1. Adds an output option to gz log that allows the tool to filter a log file and write to a new log file.
+    * [Pull request #2149](https://bitbucket.org/osrf/gazebo/pull-request/2149)
+
+1. Add common::URI class
+    * [Pull request #2275](https://bitbucket.org/osrf/gazebo/pull-request/2275)
+
+1. Update Actor animations by faciliting skeleton visualization, control via a plugin. Also resolves issue #1785.
+    * [Pull request #2219](https://bitbucket.org/osrf/gazebo/pull-request/2219)
+
+1. Generalize actors to work even if not all elements are specified
+    * [Pull request #2360](https://bitbucket.org/osrf/gazebo/pull-request/2360)
+
+1. PIMPLize rendering/Grid
+    * [Pull request 2330](https://bitbucket.org/osrf/gazebo/pull-request/2330)
+
+1. Use only Gazebo's internal version of tinyxml2. The version of tinyxml2 distributed with Ubuntu fails when parsing large log files.
+    * [Pull request #2146](https://bitbucket.org/osrf/gazebo/pull-request/2146)
+
+1. Moved gazebo ODE includes to have correct include path
+    * [Pull request #2186](https://bitbucket.org/osrf/gazebo/pull-request/2186)
+
+1. Atmosphere model
+    * [Pull request #1989](https://bitbucket.org/osrf/gazebo/pull-request/1989)
+
+1. Added static camera when following a model.
+    * [Pull request #1980](https://bitbucket.org/osrf/gazebo/pull-request/1980)
+    * A contribution from Oliver Crave
+
+1. Get plugin info with Ignition transport service
+    * [Pull request #2420](https://bitbucket.org/osrf/gazebo/pull-request/2420)
+
+1. Support conversions between SDF and protobuf for more sensors.
+    * [Pull request #2118](https://bitbucket.org/osrf/gazebo/pull-request/2118)
+
+1. Fix ODE Ray-Cylinder collision, and added ability to instantiate stand alone MultiRayShapes.
+    * [Pull request #2122](https://bitbucket.org/osrf/gazebo/pull-request/2122)
+
+1. Update depth camera sensor to publish depth data over a topic.
+    * [Pull request #2112](https://bitbucket.org/osrf/gazebo/pull-request/2112)
+
+1. Add color picker to config widget and fix visual and collision duplication.
+    * [Pull request #2381](https://bitbucket.org/osrf/gazebo/pull-request/2381)
+
+1. Model editor updates
+
+    1. Undo / redo inserting and deleting links
+        * [Pull request #2151](https://bitbucket.org/osrf/gazebo/pull-request/2151)
+
+    1. Undo / redo inserting and deleting nested models
+        * [Pull request #2229](https://bitbucket.org/osrf/gazebo/pull-request/2229)
+
+    1. Undo insert / delete joints
+        * [Pull request #2266](https://bitbucket.org/osrf/gazebo/pull-request/2266)
+
+    1. Undo insert / delete model plugins
+        * [Pull request #2334](https://bitbucket.org/osrf/gazebo/pull-request/2334)
+
+    1. Undo translate, rotate, snap and align links and nested models
+        * [Pull request #2314](https://bitbucket.org/osrf/gazebo/pull-request/2314)
+
+    1. Undo scale links
+        * [Pull request #2368](https://bitbucket.org/osrf/gazebo/pull-request/2368)
+
+1. Google Summer of Code Graphical interface for inserting plugins during simulation.
+
+    1. Display attached model plugins in the world tab / Add subheaders for model links, joints and plugins
+        * [Pull request #2323](https://bitbucket.org/osrf/gazebo/pull-request/2323)
+        * [Issue #1698](https://bitbucket.org/osrf/gazebo/issues/1698)
+
 ## Gazebo 7
 
 ## Gazebo 7.x.x (2017-xx-xx)
+
+1. Move Connection header buffer from heap to stack to avoid race condition.
+    * [Pull request 2844](https://bitbucket.org/osrf/gazebo/pull-requests/2844)
+
+1. Shadow improvements
+    * [Pull request 2805](https://bitbucket.org/osrf/gazebo/pull-requests/2805)
+
+1. Add light as child of link
+    * [Pull request 2807](https://bitbucket.org/osrf/gazebo/pull-requests/2807)
+    * [Issue 900](https://bitbucket.org/osrf/gazebo/issues/900)
+
+1. Add camera lens flare effect
+    * [Pull request 2806](https://bitbucket.org/osrf/gazebo/pull-request/2806)
+    * [Pull request 2829](https://bitbucket.org/osrf/gazebo/pull-request/2829)
+
+1. Fix inserting models with invalid submesh
+    * [Pull request 2828](https://bitbucket.org/osrf/gazebo/pull-request/2828)
+
+
+## Gazebo 7.9.0 (2017-11-22)
+
+1. Diagnostics: enable test and don't create so many empty folders
+    * [Pull request 2798](https://bitbucket.org/osrf/gazebo/pull-requests/2798)
+
+1. Parallelize ODE physics with threaded islands parameter
+    * [Pull request 2775](https://bitbucket.org/osrf/gazebo/pull-requests/2775)
+
+1. Logical camera uses <topic>
+    * [Pull request 2777](https://bitbucket.org/osrf/gazebo/pull-requests/2777)
+
+1. Support off-diagonal inertia terms in bullet
+    * [Pull request 2757](https://bitbucket.org/osrf/gazebo/pull-requests/2757)
+
+1. Add option in gui.ini to disable the use of spacenav
+    * [Pull request 2754](https://bitbucket.org/osrf/gazebo/pull-requests/2754)
+
+1. Fix disabling mesh cast shadows
+    * [Pull request 2710](https://bitbucket.org/osrf/gazebo/pull-request/2710)
+
+1. Do not display COM or inertia visualizations for static models
+    * [Pull request 2727](https://bitbucket.org/osrf/gazebo/pull-request/2727)
+    * [Issue 2286](https://bitbucket.org/osrf/gazebo/issues/2286)
+
+1. Fix Collision::GetWorldPose for non-canonical links (and friction directions)
+    * [Pull request 2702](https://bitbucket.org/osrf/gazebo/pull-request/2702)
+    * [Issue 2068](https://bitbucket.org/osrf/gazebo/issues/2068)
+
+1. Fix orbiting view around heightmap
+    * [Pull request 2688](https://bitbucket.org/osrf/gazebo/pull-request/2688)
+    * [Issue 2049](https://bitbucket.org/osrf/gazebo/issues/2049)
+
+1. Logical Camera sees nested models
+    * [Pull request 2776](https://bitbucket.org/osrf/gazebo/pull-request/2776)
+    * [Issue 2342](https://bitbucket.org/osrf/gazebo/issues/2342)
+
+1. Aligned collision and visual geometries for friction_dir_test.world
+    * [Pull request 2726](https://bitbucket.org/osrf/gazebo/pull-request/2726)
+
+1. Test which demonstrates Simbody exception when manipulating object twice while paused
+    * [Pull request 2737](https://bitbucket.org/osrf/gazebo/pull-request/2737)
+
+1. Send message to subscribers only once per connection
+    * [Pull request 2763](https://bitbucket.org/osrf/gazebo/pull-request/2763)
+
+1. Update depth camera shaders version
+    * [Pull request 2767](https://bitbucket.org/osrf/gazebo/pull-request/2767)
+    * [Issue 2323](https://bitbucket.org/osrf/gazebo/issues/2323)
+
+1. Fix gazebo7 compile error with boost 1.58 for oculus support
+    * [Pull request 2788](https://bitbucket.org/osrf/gazebo/pull-request/2788)
+    * [Issue 2356](https://bitbucket.org/osrf/gazebo/issues/2356)
+
+1. Fix gui and rendering tests for gazebo7 + ogre1.9 on OSX
+    * [Pull request 2793](https://bitbucket.org/osrf/gazebo/pull-request/2793)
+
+1. Fix right-click segfault
+    * [Pull request 2809](https://bitbucket.org/osrf/gazebo/pull-request/2809)
+    * [Issue 2377](https://bitbucket.org/osrf/gazebo/issues/2377)
 
 ## Gazebo 7.8.1 (2017-06-08)
 
@@ -19,7 +697,7 @@
     * [Pull request 2711](https://bitbucket.org/osrf/gazebo/pull-request/2711)
 
 1. Add function to retrieve scoped sensors name in multi-nested model
-    * [Pull request #2676](https://bitbucket.org/osrf/gazebo/pull-request/2674)
+    * [Pull request 2674](https://bitbucket.org/osrf/gazebo/pull-request/2674)
 
 ## Gazebo 7.7.0 (2017-05-04)
 
@@ -35,6 +713,7 @@
 
 1. Fix linking when using HDF5_INSTRUMENT for logging ODE data
     * [Pull request 2669](https://bitbucket.org/osrf/gazebo/pull-request/2669)
+    * [Issue 1841](https://bitbucket.org/osrf/gazebo/issues/1841)
 
 1. Subdivide large heightmaps to fix LOD and support global texture mapping
     * [Pull request 2655](https://bitbucket.org/osrf/gazebo/pull-request/2655)
@@ -49,6 +728,7 @@
 
 1. Add plugin for attaching lights to links in a model
     * [Pull request 2647](https://bitbucket.org/osrf/gazebo/pull-request/2647)
+    * [Issue 900](https://bitbucket.org/osrf/gazebo/issues/900)
 
 1. Support Heightmap LOD
     * [Pull request 2636](https://bitbucket.org/osrf/gazebo/pull-request/2636)
@@ -680,6 +1360,9 @@ using the same arguments used in the command line.
 
     1. Scale link mass and inertia when a link is scaled
         * [Pull request #1836](https://bitbucket.org/osrf/gazebo/pull-request/1836)
+
+    1. Add density widget to config widget and link inspector
+        * [Pull request #1978](https://bitbucket.org/osrf/gazebo/pull-request/1978)
 
     1. Added icons for child and parent link in joint inspector
         * [Pull request #1953](https://bitbucket.org/osrf/gazebo/pull-request/1953)

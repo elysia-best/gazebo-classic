@@ -17,9 +17,13 @@
 #include <math.h>
 #include <algorithm>
 
-#include "gazebo/math/Helpers.hh"
 #include "gazebo/common/Console.hh"
 #include "gazebo/common/Color.hh"
+
+#ifndef _WIN32
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 using namespace gazebo;
 using namespace common;
@@ -30,6 +34,7 @@ const Color Color::Red = Color(1, 0, 0, 1);
 const Color Color::Green = Color(0, 1, 0, 1);
 const Color Color::Blue = Color(0, 0, 1, 1);
 const Color Color::Yellow = Color(1, 1, 0, 1);
+const Color Color::Magenta = Color(1, 0, 1, 1);
 
 //////////////////////////////////////////////////
 Color::Color()
@@ -55,6 +60,31 @@ Color::Color(const Color &_pt)
 //////////////////////////////////////////////////
 Color::~Color()
 {
+}
+
+//////////////////////////////////////////////////
+Color::Color(const ignition::math::Color &_color)
+{
+  this->r = _color.R();
+  this->g = _color.G();
+  this->b = _color.B();
+  this->a = _color.A();
+}
+
+//////////////////////////////////////////////////
+Color &Color::operator=(const ignition::math::Color &_color)
+{
+  this->r = _color.R();
+  this->g = _color.G();
+  this->b = _color.B();
+  this->a = _color.A();
+  return *this;
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Color::Ign() const
+{
+  return ignition::math::Color(this->r, this->g, this->b, this->a);
 }
 
 //////////////////////////////////////////////////
@@ -172,12 +202,6 @@ ignition::math::Vector3d Color::HSV() const
   hsv.Z(v);
 
   return hsv;
-}
-
-//////////////////////////////////////////////////
-math::Vector3 Color::GetAsYUV() const
-{
-  return this->YUV();
 }
 
 //////////////////////////////////////////////////
@@ -518,3 +542,6 @@ void Color::Clamp()
   this->b = this->b < 0 ? 0: this->b;
   this->b = this->b > 1 ? this->b/255.0: this->b;
 }
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif

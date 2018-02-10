@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 */
-#ifndef _GAZEBO_RENDERING_SCENE_PRIVATE_HH_
-#define _GAZEBO_RENDERING_SCENE_PRIVATE_HH_
+#ifndef GAZEBO_RENDERING_SCENE_PRIVATE_HH_
+#define GAZEBO_RENDERING_SCENE_PRIVATE_HH_
 
 #include <list>
 #include <map>
@@ -30,6 +30,7 @@
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo_config.h"
 #include "gazebo/msgs/msgs.hh"
+#include "gazebo/rendering/MarkerManager.hh"
 #include "gazebo/rendering/RenderTypes.hh"
 #include "gazebo/transport/TransportTypes.hh"
 
@@ -66,9 +67,13 @@ namespace gazebo
     /// \brief List of light messages.
     typedef std::list<boost::shared_ptr<msgs::Light const> > LightMsgs_L;
 
-    /// \def PoseMsgs_L.
+    /// \typedef PoseMsgs_M.
     /// \brief List of messages.
     typedef std::map<uint32_t, msgs::Pose> PoseMsgs_M;
+
+    /// \typedef LightPoseMsgs_M.
+    /// \brief List of messages.
+    typedef std::map<std::string, msgs::Pose> LightPoseMsgs_M;
 
     /// \def SceneMsgs_L
     /// \brief List of scene messages.
@@ -107,6 +112,10 @@ namespace gazebo
     /// \brief Map of joint names to joint messages.
     typedef boost::unordered_map<std::string,
         boost::shared_ptr<msgs::Joint const> > JointMsgs_M;
+
+    /// \def RoadMsgs_L
+    /// \brief List of road messages
+    typedef std::list<boost::shared_ptr<msgs::Road const> > RoadMsgs_L;
 
     /// \brief Private data for the Visual class
     class ScenePrivate
@@ -174,6 +183,9 @@ namespace gazebo
       /// \brief List of pose message to process.
       public: PoseMsgs_M poseMsgs;
 
+      /// \brief List of pose message to process.
+      public: LightPoseMsgs_M lightPoseMsgs;
+
       /// \brief List of scene message to process.
       public: SceneMsgs_L sceneMsgs;
 
@@ -200,6 +212,9 @@ namespace gazebo
 
       /// \brief List of skeleton message to process.
       public: SkeletonPoseMsgs_L skeletonPoseMsgs;
+
+      /// \brief List of road messages to process.
+      public: RoadMsgs_L roadMsgs;
 
       /// \brief Mutex to lock the various message buffers.
       public: std::mutex *receiveMutex;
@@ -252,6 +267,9 @@ namespace gazebo
       /// \brief Publish requests
       public: transport::PublisherPtr requestPub;
 
+      /// \brief Subscribe to roads topic
+      public: transport::SubscriberPtr roadSub;
+
       /// \brief Event connections
       public: std::vector<event::ConnectionPtr> connections;
 
@@ -301,6 +319,9 @@ namespace gazebo
       /// \brief True when all link frames should be visualized.
       public: bool showLinkFrames;
 
+      /// \brief True when all skeletons should be visualized.
+      public: bool showSkeleton;
+
       /// \brief True when all collisions should be visualized.
       public: bool showCollisions;
 
@@ -332,6 +353,13 @@ namespace gazebo
 
       /// \brief Size of shadow texture
       public: unsigned int shadowTextureSize = 1024u;
+
+      /// \brief Manager of marker visuals
+      public: MarkerManager markerManager;
+
+      /// \brief State of each layer where key is the layer id, and value is
+      /// the layer's visibility.
+      public: std::map<int32_t, bool> layerState;
     };
   }
 }

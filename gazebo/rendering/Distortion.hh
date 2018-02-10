@@ -14,12 +14,12 @@
  * limitations under the License.
  *
 */
+#ifndef GAZEBO_RENDERING_DISTORTION_HH_
+#define GAZEBO_RENDERING_DISTORTION_HH_
 
-#ifndef _GAZEBO_RENDERING_DISTORTION_HH_
-#define _GAZEBO_RENDERING_DISTORTION_HH_
+#include <memory>
+#include <ignition/math/Vector2.hh>
 
-#include <sdf/sdf.hh>
-#include <ignition/math.hh>
 #include "gazebo/rendering/RenderTypes.hh"
 #include "gazebo/util/system.hh"
 
@@ -29,7 +29,7 @@ namespace gazebo
   /// \brief Rendering namespace
   namespace rendering
   {
-     class DistortionPrivate;
+    class DistortionPrivate;
 
     /// \addtogroup gazebo_rendering Rendering
     /// \{
@@ -55,36 +55,38 @@ namespace gazebo
       /// \brief Set whether to crop the black border around the distorted
       /// image points.
       /// \param[in] _crop True to crop the black border
-      public: void SetCrop(bool _crop);
-
-      /// \brief Get the radial distortion coefficient k1.
-      /// \return Distortion coefficient k1.
-      public: double GetK1() const;
-
-      /// \brief Get the radial distortion coefficient k2.
-      /// \return Distortion coefficient k2.
-      public: double GetK2() const;
-
-      /// \brief Get the radial distortion coefficient k3.
-      /// \return Distortion coefficient k3.
-      public: double GetK3() const;
-
-      /// \brief Get the tangential distortion coefficient p1.
-      /// \return Distortion coefficient p1.
-      public: double GetP1() const;
-
-      /// \brief Get the tangential distortion coefficient p2.
-      /// \return Distortion coefficient p2.
-      public: double GetP2() const;
+      /// \sa Crop
+      public: void SetCrop(const bool _crop);
 
       /// \brief Get whether or not the camera is being cropped to
       /// account for black borders created by barrel distortion.
-      /// \return Distortion crop value.
+      /// \return True if the black border is cropped
+      /// \sa SetCrop
       public: bool Crop() const;
+
+      /// \brief Get the radial distortion coefficient k1.
+      /// \return Distortion coefficient k1.
+      public: double K1() const;
+
+      /// \brief Get the radial distortion coefficient k2.
+      /// \return Distortion coefficient k2.
+      public: double K2() const;
+
+      /// \brief Get the radial distortion coefficient k3.
+      /// \return Distortion coefficient k3.
+      public: double K3() const;
+
+      /// \brief Get the tangential distortion coefficient p1.
+      /// \return Distortion coefficient p1.
+      public: double P1() const;
+
+      /// \brief Get the tangential distortion coefficient p2.
+      /// \return Distortion coefficient p2.
+      public: double P2() const;
 
       /// \brief Get the distortion center.
       /// \return Distortion center.
-      public: math::Vector2d GetCenter() const;
+      public: ignition::math::Vector2d Center() const;
 
       /// \brief Apply distortion model
       /// \param[in] _in Input uv coordinate.
@@ -95,10 +97,11 @@ namespace gazebo
       /// \param[in] _p1 Tangential distortion coefficient p1.
       /// \param[in] _p2 Tangential distortion coefficient p2.
       /// \return Distorted coordinate.
-      public: static math::Vector2d Distort(
-        const math::Vector2d &_in,
-        const math::Vector2d &_center, double _k1, double _k2,
-        double _k3, double _p1, double _p2);
+      public: static ignition::math::Vector2d Distort(
+                  const ignition::math::Vector2d &_in,
+                  const ignition::math::Vector2d &_center,
+                  double _k1, double _k2, double _k3,
+                  double _p1, double _p2);
 
       /// \brief get the distortion map value.
       /// \return the distortion map value at the specified index,
@@ -112,12 +115,9 @@ namespace gazebo
       /// flag has been set).
       protected: void CalculateAndApplyDistortionScale();
 
-      /// \brief Distortion SDF values.
-      protected: sdf::ElementPtr sdf;
-
       /// \internal
       /// \brief Pointer to private data.
-      private: DistortionPrivate *dataPtr;
+      private: std::unique_ptr<DistortionPrivate> dataPtr;
     };
     /// \}
   }
