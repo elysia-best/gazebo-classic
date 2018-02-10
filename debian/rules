@@ -13,7 +13,7 @@ endif
 	override_dh_auto_build-indep	\
 	override_dh_install		\
 	override_dh_auto_test           \
-	get-orig-src
+	get-orig-source
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
@@ -39,7 +39,7 @@ override_dh_auto_test:
 
 # Upstream release page is generated dynamically taking long time
 get-orig-source:
-	uscan --timeout 180 --verbose --force-download --repack --compress xz
+	uscan --timeout 500 --verbose --force-download --repack --compress xz
 
 %:
 	dh $@ --parallel --buildsystem=cmake --with bash-completion
