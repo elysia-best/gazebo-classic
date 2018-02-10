@@ -1,3 +1,14 @@
+gazebo (9.0.0+dfsg-1) xenial; urgency=medium
+
+  [ Jose Luis Rivero ]
+  * Added clang-format
+  * Include models directory in the ignition-common package
+  * Update the way of getting sources
+  * Imported Upstream version 9.0.0+dfsg
+    (Closes: #887931, #874898, #874898)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 09 Feb 2018 23:13:06 -0800
+
 gazebo (7.8.1+dfsg-4) unstable; urgency=medium
 
   * Team upload.
