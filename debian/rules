@@ -41,4 +41,4 @@ get-orig-source:
 	uscan --timeout 500 --verbose --force-download --repack --compress xz
 
 %:
-	dh $@ --parallel --buildsystem=cmake --with bash-completion
+	dh $@ --buildsystem=cmake --with bash-completion
