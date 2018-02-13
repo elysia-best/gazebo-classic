@@ -1,0 +1,17 @@
+Description: do not try to install arial font. 
+ Arial font was removed in the dfsg process and has been replaced using .links
+ file. Remove cmake instruction about it.
+Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+Forwarded: not-needed
+
+diff --git a/media/fonts/CMakeLists.txt b/media/fonts/CMakeLists.txt
+index f974026..88e00ed 100644
+--- a/media/fonts/CMakeLists.txt
++++ b/media/fonts/CMakeLists.txt
+@@ -1,5 +1,4 @@
+-SET (files arial.ttf
+-           console.ttf
++SET (files console.ttf
+            font_arial.png
+            font_matisse_itc.png
+            Gazebo.fontdef
