@@ -3,7 +3,7 @@ Author: Jose Luis Rivero <jrivero@osrfoundation.org>
 Forwarded: no
 
 diff --git a/tools/gz.1.roff b/tools/gz.1.roff
-index 1cfb9a4..4fc0c81 100644
+index 5af9f47..499046b 100644
 --- a/tools/gz.1.roff
 +++ b/tools/gz.1.roff
 @@ -6,9 +6,7 @@
@@ -22,9 +22,9 @@ index 1cfb9a4..4fc0c81 100644
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -46,7 +43,6 @@ List all cameras
+@@ -50,7 +47,6 @@ List all cameras
  .B \-f, \-\-follow\fR=\fIarg\fR
  .
  Model to follow.
@@ -32,15 +32,15 @@ index 1cfb9a4..4fc0c81 100644
  .SS debug
  .sp
  .nf
-@@ -61,7 +57,6 @@ return the completion list for a given command.
+@@ -65,7 +61,6 @@ return the completion list for a given command.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -70,7 +65,6 @@ Print this help message
+@@ -78,7 +73,6 @@ Print this help message
  .B \-o, \-\-option\fR=\fIarg\fR
  .
  Show the command options.
@@ -48,12 +48,15 @@ index 1cfb9a4..4fc0c81 100644
  .SS help
  .sp
  .nf
-@@ -84,12 +78,10 @@ Output information about a gz command.
+@@ -92,7 +86,6 @@ Output information about a gz command.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
+ .B \-\-verbose
+ .
+@@ -101,7 +94,6 @@ Print extra information
  .B \-h, \-\-help
  .
  Print this help message
@@ -61,15 +64,15 @@ index 1cfb9a4..4fc0c81 100644
  .SS joint
  .sp
  .nf
-@@ -106,7 +98,6 @@ A model name and joint name are required.
+@@ -129,7 +121,6 @@ with --vel-p, --vel-i, --vel-d to specify the PID parameters.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -163,7 +154,6 @@ Velocity integral gain.
+@@ -190,7 +181,6 @@ Velocity integral gain.
  .B \-\-vel\-d\fR=\fIarg\fR
  .
  Velocity differential gain.
@@ -77,31 +80,47 @@ index 1cfb9a4..4fc0c81 100644
  .SS log
  .sp
  .nf
-@@ -179,7 +169,6 @@ an active Gazebo server.
+@@ -206,7 +196,6 @@ an active Gazebo server.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -224,7 +213,6 @@ Path to a log file.
+@@ -263,7 +252,6 @@ Specify the encoding (txt, zlib, or bz2) for an output file. Valid in conjunctio
  .B \-\-filter\fR=\fIarg\fR
  .
- Filter output. Valid only for the echo and step commands
+ Filter output. Valid only with the echo, step, and output commands
+-.UNINDENT
+ .SS marker
+ .sp
+ .nf
+@@ -346,7 +334,6 @@ $ gz marker -m 'action: ADD_MODIFY, type: SPHERE, id: 2, scale: {x:0.2, y:0.4, z
+ 
+ .sp
+ Options:
+-.INDENT 0.0
+ .TP
+ .B \-\-verbose
+ .
+@@ -399,7 +386,6 @@ Get a list of the visual markers.
+ .B \-y, \-\-layer\fR=\fIarg\fR
+ .
+ Add or move a marker to the specified layer.
 -.UNINDENT
  .SS model
  .sp
  .nf
-@@ -241,7 +229,6 @@ will be used.
+@@ -416,7 +402,6 @@ will be used.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -286,7 +273,6 @@ Output model pose as a space separated 6\-tuple: x y z roll pitch yaw.
+@@ -465,7 +450,6 @@ Output model pose as a space separated 6\-tuple: x y z roll pitch yaw.
  .B \-P, \-\-pose\-P arg pitch in radians.
  .TP
  .B \-Y, \-\-pose\-Y arg yaw in radians.
@@ -109,15 +128,15 @@ index 1cfb9a4..4fc0c81 100644
  .SS physics
  .sp
  .nf
-@@ -302,7 +288,6 @@ the first world found on the Gazebo master will be used.
+@@ -481,7 +465,6 @@ the first world found on the Gazebo master will be used.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -331,7 +316,6 @@ Target real\-time update rate.
+@@ -514,7 +497,6 @@ Target real\-time update rate.
  .B \-o, \-\-profile\fR=\fIarg\fR
  .
  Preset physics profile.
@@ -125,15 +144,15 @@ index 1cfb9a4..4fc0c81 100644
  .SS sdf
  .sp
  .nf
-@@ -347,7 +331,6 @@ SDF for use with other options.
+@@ -530,7 +512,6 @@ SDF for use with other options.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -376,7 +359,6 @@ Version of SDF to use with other options.
+@@ -563,7 +544,6 @@ Version of SDF to use with other options.
  .B \-p, \-\-print\fR=\fIarg\fR
  .
  Print arg, useful for debugging and as a conversion tool.
@@ -141,15 +160,15 @@ index 1cfb9a4..4fc0c81 100644
  .SS stats
  .sp
  .nf
-@@ -392,7 +374,6 @@ the Gazebo master will be used.
+@@ -579,7 +559,6 @@ the Gazebo master will be used.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -409,7 +390,6 @@ Duration (seconds) to run.
+@@ -600,7 +579,6 @@ Duration (seconds) to run.
  .B \-p, \-\-plot
  .
  Output comma\-separated values, useful for processing and plotting.
@@ -157,15 +176,15 @@ index 1cfb9a4..4fc0c81 100644
  .SS topic
  .sp
  .nf
-@@ -425,7 +405,6 @@ the Gazebo master will be used.
+@@ -616,7 +594,6 @@ the Gazebo master will be used.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
-@@ -466,7 +445,6 @@ Output data from echo without formatting.
+@@ -661,7 +638,6 @@ Output data from echo without formatting.
  .B \-d, \-\-duration\fR=\fIarg\fR
  .
  Duration (seconds) to run. Applicable with echo, hz, and bw
@@ -173,11 +192,11 @@ index 1cfb9a4..4fc0c81 100644
  .SS world
  .sp
  .nf
-@@ -482,7 +460,6 @@ the first world found on the Gazebo master will be used.
+@@ -677,7 +653,6 @@ the first world found on the Gazebo master will be used.
  
  .sp
  Options:
 -.INDENT 0.0
  .TP
- .B \-h, \-\-help
+ .B \-\-verbose
  .
