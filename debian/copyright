@@ -102,15 +102,6 @@ Files: deps/fcl/*
 Copyright: 2011, Willow Garage, Inc
 License: BSD-3-clause
 
-Files: test/gtest/*
-Copyright: 2003, Google Inc.
-           2005, Google Inc.
-           2006, Google Inc.
-           2007, Google Inc.
-           2008, Google Inc.
-           2009, Google Inc.
-License: BSD-3-clause
-
 Files: tools/check_test_ran.py
 Copyright: 2008, Willow Garage, Inc.
 License: BSD-3-clause
@@ -118,12 +109,6 @@ License: BSD-3-clause
 Files: tools/cpplint.py
 Copyright: 2009 Google Inc.
 License: BSD-3-clause
-
-Files: doc/search.js
-Copyright: 2009, Dimitri van Heesch.
-           2003-2008, Greg Valure.
-License: GPL
- See '/usr/share/common-licenses/GPL'.
 
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
