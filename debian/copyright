@@ -22,10 +22,12 @@ Copyright: 2003 Bitstream, Inc.
 License: BITSTREAM-VERA-FONTS
 
 Files: media/rtshaderlib/*
+       gazebo/rendering/CustomPSSMShadowCameraSetup.cc
 Copyright: 2000-2012 Torus Knot Software Ltd
 License: MIT
 
 Files: gazebo/rendering/skyx/*
+       media/skyx/*
 Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
 License: LGPL-2+
   This program is free software; you can redistribute it and/or modify it under
@@ -64,6 +66,27 @@ Files:  gazebo/gui/qtpropertybrowser/qtbuttonpropertybrowser.cpp
 Copyright: 2010 Nokia Corporation and/or its subsidiary(-ies)
 License: BSD-3-clause
 
+Files: gazebo/gui/qgv/QGVEdge.cpp
+ gazebo/gui/qgv/QGVEdge.h
+ gazebo/gui/qgv/QGVNode.cpp
+ gazebo/gui/qgv/QGVNode.h
+ gazebo/gui/qgv/QGVScene.cpp
+ gazebo/gui/qgv/QGVScene.h
+ gazebo/gui/qgv/QGVSubGraph.cpp
+ gazebo/gui/qgv/QGVSubGraph.h
+ gazebo/gui/qgv/private/QGVCore.cpp
+ gazebo/gui/qgv/private/QGVCore.h
+ gazebo/gui/qgv/private/QGVEdgePrivate.cpp
+ gazebo/gui/qgv/private/QGVEdgePrivate.h
+ gazebo/gui/qgv/private/QGVGraphPrivate.cpp
+ gazebo/gui/qgv/private/QGVGraphPrivate.h
+ gazebo/gui/qgv/private/QGVGvcPrivate.cpp
+ gazebo/gui/qgv/private/QGVGvcPrivate.h
+ gazebo/gui/qgv/private/QGVNodePrivate.h
+ gazebo/gui/qgv/qgv.h
+Copyright: 2014, Bergont Nicolas
+License: LGPL-3+
+
 Files: deps/opende/*
 Copyright: 1993 by Sun Microsystems, Inc
 	   2001 Pierre Terdiman
@@ -90,6 +113,14 @@ License: BSD-2-clause
 
 Files: deps/parallel_quickstep/CMakeModules/*
 Copyright: 2007-2009 / 2008 - 2009 NVIDIA Corporation
+License: MIT
+
+Files: deps/tinyobjloader/tiny_obj_loader.h
+Copyright: 2012-2016, Syoyo Fujita and many contributors.
+License: MIT
+
+Files: gazebo/common/win_dirent.h
+Copyright: 2006-2012, Toni Ronkko
 License: MIT
 
 Files: deps/ann/*
