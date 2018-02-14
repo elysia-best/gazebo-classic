@@ -6,5 +6,4 @@ Icon=gazebo
 Type=Application
 Categories=Development;Education;Science;
 StartupNotify=true
-OnlyShowIn=GNOME;Unity;
 Keywords=Run;
