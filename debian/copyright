@@ -125,8 +125,7 @@ License: MIT
 
 Files: deps/ann/*
 Copyright: 1997-2005 University of Maryland and Sunil Arya and David Mount
-License: LGPL
- See '/usr/share/common-licenses/LGPL'.
+License: LGPL-3+
 
 Files: deps/fcl/*
 Copyright: 2011, Willow Garage, Inc
@@ -349,8 +348,8 @@ License: LGPL-2.1
   document, but changing it is not allowed.
   .
   [This is the first released version of the Lesser GPL. It also counts as the
-  successor of the GNU Library Public License, version 2, hence the version
-  number 2.1.]
+  successor of the GNU Library General Public License, version 2, hence the
+  version number 2.1.]
   .
   Preamble
   .
