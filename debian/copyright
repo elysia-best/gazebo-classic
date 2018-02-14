@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: gazebo
 Upstream-Contact: gazebo@osrfoundation.org
 Source: http://gazebosim.org/
-Files-Excluded: NEWS media/fonts/arial.ttf media/gui/fonts/DejaVuSans.ttf gazebo/gui/fonts test/gtest configure.bat .hg* deps/tinyxml2 deps/win deps/libccd deps/fcl deps/ann deps/parallel_quickstep
+Files-Excluded: NEWS media/fonts/arial.ttf media/gui/fonts/DejaVuSans.ttf gazebo/gui/fonts test/gtest configure.bat .hg* deps/tinyxml2 deps/win deps/libccd deps/fcl deps/ann deps/parallel_quickstep deps/tinyobjloader
 
 Files: *
 Copyright: 2012-2017 Open Source Robotics Foundation
