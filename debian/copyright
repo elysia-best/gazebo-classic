@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: gazebo
 Upstream-Contact: gazebo@osrfoundation.org
 Source: http://gazebosim.org/
-Files-Excluded: NEWS media/fonts/arial.ttf test/gtest configure.bat .hg*
+Files-Excluded: NEWS media/fonts/arial.ttf media/gui/fonts/DejaVuSans.ttf gazebo/gui/fonts test/gtest configure.bat .hg* deps/tinyxml2 deps/win deps/libccd deps/fcl deps/ann deps/parallel_quickstep
 
 Files: *
 Copyright: 2012-2017 Open Source Robotics Foundation
@@ -59,29 +59,9 @@ Files: deps/threadpool/*
 Copyright: 2005-2007 Philipp Henkel
 License: BSL-1.0
 
-Files: deps/libccd/*
-Copyright: 2010-2011 Daniel Fiser <danfis@danfis.cz>
-License: BSD-2-clause
-
-Files: deps/parallel_quickstep/CMakeModules/*
-Copyright: 2007-2009 / 2008 - 2009 NVIDIA Corporation
-License: MIT
-
-Files: deps/tinyobjloader/tiny_obj_loader.h
-Copyright: 2012-2016, Syoyo Fujita and many contributors.
-License: MIT
-
 Files: gazebo/common/win_dirent.h
 Copyright: 2006-2012, Toni Ronkko
 License: MIT
-
-Files: deps/ann/*
-Copyright: 1997-2005 University of Maryland and Sunil Arya and David Mount
-License: LGPL-3+
-
-Files: deps/fcl/*
-Copyright: 2011, Willow Garage, Inc
-License: BSD-3-clause
 
 Files: tools/check_test_ran.py
 Copyright: 2008, Willow Garage, Inc.
@@ -117,7 +97,7 @@ License: BSD-3-clause
  modification, are permitted provided that the following conditions
  are met:
  1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer. 
+    notice, this list of conditions and the following disclaimer.
  2. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the
     documentation and/or other materials provided with the distribution.
@@ -126,15 +106,15 @@ License: BSD-3-clause
     without specific prior written permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE  
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE  
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS   
- OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)     
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
- OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF    
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
 License: Apache-2.0
