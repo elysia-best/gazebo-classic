@@ -1,8 +1,17 @@
-gazebo (9.0.0+dfsg-1) experimental; urgency=medium
+gazebo (9.0.0+dfsg1-1) experimental; urgency=medium
 
-  [ Jose Luis Rivero ]
+  * Missing pieces in the copyright file
+  * Remove duplicate dependency on simbody
+  * Do not restrict desktops where gazebo is shown
+  * Fix lintian errors related to copyright
+  * Change to salsa. Break/Replace gazebo7 version
+  * Remove gazebo.menu per https://www.debian.org/doc/debian-policy/#version-4-0-1
+  * Remove all the SSE logic from rules file
+  * Update TODO file with info about the ode packaging exception
+  * Simplify and improve the README file: move licenses to its own section and use wildcards for listing files when possible
+  * Missing font dependencies
+  * Remove embedded libraries present in code
   * Added clang-format
-  * Include models directory in the ignition-common package
   * Update the way of getting sources
   * Imported Upstream version 9.0.0+dfsg
     (Closes: #887931, #874898, #874898)
