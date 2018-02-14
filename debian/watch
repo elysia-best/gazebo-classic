@@ -4,6 +4,6 @@
 # See uscan(1) for format
 
 version=3
-opts=uversionmangle=s/$/+dfsg/ \
+opts=dversionmangle=s/$/+dfsg/ \
      http://gazebosim.org/distributions/gazebo/releases/ .*gazebo-(\d\.\d\.\d)\.(?:zip|tgz|tbz|txz|(?:tar\.(?:gz|bz2|xz)))
 
