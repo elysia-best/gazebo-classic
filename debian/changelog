@@ -1,4 +1,4 @@
-gazebo (9.0.0+dsfg4-1) unstable; urgency=medium
+gazebo (9.0.0+dfsg4-1) unstable; urgency=medium
 
   * Missing pieces in the copyright file
   * Remove duplicate dependency on simbody
