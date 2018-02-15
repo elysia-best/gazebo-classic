@@ -1,5 +1,7 @@
-gazebo (9.0.0+dfsg4-1) unstable; urgency=medium
+gazebo (9.0.0+dfsg5-1) unstable; urgency=medium
 
+  * Added patch to use roboto system fonts
+  * Added patch to use system qtpropertybrowser
   * Missing pieces in the copyright file
   * Remove duplicate dependency on simbody
   * Do not restrict desktops where gazebo is shown
@@ -18,7 +20,7 @@ gazebo (9.0.0+dfsg4-1) unstable; urgency=medium
   * Use system ccd
   * Fix watch file
   * Remove fonts copyright
-  * New upstream version 9.0.0+dfsg4
+  * New upstream version 9.0.0+dfsg5
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 15 Feb 2018 02:49:23 +0000
 
