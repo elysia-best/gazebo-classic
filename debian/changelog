@@ -1,5 +1,6 @@
-gazebo (9.0.0+dfsg1-1) experimental; urgency=medium
+gazebo (9.0.0+dsfg2-1) UNRELEASED; urgency=medium
 
+  * Remove deps/tinyobjloader
   * Missing pieces in the copyright file
   * Remove duplicate dependency on simbody
   * Do not restrict desktops where gazebo is shown
