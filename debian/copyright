@@ -27,11 +27,6 @@ Files: gazebo/rendering/skyx/*
 Copyright: 2009-2012 Xavier Verguín González <xavyiy@gmail.com>
 License: LGPL-2+
 
-Files:  gazebo/gui/qtpropertybrowser/*.h
-        gazebo/gui/qtpropertybrowser/*.cpp
-Copyright: 2010 Nokia Corporation and/or its subsidiary(-ies)
-License: BSD-3-clause
-
 Files: gazebo/gui/qgv/*
 Copyright: 2014, Bergont Nicolas
 License: LGPL-3+
