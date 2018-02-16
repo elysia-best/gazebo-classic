@@ -7,10 +7,12 @@ gazebo (9.0.0+dfsg5-1) unstable; urgency=medium
   * Do not restrict desktops where gazebo is shown
   * Fix lintian errors related to copyright
   * Change to salsa. Break/Replace gazebo7 version
-  * Remove gazebo.menu per https://www.debian.org/doc/debian-policy/#version-4-0-1
+  * Remove gazebo.menu
+    (https://www.debian.org/doc/debian-policy/#version-4-0-1)
   * Remove all the SSE logic from rules file
   * Update TODO file with info about the ode packaging exception
-  * Simplify and improve the README file: move licenses to its own section and use wildcards for listing files when possible
+  * Simplify and improve the README file: move licenses to its own section and
+    use wildcards for listing files when possible
   * Missing font dependencies
   * Remove embedded libraries present in code
   * Added clang-format
