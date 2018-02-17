@@ -1,4 +1,4 @@
-gazebo (9.0.0+dfsg5-1) unstable; urgency=medium
+gazebo (9.0.0+dfsg5-1) experimental; urgency=medium
 
   * Added patch to use roboto system fonts
   * Added patch to use system qtpropertybrowser
@@ -90,7 +90,7 @@ gazebo (7.3.1+dfsg-1) unstable; urgency=medium
 
 gazebo (7.3.0+dfsg-6) unstable; urgency=medium
 
-  * Fix supported arches in libgazebo9-dev package. Thanks to Graham Inggs
+  * Fix supported arches in libgazebo7-dev package. Thanks to Graham Inggs
     (Closes: #837121)
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Wed, 14 Sep 2016 17:00:37 +0000
@@ -151,11 +151,11 @@ gazebo (7.0.0+dfsg-2) unstable; urgency=medium
 
 gazebo (7.0.0+dfsg-1) unstable; urgency=medium
 
-  * Need sdformat4 in gazebo9
+  * Need sdformat4 in gazebo7
     (Closes: #813001)
   * Add libqtwebkit dependency
   * Imported Upstream version 7.0.0
-  * Migrate all package metadata to gazebo9
+  * Migrate all package metadata to gazebo7
   * Remove patch. Circular dependencies problem is fixed upstream
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 26 Jan 2016 13:49:54 +0100
