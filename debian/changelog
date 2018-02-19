@@ -1,3 +1,9 @@
+gazebo (9.0.0+dfsg5-2) experimental; urgency=medium
+
+  * Added ignition-fuelt-tools as dependency to enable optional support
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 19 Feb 2018 23:09:16 +0000
+
 gazebo (9.0.0+dfsg5-1) experimental; urgency=medium
 
   * Added patch to use roboto system fonts
