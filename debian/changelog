@@ -1,3 +1,9 @@
+gazebo (9.0.0+dfsg5-3) unstable; urgency=medium
+
+  * Filter optional dependencies from those arches that does not support build-dep packages
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 27 Feb 2018 08:53:44 +0000
+
 gazebo (9.0.0+dfsg5-2) unstable; urgency=medium
 
   * Upload to unsatble
