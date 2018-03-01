@@ -1,3 +1,10 @@
+gazebo (9.0.0+dfsg5-4) unstable; urgency=medium
+
+  * libqtpropertybrowser-dev is not an optional dependency. Remove arch conditionals
+    (Closes: #891646)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 01 Mar 2018 12:12:16 +0000
+
 gazebo (9.0.0+dfsg5-3) unstable; urgency=medium
 
   * Filter optional dependencies from those arches that does not support build-dep packages
