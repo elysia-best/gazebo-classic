@@ -1,3 +1,10 @@
+gazebo (9.0.0+dfsg5-5) unstable; urgency=medium
+
+  * Use clang-format instead of clang-format-4.0
+    (Closes: #893408)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 23 Mar 2018 15:24:24 +0000
+
 gazebo (9.0.0+dfsg5-4) unstable; urgency=medium
 
   * libqtpropertybrowser-dev is not an optional dependency. Remove arch conditionals
