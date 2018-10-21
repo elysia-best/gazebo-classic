@@ -1,0 +1,74 @@
+# HG changeset patch
+# User Steve Peters <scpeters@openrobotics.org>
+# Date 1529604413 25200
+#      Thu Jun 21 11:06:53 2018 -0700
+# Branch proto36_9
+# Node ID 3190babf9bfc68718bd3c29602700fea923754e9
+# Parent  039509b626b48849782161f0b16c40dc0c8568fa
+replace protobuf scoped_ptr with std::unique_ptr, since scoped_ptr's were removed in protobuf 3.6
+
+diff -r 039509b626b4 -r 3190babf9bfc gazebo/msgs/generator/GazeboGenerator.cc
+--- a/gazebo/msgs/generator/GazeboGenerator.cc	Thu Jun 21 00:17:31 2018 +0000
++++ b/gazebo/msgs/generator/GazeboGenerator.cc	Thu Jun 21 11:06:53 2018 -0700
+@@ -22,6 +22,7 @@
+ #include <google/protobuf/descriptor.pb.h>
+ #include <boost/algorithm/string/replace.hpp>
+ 
++#include <memory>
+ #include <vector>
+ #include <utility>
+ #include <iostream>
+@@ -48,7 +49,7 @@
+ 
+   // Add boost shared point include
+   {
+-    scoped_ptr<io::ZeroCopyOutputStream> output(
++    std::unique_ptr<io::ZeroCopyOutputStream> output(
+         _generator_context->OpenForInsert(headerFilename, "includes"));
+     io::Printer printer(output.get(), '$');
+ 
+@@ -57,7 +58,7 @@
+ 
+   // Add boost shared point include
+   {
+-    scoped_ptr<io::ZeroCopyOutputStream> output(
++    std::unique_ptr<io::ZeroCopyOutputStream> output(
+         _generator_context->OpenForInsert(sourceFilename, "includes"));
+     io::Printer printer(output.get(), '$');
+ 
+@@ -67,7 +68,7 @@
+ 
+ 
+   {
+-    scoped_ptr<io::ZeroCopyOutputStream> output(
++    std::unique_ptr<io::ZeroCopyOutputStream> output(
+         _generator_context->OpenForInsert(headerFilename, "includes"));
+     io::Printer printer(output.get(), '$');
+ 
+@@ -79,7 +80,7 @@
+ 
+   // Add boost shared typedef
+   {
+-    scoped_ptr<io::ZeroCopyOutputStream> output(
++    std::unique_ptr<io::ZeroCopyOutputStream> output(
+         _generator_context->OpenForInsert(headerFilename, "namespace_scope"));
+     io::Printer printer(output.get(), '$');
+ 
+@@ -95,7 +96,7 @@
+ 
+   // Add const boost shared typedef
+   {
+-    scoped_ptr<io::ZeroCopyOutputStream> output(
++    std::unique_ptr<io::ZeroCopyOutputStream> output(
+         _generator_context->OpenForInsert(headerFilename, "global_scope"));
+     io::Printer printer(output.get(), '$');
+ 
+@@ -111,7 +112,7 @@
+ 
+   // Add Message Factory register
+   {
+-    scoped_ptr<io::ZeroCopyOutputStream> output(
++    std::unique_ptr<io::ZeroCopyOutputStream> output(
+         _generator_context->OpenForInsert(sourceFilename, "global_scope"));
+     io::Printer printer(output.get(), '$');
+ 
