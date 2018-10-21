@@ -6,6 +6,14 @@ gazebo (9.0.0+dfsg5-5) UNRELEASED; urgency=medium
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 28 May 2018 13:47:06 +0000
 
+gazebo (9.0.0+dfsg5-4.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * debian/patches: Fix build with ffmpeg 4.0. Thanks to James Cowgill for the
+    patch. (Closes: #888365)
+
+ -- Sebastian Ramacher <sramacher@debian.org>  Wed, 11 Jul 2018 22:07:57 +0200
+
 gazebo (9.0.0+dfsg5-4) unstable; urgency=medium
 
   * libqtpropertybrowser-dev is not an optional dependency. Remove arch conditionals
