@@ -1,10 +1,18 @@
 gazebo (9.0.0+dfsg5-5) UNRELEASED; urgency=medium
 
-  * Use clang-format instead of clang-format-4.0
-    (Closes: #893408)
   * Missing the inclusion of static libs (such as test-fixture) in the -dev package
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 28 May 2018 13:47:06 +0000
+
+gazebo (9.0.0+dfsg5-4.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Remove the seemingly unnecessary build dependency
+    on clang-format-4.0. (Closes: #893408)
+  * Update the build dependency from ruby-ronn to ronn.
+    (Closes: #903078)
+
+ -- Adrian Bunk <bunk@debian.org>  Wed, 15 Aug 2018 11:44:09 +0300
 
 gazebo (9.0.0+dfsg5-4.1) unstable; urgency=medium
 

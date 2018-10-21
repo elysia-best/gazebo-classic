@@ -7,7 +7,6 @@ Build-Depends: cmake,
                pkg-config,
                debhelper (>= 11),
                bash-completion,
-               clang-format [!alpha !hppa !ia64 !m68k !sh4],
                doxygen,
                doxygen-latex,
                texlive-fonts-recommended,
@@ -56,7 +55,7 @@ Build-Depends: cmake,
                libbullet-dev,
                libsimbody-dev (<< 4.0.0) [!i386 !mips !mipsel !ppc64el !ppc64 !powerpc],
                libgdal-dev,
-               ruby-ronn,
+               ronn,
                libgtest-dev
 Standards-Version: 4.1.3
 Vcs-Browser: https://salsa.debian.org/science-team/gazebo
