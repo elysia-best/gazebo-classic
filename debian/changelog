@@ -1,15 +1,10 @@
-gazebo (9.0.0+dfsg5-6) unstable; urgency=medium
-
-  * Missing the inclusion of static libs (such as test-fixture) in the -dev package
-
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 28 May 2018 13:47:06 +0000
-
-gazebo (9.0.0+dfsg5-5) unstable; urgency=medium
+gazebo (9.0.0+dfsg5-5) UNRELEASED; urgency=medium
 
   * Use clang-format instead of clang-format-4.0
     (Closes: #893408)
+  * Missing the inclusion of static libs (such as test-fixture) in the -dev package
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 23 Mar 2018 15:24:24 +0000
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 28 May 2018 13:47:06 +0000
 
 gazebo (9.0.0+dfsg5-4) unstable; urgency=medium
 
