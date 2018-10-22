@@ -5,12 +5,20 @@ Deprecated code produces compile-time warnings. These warning serve as
 notification to users that their code should be upgraded. The next major
 release will remove the deprecated code.
 
+## Gazebo 8.4 to 9.x
+
+### Models with duplicate names will not be inserted
+
+1. Prior to gazebo 8.4, multiple models with the same name could be inserted
+   into a world and simulated, though they were not fully functional.
+   Now models with duplicate names are not allowed to be inserted.
+
 ## Gazebo 8.x to 9.x
 
 ### Build system
 
 New versions in mandatory dependencies: `ign-transport4`, `ign-msgs1`, `ign-math4`, `sdformat6`.
-New optional dependencies: `ign-fuel-tools`,`ign-common1` 
+New optional dependencies: `ign-fuel-tools`,`ign-common1`
 
 ### -g command line argument to load plugins in gzclient
 
@@ -108,6 +116,10 @@ New optional dependencies: `ign-fuel-tools`,`ign-common1`
     + ***Replacement:*** void SetFog(const std::string &_type, const ignition::math::Color &_color, const double _density, const double _start, const double _end)
     + common::Color AmbientColor() const now returns ignition::math::Color
     + common::Color BackgroundColor() const now returns ignition::math::Color
+    + ***Deprecation:*** LightPtr GetLight(const uint32_t _index) const;
+    + ***Replacement:*** LightPtr LightByIndex(const uint32_t _index) const;
+    + ***Deprecation:*** LightPtr GetLight(const std::string &_name) const;
+    + ***Replacement:*** LightPtr LightByName(const std::string &_name) const;
 1. **gazebo/rendering/Camera.hh**
     + ***Deprecation:*** virtual bool SetBackgroundColor(const common::Color &_color)
     + ***Replacement:*** virtual bool SetBackgroundColor(const ignition::math::Color &_color)
@@ -352,6 +364,12 @@ New optional dependencies: `ign-fuel-tools`,`ign-common1`
     + ***Removed:*** public: virtual bool MoveToPosition(const math::Pose &_pose, double _time)
 
 ### Deprecations
+
+1. **plugins/ContainPlugin.hh**
+    + ***Deprecation:*** Gazebo transport publisher on <namespace>/contain
+    + ***Replacement:*** Ignition transport publisher on <namespace>/contain
+    + ***Deprecation:*** Gazebo transport subscriber on <namespace>/enable
+    + ***Replacement:*** Ignition transport service on <namespace>/enable
 
 1. **gazebo/physics/RayShape.hh**
     + ***Deprecation:*** void SetPoints(const math::Vector3 &_posStart, const math::Vector3 &_posEnd)

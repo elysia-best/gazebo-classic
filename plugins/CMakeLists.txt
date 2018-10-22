@@ -3,6 +3,7 @@ if (WIN32)
 endif()
 
 include_directories(
+  ${CURL_INCLUDEDIR}
   ${PROJECT_SOURCE_DIR}
   ${PROTOBUF_INCLUDE_DIR}
   ${SDFormat_INCLUDE_DIRS}
@@ -21,6 +22,9 @@ link_directories(
   ${tinyxml_LIBRARY_DIRS}
 )
 
+if (WIN32)
+  add_definitions(-DCURL_STATICLIB)
+endif()
 add_definitions(${Qt5Core_DEFINITIONS})
 set (CMAKE_AUTOMOC ON)
 
@@ -42,6 +46,7 @@ endif()
 set (plugins_single_header
   ActorPlugin
   ActuatorPlugin
+  AmbientOcclusionVisualPlugin
   ArduCopterPlugin
   ArrangePlugin
   AttachLightPlugin
@@ -52,9 +57,11 @@ set (plugins_single_header
   CartDemoPlugin
   CessnaPlugin
   ContactPlugin
+  ContainPlugin
   DepthCameraPlugin
   DiffDrivePlugin
   FiducialCameraPlugin
+  FlashLightPlugin
   FollowerPlugin
   ForceTorquePlugin
   GimbalSmall2dPlugin
@@ -65,6 +72,7 @@ set (plugins_single_header
   InitialVelocityPlugin
   JointTrajectoryPlugin
   KeysToJointsPlugin
+  LedPlugin
   LensFlareSensorPlugin
   LiftDragPlugin
   LinearBatteryConsumerPlugin
@@ -77,9 +85,11 @@ set (plugins_single_header
   RayPlugin
   RaySensorNoisePlugin
   RubblePlugin
+  ShaderParamVisualPlugin
   SkidSteerDrivePlugin
   SonarPlugin
   SphereAtlasDemoPlugin
+  StaticMapPlugin
   TouchPlugin
   VehiclePlugin
   WindPlugin
@@ -95,6 +105,7 @@ if (HAVE_USB AND UNIX AND NOT APPLE)
   set (plugins_single_header ${plugins_single_header}
     HydraPlugin
     HydraDemoPlugin
+    JoyPlugin
   )
 endif()
 
@@ -161,6 +172,12 @@ if (HAVE_DART_URDF)
     gz_install_includes("plugins" ${src}.hh)
   endforeach ()
 endif()
+
+# If a plugin depends on other plugins in the same directory, add them to link.
+# Plus, set RPATH to the directory so they can dynamically link.
+target_link_libraries(LedPlugin FlashLightPlugin)
+set_target_properties(
+  LedPlugin PROPERTIES INSTALL_RPATH ${GAZEBO_PLUGIN_INSTALL_DIR})
 
 add_subdirectory(events)
 
