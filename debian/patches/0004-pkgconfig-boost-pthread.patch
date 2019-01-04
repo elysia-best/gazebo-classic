@@ -1,0 +1,31 @@
+Description: Don't prefix -l if already present.
+ An invalid gazebo.pc is generated when ${Boost_LIBRARIES} contains:
+ .
+ /usr/lib/x86_64-linux-gnu/libboost_thread.so;-lpthread;/usr/lib/x86_64-linux-gnu/libboost_signals.so;[...]
+ .
+ This resulted in gazebo.pc containing:
+ .
+ [...]-L/usr/lib/x86_64-linux-gnu -lboost_thread -l-lpthread -lboost_signals[...]
+ .
+ Which in turn caused the autopkgtests to fail:
+ .
+ /usr/bin/ld: cannot find -l-lpthread
+Author: Bas Couwenberg <sebastic@debian.org>
+
+Index: gazebo-9.4.1+dfsg/CMakeLists.txt
+===================================================================
+--- gazebo-9.4.1+dfsg.orig/CMakeLists.txt
++++ gazebo-9.4.1+dfsg/CMakeLists.txt
+@@ -371,8 +371,10 @@ else (build_errors)
+ 
+   foreach (b ${Boost_LIBRARIES})
+     get_filename_component(bname ${b} NAME_WE)
+-    # Prefix always -l
+-    set (bname "-l${bname}")
++    # Prefix -l if not already present
++    if(NOT ${bname} MATCHES "^-l")
++      set (bname "-l${bname}")
++    endif()
+     # Remove the prefix lib (not always present, like in pthread)
+     string (REPLACE "lib" "" bname "${bname}")
+     set (Boost_PKGCONFIG_LIBS "${Boost_PKGCONFIG_LIBS} ${bname}")
