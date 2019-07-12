@@ -1,6 +1,6 @@
 gazebo (9.6.0-2) unstable; urgency=medium
 
-  * Add explicit boost dependency and remove obsolte signals
+  * Add explicit boost dependency and remove obsolete signals
   * Update boost dependencies for libgazebo9-dev too
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 11 Jul 2019 19:39:06 +0000
