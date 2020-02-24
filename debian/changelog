@@ -1,5 +1,7 @@
 gazebo (9.12.0+dfsg-1) unstable; urgency=medium
 
+  * Use robot-unhinted fonts
+    (Closes: #922946)
   * Include static plugins in plugin package
   * Migrate to debhelper-compat 12 and latest Standards
   * New upstream version 9.12.0
