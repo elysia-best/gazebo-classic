@@ -1,7 +1,9 @@
 gazebo (9.12.0+dfsg-1) unstable; urgency=medium
 
-  * New upstream version 9.12.0
+  * Include static plugins in plugin package
   * Migrate to debhelper-compat 12 and latest Standards
+  * New upstream version 9.12.0
+  * Remove patch for pkg-config merged upstream
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 24 Feb 2020 15:26:56 +0000
 
