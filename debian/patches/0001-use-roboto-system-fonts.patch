@@ -1,6 +1,6 @@
 Description: Use system packaged roboto fonts
 Author: Jose Luis Rivero <jrivero@osrfoundation.org>
-Last-Update: 2018-02-15
+Last-Update: 2019-02-26
 
 diff -r 9887261d5b3b gazebo/gui/resources.qrc
 --- a/gazebo/gui/resources.qrc	Tue Feb 13 01:55:43 2018 +0000
@@ -22,17 +22,17 @@ diff -r 9887261d5b3b gazebo/gui/resources.qrc
 -  <file>fonts/Roboto-Regular.ttf</file>
 -  <file>fonts/Roboto-Thin.ttf</file>
 -  <file>fonts/Roboto-ThinItalic.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-Black.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-BlackItalic.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-Bold.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-BoldItalic.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-Italic.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-Light.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-LightItalic.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-Medium.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-MediumItalic.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-Regular.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-Thin.ttf</file>
-+  <file>/usr/share/fonts/truetype/roboto/hinted/Roboto-ThinItalic.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Black.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-BlackItalic.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Bold.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-BoldItalic.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Italic.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Light.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-LightItalic.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-MediumItalic.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Regular.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Thin.ttf</file>
++  <file>/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-ThinItalic.ttf</file>
  </qresource>
  </RCC>
