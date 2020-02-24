@@ -14,15 +14,9 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <functional>
 
-#include "ForceTorquePlugin.hh"
+#include "plugins/ForceTorquePlugin.hh"
 
 using namespace gazebo;
 
@@ -37,7 +31,7 @@ ForceTorquePlugin::ForceTorquePlugin()
 /////////////////////////////////////////////////
 ForceTorquePlugin::~ForceTorquePlugin()
 {
-  this->parentSensor->DisconnectUpdate(this->connection);
+  this->connection.reset();
   this->parentSensor.reset();
 }
 
@@ -49,7 +43,11 @@ void ForceTorquePlugin::Load(sensors::SensorPtr _parent,
     std::dynamic_pointer_cast<sensors::ForceTorqueSensor>(_parent);
 
   if (!this->parentSensor)
-    gzthrow("ForceTorquePlugin requires a force_torque sensor as its parent.");
+  {
+    gzerr << "ForceTorquePlugin requires a force_torque "
+          << "sensor as its parent.\n";
+    return;
+  }
 
   this->connection = this->parentSensor->ConnectUpdate(
         std::bind(&ForceTorquePlugin::OnUpdate, this, std::placeholders::_1));

@@ -14,16 +14,10 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <string>
 
-#include "gazebo/math/SignalStats.hh"
-#include "gazebo/math/Vector3Stats.hh"
+#include <ignition/math/SignalStats.hh>
+#include <ignition/math/Vector3Stats.hh>
 #include "ServerFixture.hh"
 
 using namespace gazebo;
@@ -38,7 +32,7 @@ void ServerFixture::Record(const std::string &_name, const double _data)
 
 /////////////////////////////////////////////////
 void ServerFixture::Record(const std::string &_prefix,
-                           const math::SignalStats &_stats)
+                           const ignition::math::SignalStats &_stats)
 {
   auto map = _stats.Map();
   for (auto const &stat : map)
@@ -49,7 +43,7 @@ void ServerFixture::Record(const std::string &_prefix,
 
 /////////////////////////////////////////////////
 void ServerFixture::Record(const std::string &_prefix,
-                           const math::Vector3Stats &_stats)
+                           const ignition::math::Vector3Stats &_stats)
 {
   this->Record(_prefix + "_x_", _stats.X());
   this->Record(_prefix + "_y_", _stats.Y());

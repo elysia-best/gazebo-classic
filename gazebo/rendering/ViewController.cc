@@ -15,12 +15,6 @@
  *
 */
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include "gazebo/rendering/Camera.hh"
 #include "gazebo/rendering/ViewController.hh"
 
@@ -40,8 +34,8 @@ ViewController::~ViewController()
 }
 
 //////////////////////////////////////////////////
-void ViewController::Init(const math::Vector3 &/*_focalPoint*/,
-    double /*_yaw*/, double /*_pitch*/)
+void ViewController::Init(const ignition::math::Vector3d &/*_focalPoint*/,
+    const double /*_yaw*/, const double /*_pitch*/)
 {
 }
 

@@ -15,6 +15,7 @@
  *
 */
 
+#include <ignition/math/Color.hh>
 #include <ignition/math/Vector3.hh>
 #include <ignition/math/Pose3.hh>
 
@@ -424,16 +425,16 @@ void JointInspector::OnJointTypeChanged(const QString &_value)
   this->dataPtr->configWidget->SetWidgetReadOnly("screw", !isScrew);
 
   // Change child icon color according to type
-  common::Color matAmbient, matDiffuse, matSpecular, matEmissive;
-  rendering::Material::GetMaterialAsColor(
+  ignition::math::Color matAmbient, matDiffuse, matSpecular, matEmissive;
+  rendering::Material::MaterialAsColor(
       this->dataPtr->jointMaker->jointMaterials[type],
       matAmbient, matDiffuse, matSpecular, matEmissive);
 
   std::ostringstream sheet;
   sheet << "QLabel{background-color: rgb(" <<
-          (matAmbient[0] * 255) << ", " <<
-          (matAmbient[1] * 255) << ", " <<
-          (matAmbient[2] * 255) << "); }";
+          (matAmbient.R() * 255) << ", " <<
+          (matAmbient.G() * 255) << ", " <<
+          (matAmbient.B() * 255) << "); }";
 
   this->dataPtr->parentIcon->setStyleSheet(QString::fromStdString(sheet.str()));
 }
@@ -573,7 +574,7 @@ void JointInspector::OnRemove()
 {
   this->close();
 
-  this->dataPtr->jointMaker->RemoveJoint(this->dataPtr->jointId);
+  this->dataPtr->jointMaker->RemoveJointByUser(this->dataPtr->jointId);
 }
 
 /////////////////////////////////////////////////
@@ -626,7 +627,7 @@ void JointInspector::OnCancel()
 {
   this->RestoreOriginalData();
 
-  this->close();
+  this->reject();
 }
 
 /////////////////////////////////////////////////
@@ -668,4 +669,10 @@ void JointInspector::keyPressEvent(QKeyEvent *_event)
     _event->accept();
   else
     QDialog::keyPressEvent(_event);
+}
+
+///////////////////////////////////////////////////
+void JointInspector::closeEvent(QCloseEvent *_event)
+{
+  _event->accept();
 }

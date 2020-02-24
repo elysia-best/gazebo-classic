@@ -1,9 +1,5 @@
 include (${gazebo_cmake_dir}/GazeboUtils.cmake)
 
-if (WIN32)
- add_definitions(-DBUILDING_DLL_GZ_COMMON)
-endif()
-
 # tiny obj loader
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/deps/tinyobjloader)
 
@@ -54,6 +50,7 @@ set (sources
   KeyEvent.cc
   KeyFrame.cc
   Material.cc
+  MaterialDensity.cc
   Mesh.cc
   MeshExporter.cc
   MeshLoader.cc
@@ -71,17 +68,20 @@ set (sources
   SVGLoader.cc
   Time.cc
   Timer.cc
+  URI.cc
   Video.cc
+  VideoEncoder.cc
   ffmpeg_inc.cc
 )
 
 if (NOT USE_EXTERNAL_TINYXML)
   include_directories (${CMAKE_SOURCE_DIR}/deps/win/tinyxml)
-  set (sources ${sources}
-       ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinystr.cpp
-       ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinyxml.cpp
-       ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinyxmlerror.cpp
-       ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinyxmlparser.cpp)
+  add_library (tinyxml_internal STATIC
+    ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinystr.cpp
+    ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinyxml.cpp
+    ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinyxmlerror.cpp
+    ${CMAKE_SOURCE_DIR}/deps/win/tinyxml/tinyxmlparser.cpp)
+  set (tinyxml_LIBRARIES tinyxml_internal)
 endif()
 
 set (headers
@@ -108,6 +108,7 @@ set (headers
   KeyEvent.hh
   KeyFrame.hh
   Material.hh
+  MaterialDensity.hh
   Mesh.hh
   MeshLoader.hh
   MeshManager.hh
@@ -127,7 +128,9 @@ set (headers
   Time.hh
   Timer.hh
   UpdateInfo.hh
+  URI.hh
   Video.hh
+  VideoEncoder.hh
   ffmpeg_inc.h
  )
 
@@ -147,16 +150,20 @@ set (gtest_sources
   Image_TEST.cc
   ImageHeightmap_TEST.cc
   Material_TEST.cc
+  MaterialDensity_TEST.cc
   Mesh_TEST.cc
   MeshManager_TEST.cc
   MouseEvent_TEST.cc
   MovingWindowFilter_TEST.cc
   OBJLoader_TEST.cc
+  Plugin_TEST.cc
   SemanticVersion_TEST.cc
   SphericalCoordinates_TEST.cc
   SystemPaths_TEST.cc
   SVGLoader_TEST.cc
   Time_TEST.cc
+  URI_TEST.cc
+  VideoEncoder_TEST.cc
 )
 
 # Timer test fails on OSX
@@ -191,16 +198,31 @@ if (HAVE_FFMPEG)
                      AudioDecoder_TEST.cc)
 endif()
 
-gz_build_tests(${gtest_sources} EXTRA_LIBS gazebo_common)
+set (headers_install ${headers})
 
-set (common_headers "" CACHE INTERNAL "common headers" FORCE)
-foreach (hdr ${headers})
-  APPEND_TO_CACHED_STRING(common_headers
-    "Common Headers" "#include \"gazebo/common/${hdr}\"\n")
+# Do not install fuel_tools headers.
+if (HAVE_IGNITION_FUEL_TOOLS)
+  set (headers ${headers}
+    FuelModelDatabase.hh
+  )
+
+  set (sources ${sources}
+    FuelModelDatabase.cc
+  )
+
+  set (gtest_sources ${gtest_sources}
+    FuelModelDatabase_TEST.cc
+  )
+endif()
+
+gz_build_tests(${gtest_sources} EXTRA_LIBS gazebo_common ${tinyxml_LIBRARIES})
+
+set (common_headers "")
+foreach (hdr ${headers_install})
+  set (common_headers "${common_headers}#include \"gazebo/common/${hdr}\"\n")
 endforeach()
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/common.hh.in ${CMAKE_CURRENT_BINARY_DIR}/common.hh )
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBUILDING_DLL_GZ_COMMON")
 if (WIN32)
   # 0x601 = Windows 7.  TBB needs to know this.
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WIN32_WINNT=0x601")
@@ -219,8 +241,11 @@ set_property(
   OGRE_RESOURCE_PATH="${OGRE_RESOURCE_PATH}"
 )
 
+target_compile_definitions(gazebo_common
+  PRIVATE BUILDING_DLL_GZ_COMMON
+)
+
 target_link_libraries(gazebo_common
-  gazebo_math
   ${IGNITION-MATH_LIBRARIES}
   ${libdl_library}
   ${libtool_library}
@@ -230,11 +255,13 @@ target_link_libraries(gazebo_common
   ${libavcodec_LIBRARIES}
   ${libavformat_LIBRARIES}
   ${libavutil_LIBRARIES}
+  ${libavdevice_LIBRARIES}
   ${CURL_LIBRARIES}
   ${libswscale_LIBRARIES}
   ${libtar_LIBRARIES}
   ${TBB_LIBRARIES}
   ${SDFormat_LIBRARIES}
+  ${IGNITION-FUEL_TOOLS_LIBRARIES}
 )
 
 if (UNIX)
@@ -258,5 +285,11 @@ if (HAVE_GDAL)
   target_link_libraries(gazebo_common ${GDAL_LIBRARY})
 endif()
 
+if (USE_PCH)
+  set(MORE_FLAGS "-pthread" ${Boost_PKGCONFIG_CFLAGS})
+  add_pch(gazebo_common common_pch.hh ${MORE_FLAGS})
+endif()
+
+
 gz_install_library(gazebo_common)
-gz_install_includes("common" ${headers} ${CMAKE_CURRENT_BINARY_DIR}/common.hh)
+gz_install_includes("common" ${headers_install} ${CMAKE_CURRENT_BINARY_DIR}/common.hh)

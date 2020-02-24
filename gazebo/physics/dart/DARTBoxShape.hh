@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Open Source Robotics Foundation
+ * Copyright (C) 2014-2016 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 #ifndef _GAZEBO_DARTBOXSHAPE_HH_
 #define _GAZEBO_DARTBOXSHAPE_HH_
 
-#include "gazebo/math/Vector3.hh"
 #include "gazebo/physics/BoxShape.hh"
 #include "gazebo/physics/dart/DARTTypes.hh"
 #include "gazebo/util/system.hh"
@@ -43,7 +42,10 @@ namespace gazebo
       public: virtual ~DARTBoxShape();
 
       // Documentation inherited.
-      public: virtual void SetSize(const math::Vector3 &_size);
+      public: virtual void Init();
+
+      // Documentation inherited.
+      public: virtual void SetSize(const ignition::math::Vector3d &_size);
 
       /// \internal
       /// \brief Pointer to private data

@@ -27,7 +27,7 @@ using namespace gazebo;
 using namespace physics;
 
 //////////////////////////////////////////////////
-DARTCylinderShape::DARTCylinderShape(CollisionPtr _parent)
+DARTCylinderShape::DARTCylinderShape(DARTCollisionPtr _parent)
   : CylinderShape(_parent),
     dataPtr(new DARTCylinderShapePrivate())
 {
@@ -37,6 +37,27 @@ DARTCylinderShape::DARTCylinderShape(CollisionPtr _parent)
 DARTCylinderShape::~DARTCylinderShape()
 {
   delete this->dataPtr;
+  this->dataPtr = nullptr;
+}
+
+//////////////////////////////////////////////////
+void DARTCylinderShape::Init()
+{
+  BasePtr _parent = GetParent();
+  GZ_ASSERT(boost::dynamic_pointer_cast<DARTCollision>(_parent),
+            "Parent must be a DARTCollisionPtr");
+  DARTCollisionPtr _collisionParent =
+    boost::static_pointer_cast<DARTCollision>(_parent);
+
+  dart::dynamics::BodyNodePtr bodyNode = _collisionParent->DARTBodyNode();
+
+  if (!bodyNode) gzerr << "BodyNode is NULL in init!\n";
+  GZ_ASSERT(bodyNode, "BodyNode is NULL in init!");
+
+  this->dataPtr->CreateShape(bodyNode);
+  _collisionParent->SetDARTCollisionShapeNode(this->dataPtr->ShapeNode());
+
+  CylinderShape::Init();
 }
 
 //////////////////////////////////////////////////
@@ -54,7 +75,7 @@ void DARTCylinderShape::SetSize(double _radius, double _length)
     return;
   }
 
-  if (math::equal(_radius, 0.0))
+  if (ignition::math::equal(_radius, 0.0))
   {
     // Warn user, but still create shape with very small value
     // otherwise later resize operations using setLocalScaling
@@ -64,7 +85,7 @@ void DARTCylinderShape::SetSize(double _radius, double _length)
     _radius = 1e-4;
   }
 
-  if (math::equal(_length, 0.0))
+  if (ignition::math::equal(_length, 0.0))
   {
     gzwarn << "Setting cylinder shape's length to zero not supported "
            << "in DART, using 1e-4.\n";
@@ -73,24 +94,6 @@ void DARTCylinderShape::SetSize(double _radius, double _length)
 
   CylinderShape::SetSize(_radius, _length);
 
-  DARTCollisionPtr dartCollisionParent =
-      boost::dynamic_pointer_cast<DARTCollision>(this->collisionParent);
-
-  if (dartCollisionParent->GetDARTCollisionShape() == NULL)
-  {
-    dart::dynamics::BodyNode *dtBodyNode =
-        dartCollisionParent->GetDARTBodyNode();
-    dart::dynamics::CylinderShape *dtCylinderShape =
-        new dart::dynamics::CylinderShape(_radius, _length);
-    dtBodyNode->addCollisionShape(dtCylinderShape);
-    dartCollisionParent->SetDARTCollisionShape(dtCylinderShape);
-  }
-  else
-  {
-    dart::dynamics::CylinderShape *dtCylinderShape =
-        dynamic_cast<dart::dynamics::CylinderShape*>(
-          dartCollisionParent->GetDARTCollisionShape());
-    dtCylinderShape->setRadius(_radius);
-    dtCylinderShape->setHeight(_length);
-  }
+  this->dataPtr->Shape()->setRadius(_radius);
+  this->dataPtr->Shape()->setHeight(_length);
 }

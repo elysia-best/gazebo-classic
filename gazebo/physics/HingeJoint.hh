@@ -19,11 +19,9 @@
  * Date: 21 May 2003
  */
 
-#ifndef _HINGEJOINT_HH_
-#define _HINGEJOINT_HH_
+#ifndef GAZEBO_PHYSICS_HINGEJOINT_HH_
+#define GAZEBO_PHYSICS_HINGEJOINT_HH_
 
-#include "gazebo/math/Angle.hh"
-#include "gazebo/math/Vector3.hh"
 #include "gazebo/util/system.hh"
 
 namespace gazebo
@@ -40,14 +38,14 @@ namespace gazebo
     {
       /// \brief Constructor
       /// \param[in] _parent Parent link
-      public: HingeJoint(BasePtr _parent) : T(_parent)
+      public: explicit HingeJoint(BasePtr _parent) : T(_parent)
               { this->AddType(Base::HINGE_JOINT); }
       ///  \brief Destructor
       public: virtual ~HingeJoint()
               { }
 
       // Documentation inherited.
-      public: virtual unsigned int GetAngleCount() const
+      public: virtual unsigned int DOF() const
               {return 1;}
 
       /// \brief Load joint

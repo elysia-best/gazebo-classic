@@ -19,20 +19,10 @@
  * Date: 13 Feb 2006
  */
 
-#ifndef _BULLET_COLLISION_HH_
-#define _BULLET_COLLISION_HH_
+#ifndef GAZEBO_PHYSICS_BULLET_BULLETCOLLISION_HH_
+#define GAZEBO_PHYSICS_BULLET_BULLETCOLLISION_HH_
 
 #include <string>
-
-/*
-
-#include "gazebo/common/Param.hh"
-#include "Entity.hh"
-#include "gazebo/math/Pose.hh"
-#include "gazebo/math/Vector3.hh"
-#include "gazebo/physics/Collision.hh"
-#include "gazebo/util/system.hh"
-*/
 
 #include "gazebo/physics/bullet/BulletTypes.hh"
 #include "gazebo/physics/PhysicsTypes.hh"
@@ -53,7 +43,7 @@ namespace gazebo
     class GZ_PHYSICS_VISIBLE BulletCollision : public Collision
     {
       /// \brief Constructor
-      public: BulletCollision(LinkPtr _parent);
+      public: explicit BulletCollision(LinkPtr _parent);
 
       /// \brief Destructor
       public: virtual ~BulletCollision();
@@ -80,8 +70,8 @@ namespace gazebo
       /// \return The bits
       public: virtual unsigned int GetCollideBits() const;
 
-      /// \brief Get the bounding box, defined by the physics engine
-      public: virtual math::Box GetBoundingBox() const;
+      // Documentation inherited
+      public: virtual ignition::math::Box BoundingBox() const;
 
       /// \brief Set the collision shape
       /// \param[in] _shape Collision shape

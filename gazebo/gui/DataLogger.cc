@@ -16,9 +16,6 @@
  */
 
 #ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
   // For _access()
   #include <io.h>
 #endif
@@ -233,7 +230,7 @@ DataLogger::DataLogger(QWidget *_parent)
 
   // Create a node from communication.
   this->dataPtr->node = transport::NodePtr(new transport::Node());
-  this->dataPtr->node->Init();
+  this->dataPtr->node->TryInit(common::Time::Maximum());
 
   // Advertise on the log control topic. The server listens to log control
   // messages.
@@ -258,7 +255,7 @@ DataLogger::DataLogger(QWidget *_parent)
   {
     common::SystemPaths *paths = common::SystemPaths::Instance();
     this->dataPtr->basePath =
-        QString::fromStdString(paths->GetTmpPath() + "/gazebo");
+        QString::fromStdString(paths->TmpPath() + "/gazebo");
   }
   else
   {
@@ -273,6 +270,11 @@ DataLogger::DataLogger(QWidget *_parent)
 /////////////////////////////////////////////////
 DataLogger::~DataLogger()
 {
+  this->dataPtr->sub.reset();
+  this->dataPtr->pub.reset();
+  if (this->dataPtr->node)
+    this->dataPtr->node->Fini();
+  this->dataPtr->node.reset();
 }
 
 /////////////////////////////////////////////////

@@ -14,12 +14,6 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <ignition/math/Helpers.hh>
 #include <ignition/math/Rand.hh>
 
@@ -211,7 +205,7 @@ void ImageGaussianNoiseModel::Load(sdf::ElementPtr _sdf)
 //////////////////////////////////////////////////
 void ImageGaussianNoiseModel::SetCamera(rendering::CameraPtr _camera)
 {
-  GZ_ASSERT(_camera, "Unable to apply gaussian noise, camera is NULL");
+  GZ_ASSERT(_camera, "Unable to apply gaussian noise, camera is null");
 
   this->gaussianNoiseCompositorListener.reset(new
         GaussianNoiseCompositorListener(this->mean, this->stdDev));

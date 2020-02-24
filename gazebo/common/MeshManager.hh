@@ -28,14 +28,12 @@
 #include <ignition/math/Matrix4.hh>
 #include <ignition/math/Vector2.hh>
 
-#include "gazebo/math/Vector3.hh"
-#include "gazebo/math/Vector2d.hh"
-#include "gazebo/math/Vector2i.hh"
-#include "gazebo/math/Pose.hh"
-#include "gazebo/math/Plane.hh"
 #include "gazebo/common/SingletonT.hh"
 #include "gazebo/common/CommonTypes.hh"
 #include "gazebo/util/system.hh"
+
+/// \brief Explicit instantiation for typed SingletonT.
+GZ_SINGLETON_DECLARE(GZ_COMMON_VISIBLE, gazebo, common, MeshManager)
 
 namespace gazebo
 {
@@ -43,6 +41,7 @@ namespace gazebo
   {
     class ColladaLoader;
     class ColladaExporter;
+    class FBXLoader;
     class STLLoader;
     class Mesh;
     class Plane;
@@ -106,7 +105,7 @@ namespace gazebo
 
       /// \brief Get a mesh by name.
       /// \param[in] _name the name of the mesh to look for
-      /// \return the mesh or NULL if not found
+      /// \return the mesh or nullptr if not found
       public: const Mesh *GetMesh(const std::string &_name) const;
 
       /// \brief Return true if the mesh exists.
@@ -268,13 +267,17 @@ namespace gazebo
                       double _tol);
 
       /// \brief 3D mesh loader for COLLADA files
-      private: ColladaLoader *colladaLoader;
+      private: ColladaLoader *colladaLoader = nullptr;
 
       /// \brief 3D mesh exporter for COLLADA files
-      private: ColladaExporter *colladaExporter;
+      private: ColladaExporter *colladaExporter = nullptr;
 
       /// \brief 3D mesh loader for STL files
-      private: STLLoader *stlLoader;
+      private: STLLoader *stlLoader = nullptr;
+
+      /// \brief 3D mesh loader for FBX files
+      /// \todo The FBX loader needs to be implemented.
+      private: FBXLoader *fbxLoader = nullptr;
 
       /// \brief Dictionary of meshes, indexed by name
       private: std::map<std::string, Mesh*> meshes;

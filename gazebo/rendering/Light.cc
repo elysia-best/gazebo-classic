@@ -32,7 +32,7 @@
 using namespace gazebo;
 using namespace rendering;
 
-unsigned int LightPrivate::lightCounter = 0;
+unsigned int LightPrivate::lightCounter = ignition::math::MAX_UI32 - 1;
 
 //////////////////////////////////////////////////
 Light::Light(ScenePtr _scene)
@@ -41,7 +41,7 @@ Light::Light(ScenePtr _scene)
   this->dataPtr->line = NULL;
   this->dataPtr->scene = _scene;
 
-  this->dataPtr->lightCounter++;
+  this->dataPtr->id = this->dataPtr->lightCounter--;
 
   this->dataPtr->sdf.reset(new sdf::Element);
   sdf::initFile("light.sdf", this->dataPtr->sdf);
@@ -82,12 +82,11 @@ void Light::Load(sdf::ElementPtr _sdf)
 //////////////////////////////////////////////////
 void Light::Load()
 {
-  math::Vector3 vec;
-
+  std::string lightName = this->Name();
   try
   {
     this->dataPtr->light =
-        this->dataPtr->scene->OgreSceneManager()->createLight(this->Name());
+        this->dataPtr->scene->OgreSceneManager()->createLight(lightName);
   }
   catch(Ogre::Exception &e)
   {
@@ -97,10 +96,17 @@ void Light::Load()
 
   this->Update();
 
-  this->dataPtr->visual.reset(new Visual(this->Name(),
-                     this->dataPtr->scene->WorldVisual()));
+  // TODO add parent_id to light.proto file for finding parent link visual
+  // Do this in Scene::ProcessLightFactoryMsg
+  std::string parentName = lightName.substr(0, lightName.rfind("::"));
+  VisualPtr parentVis = this->dataPtr->scene->GetVisual(parentName);
+  if (!parentVis)
+    parentVis = this->dataPtr->scene->WorldVisual();
+
+  this->dataPtr->visual.reset(
+      new Visual(this->Name(), parentVis, false));
+  this->dataPtr->visual->Load();
   this->dataPtr->visual->AttachObject(this->dataPtr->light);
-  this->dataPtr->scene->AddVisual(this->dataPtr->visual);
 
   this->CreateVisual();
 }
@@ -108,13 +114,14 @@ void Light::Load()
 //////////////////////////////////////////////////
 void Light::Update()
 {
+  // shadow support is also affected by light type so set type first.
+  this->SetLightType(this->dataPtr->sdf->Get<std::string>("type"));
   this->SetCastShadows(this->dataPtr->sdf->Get<bool>("cast_shadows"));
 
-  this->SetLightType(this->dataPtr->sdf->Get<std::string>("type"));
   this->SetDiffuseColor(
-      this->dataPtr->sdf->GetElement("diffuse")->Get<common::Color>());
+      this->dataPtr->sdf->GetElement("diffuse")->Get<ignition::math::Color>());
   this->SetSpecularColor(
-      this->dataPtr->sdf->GetElement("specular")->Get<common::Color>());
+      this->dataPtr->sdf->GetElement("specular")->Get<ignition::math::Color>());
   this->SetDirection(
       this->dataPtr->sdf->Get<ignition::math::Vector3d>("direction"));
 
@@ -160,6 +167,9 @@ void Light::UpdateFromMsg(ConstLightPtr &_msg)
 //////////////////////////////////////////////////
 void Light::LoadFromMsg(const msgs::Light &_msg)
 {
+  if (_msg.has_id())
+    this->dataPtr->id = _msg.id();
+
   this->UpdateSDFFromMsg(_msg);
 
   this->Load();
@@ -184,21 +194,9 @@ void Light::SetName(const std::string &_name)
 }
 
 //////////////////////////////////////////////////
-std::string Light::GetName() const
-{
-  return this->Name();
-}
-
-//////////////////////////////////////////////////
 std::string Light::Name() const
 {
   return this->dataPtr->sdf->Get<std::string>("name");
-}
-
-//////////////////////////////////////////////////
-std::string Light::GetType() const
-{
-  return this->Type();
 }
 
 //////////////////////////////////////////////////
@@ -227,34 +225,23 @@ void Light::CreateVisual()
 
     this->dataPtr->visual->SetVisible(true);
 
-    // Create a scene node to hold the light selection object.
-    Ogre::SceneNode *visSceneNode;
-    visSceneNode =
-        this->dataPtr->visual->GetSceneNode()->createChildSceneNode();
+    // Create a visual to hold the light selection object.
+    VisualPtr lightSelectionVis(new Visual(this->Name() + "_selection",
+        this->dataPtr->visual));
+    lightSelectionVis->SetType(Visual::VT_GUI);
 
     // Make sure the unit_sphere has been inserted.
-    this->dataPtr->visual->InsertMesh("unit_sphere");
-
-    Ogre::Entity *ent =
-        visSceneNode->getCreator()->createEntity(this->Name() +
-        "_selection_sphere", "unit_sphere");
-
-    ent->setMaterialName("Gazebo/White");
-
-    // Create the selection object.
-    Ogre::MovableObject *obj = static_cast<Ogre::MovableObject*>(ent);
-
-    // Attach the selection object to the light visual
-    visSceneNode->attachObject(obj);
+    lightSelectionVis->InsertMesh("unit_sphere");
+    lightSelectionVis->AttachMesh("unit_sphere");
+    lightSelectionVis->SetMaterial("Gazebo/White");
 
     // Make sure the selection object is rendered only in the selection
     // buffer.
-    obj->setVisibilityFlags(GZ_VISIBILITY_SELECTION);
-    obj->getUserObjectBindings().setUserAny(Ogre::Any(this->Name()));
-    obj->setCastShadows(false);
+    lightSelectionVis->SetVisibilityFlags(GZ_VISIBILITY_SELECTION);
+    lightSelectionVis->SetCastShadows(false);
 
     // Scale the selection object to roughly match the light visual size.
-    visSceneNode->setScale(0.25, 0.25, 0.25);
+    lightSelectionVis->SetScale(ignition::math::Vector3d(0.25, 0.25, 0.25));
   }
 
   std::string lightType = this->dataPtr->sdf->Get<std::string>("type");
@@ -378,33 +365,15 @@ void Light::CreateVisual()
 }
 
 //////////////////////////////////////////////////
-void Light::SetPosition(const math::Vector3 &_p)
-{
-  this->SetPosition(_p.Ign());
-}
-
-//////////////////////////////////////////////////
 void Light::SetPosition(const ignition::math::Vector3d &_p)
 {
   this->dataPtr->visual->SetPosition(_p);
 }
 
 //////////////////////////////////////////////////
-math::Vector3 Light::GetPosition() const
-{
-  return this->Position();
-}
-
-//////////////////////////////////////////////////
 ignition::math::Vector3d Light::Position() const
 {
-  return this->dataPtr->visual->GetPosition().Ign();
-}
-
-//////////////////////////////////////////////////
-void Light::SetRotation(const math::Quaternion &_q)
-{
-  this->SetRotation(_q.Ign());
+  return this->dataPtr->visual->Position();
 }
 
 //////////////////////////////////////////////////
@@ -414,15 +383,15 @@ void Light::SetRotation(const ignition::math::Quaterniond &_q)
 }
 
 //////////////////////////////////////////////////
-math::Quaternion Light::GetRotation() const
+ignition::math::Quaterniond Light::Rotation() const
 {
-  return this->Rotation();
+  return this->dataPtr->visual->Rotation();
 }
 
 //////////////////////////////////////////////////
-ignition::math::Quaterniond Light::Rotation() const
+ignition::math::Pose3d Light::WorldPose() const
 {
-  return this->dataPtr->visual->GetRotation().Ign();
+  return this->dataPtr->visual->WorldPose();
 }
 
 //////////////////////////////////////////////////
@@ -442,19 +411,30 @@ bool Light::SetSelected(const bool _s)
 //////////////////////////////////////////////////
 void Light::ToggleShowVisual()
 {
-  this->dataPtr->visual->ToggleVisible();
+  this->ShowVisual(!this->dataPtr->visualize);
 }
 
 //////////////////////////////////////////////////
 void Light::ShowVisual(const bool _s)
 {
-  this->dataPtr->visual->SetVisible(_s);
+  if (this->dataPtr->visualize == _s)
+    return;
+
+  this->dataPtr->visualize = _s;
+
+  Ogre::SceneNode *n = this->dataPtr->visual->GetSceneNode();
+  for (unsigned int i = 0; i < n->numAttachedObjects(); ++i)
+  {
+    Ogre::MovableObject *m = n->getAttachedObject(i);
+    if (m->getMovableType() != "Light")
+      m->setVisible(this->dataPtr->visualize);
+  }
 }
 
 //////////////////////////////////////////////////
-bool Light::GetVisible() const
+void Light::SetVisible(const bool _s)
 {
-  return this->Visible();
+  this->dataPtr->visual->SetVisible(_s);
 }
 
 //////////////////////////////////////////////////
@@ -485,74 +465,73 @@ void Light::SetLightType(const std::string &_type)
 }
 
 //////////////////////////////////////////////////
+std::string Light::LightType() const
+{
+  if (this->dataPtr->sdf)
+    return this->dataPtr->sdf->Get<std::string>("type");
+
+  return std::string();
+}
+
+//////////////////////////////////////////////////
 void Light::SetDiffuseColor(const common::Color &_color)
+{
+  this->SetDiffuseColor(_color.Ign());
+}
+
+//////////////////////////////////////////////////
+void Light::SetDiffuseColor(const ignition::math::Color &_color)
 {
   sdf::ElementPtr elem = this->dataPtr->sdf->GetElement("diffuse");
 
-  if (_color != elem->Get<common::Color>())
+  if (_color != elem->Get<ignition::math::Color>())
     elem->Set(_color);
 
-  this->dataPtr->light->setDiffuseColour(_color.r, _color.g, _color.b);
+  this->dataPtr->light->setDiffuseColour(Conversions::Convert(_color));
 }
 
 //////////////////////////////////////////////////
-common::Color Light::GetDiffuseColor() const
+ignition::math::Color Light::DiffuseColor() const
 {
-  return this->DiffuseColor();
+  return
+      this->dataPtr->sdf->GetElement("diffuse")->Get<ignition::math::Color>();
 }
 
 //////////////////////////////////////////////////
-common::Color Light::DiffuseColor() const
+ignition::math::Color Light::SpecularColor() const
 {
-  return this->dataPtr->sdf->GetElement("diffuse")->Get<common::Color>();
-}
-
-//////////////////////////////////////////////////
-common::Color Light::GetSpecularColor() const
-{
-  return this->SpecularColor();
-}
-
-//////////////////////////////////////////////////
-common::Color Light::SpecularColor() const
-{
-  return this->dataPtr->sdf->GetElement("specular")->Get<common::Color>();
+  return
+      this->dataPtr->sdf->GetElement("specular")->Get<ignition::math::Color>();
 }
 
 //////////////////////////////////////////////////
 void Light::SetSpecularColor(const common::Color &_color)
 {
-  sdf::ElementPtr elem = this->dataPtr->sdf->GetElement("specular");
-
-  if (elem->Get<common::Color>() != _color)
-    elem->Set(_color);
-
-  this->dataPtr->light->setSpecularColour(_color.r, _color.g, _color.b);
+  this->SetSpecularColor(_color.Ign());
 }
 
 //////////////////////////////////////////////////
-void Light::SetDirection(const math::Vector3 &_dir)
+void Light::SetSpecularColor(const ignition::math::Color &_color)
 {
-  this->SetDirection(_dir.Ign());
+  sdf::ElementPtr elem = this->dataPtr->sdf->GetElement("specular");
+
+  if (elem->Get<ignition::math::Color>() != _color)
+    elem->Set(_color);
+
+  this->dataPtr->light->setSpecularColour(Conversions::Convert(_color));
 }
 
 //////////////////////////////////////////////////
 void Light::SetDirection(const ignition::math::Vector3d &_dir)
 {
   // Set the direction which the light points
-  math::Vector3 vec = _dir;
+  ignition::math::Vector3d vec = _dir;
   vec.Normalize();
 
-  if (vec != this->dataPtr->sdf->Get<math::Vector3>("direction"))
+  if (vec != this->dataPtr->sdf->Get<ignition::math::Vector3d>("direction"))
     this->dataPtr->sdf->GetElement("direction")->Set(vec);
 
-  this->dataPtr->light->setDirection(vec.x, vec.y, vec.z);
-}
-
-//////////////////////////////////////////////////
-math::Vector3 Light::GetDirection() const
-{
-  return this->Direction();
+  this->dataPtr->light->setDirection(vec.X(), vec.Y(), vec.Z());
 }
 
 //////////////////////////////////////////////////
@@ -601,18 +580,25 @@ void Light::SetRange(const double _range)
 }
 
 //////////////////////////////////////////////////
-void Light::SetCastShadows(const bool /*_cast*/)
+void Light::SetCastShadows(const bool _cast)
 {
-    this->dataPtr->light->setCastShadows(true);
-  /*if (this->dataPtr->light->getType() == Ogre::Light::LT_SPOTLIGHT ||
-      this->dataPtr->light->getType() == Ogre::Light::LT_DIRECTIONAL)
+  if (this->dataPtr->light->getType() == Ogre::Light::LT_DIRECTIONAL)
   {
     this->dataPtr->light->setCastShadows(_cast);
   }
   else
   {
     this->dataPtr->light->setCastShadows(false);
-  }*/
+  }
+}
+
+//////////////////////////////////////////////////
+bool Light::CastShadows() const
+{
+  if (this->dataPtr->light)
+    return this->dataPtr->light->getCastShadows();
+
+  return false;
 }
 
 //////////////////////////////////////////////////
@@ -711,4 +697,10 @@ LightPtr Light::Clone(const std::string &_name, ScenePtr _scene)
   result->SetRotation(this->Rotation());
 
   return result;
+}
+
+//////////////////////////////////////////////////
+uint32_t Light::Id() const
+{
+  return this->dataPtr->id;
 }

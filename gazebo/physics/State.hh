@@ -21,12 +21,6 @@
 #ifndef _STATE_HH_
 #define _STATE_HH_
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <string>
 
 #include <sdf/sdf.hh>
@@ -134,7 +128,7 @@ namespace gazebo
 
       /// \brief The number of simulation iterations when this state was
       /// generated.
-      protected: uint64_t iterations;
+      protected: uint64_t iterations = 0;
     };
     /// \}
   }

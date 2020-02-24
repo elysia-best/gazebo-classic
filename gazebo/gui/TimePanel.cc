@@ -14,26 +14,22 @@
  * limitations under the License.
  *
  */
-
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
-#include <boost/bind.hpp>
+#include <functional>
+#include <mutex>
 #include <sstream>
 
-#include "gazebo/transport/Node.hh"
+#include <boost/lexical_cast.hpp>
 
 #include "gazebo/gui/Actions.hh"
 #include "gazebo/gui/GuiEvents.hh"
 #include "gazebo/gui/GuiIface.hh"
-#include "gazebo/rendering/UserCamera.hh"
-#include "gazebo/gui/TimeWidget.hh"
 #include "gazebo/gui/LogPlayWidget.hh"
 #include "gazebo/gui/TimePanel.hh"
 #include "gazebo/gui/TimePanelPrivate.hh"
+#include "gazebo/gui/TimeWidget.hh"
+#include "gazebo/rendering/UserCamera.hh"
+
+#include "gazebo/transport/Node.hh"
 
 using namespace gazebo;
 using namespace gui;
@@ -68,7 +64,7 @@ TimePanel::TimePanel(QWidget *_parent)
 
   // Transport
   this->dataPtr->node = transport::NodePtr(new transport::Node());
-  this->dataPtr->node->Init();
+  this->dataPtr->node->TryInit(common::Time::Maximum());
 
   this->dataPtr->statsSub = this->dataPtr->node->Subscribe(
       "~/world_stats", &TimePanel::OnStats, this);
@@ -84,9 +80,10 @@ TimePanel::TimePanel(QWidget *_parent)
   // Connections
   this->dataPtr->connections.push_back(
       gui::Events::ConnectFullScreen(
-      boost::bind(&TimePanel::OnFullScreen, this, _1)));
+      std::bind(&TimePanel::OnFullScreen, this, std::placeholders::_1)));
 
-  connect(g_playAct, SIGNAL(changed()), this, SLOT(OnPlayActionChanged()));
+  if (g_playAct)
+    connect(g_playAct, SIGNAL(changed()), this, SLOT(OnPlayActionChanged()));
 
   QShortcut *space = new QShortcut(Qt::Key_Space, this);
   QObject::connect(space, SIGNAL(activated()), this, SLOT(TogglePause()));
@@ -215,7 +212,7 @@ void TimePanel::TogglePause()
 /////////////////////////////////////////////////
 void TimePanel::OnStats(ConstWorldStatisticsPtr &_msg)
 {
-  boost::mutex::scoped_lock lock(this->dataPtr->mutex);
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
   if (_msg->has_paused())
     this->SetPaused(_msg->paused());
@@ -282,7 +279,7 @@ void TimePanel::Update()
   if (!this->isVisible())
     return;
 
-  boost::mutex::scoped_lock lock(this->dataPtr->mutex);
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
   // Avoid apparent race condition on start, seen on Windows.
   if (!this->dataPtr->simTimes.size() || !this->dataPtr->realTimes.size())

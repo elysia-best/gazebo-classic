@@ -20,6 +20,7 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
+#include <gazebo/sensors/SensorsIface.hh>
 
 #include <iostream>
 
@@ -60,27 +61,48 @@ int main(int _argc, char **_argv)
     str = _argv[1];
   }
 
-  // load gazebo server
-  gazebo::setupServer(_argc, _argv);
-
-  // Load a world
-  gazebo::physics::WorldPtr world = gazebo::loadWorld(str);
-
-  // Create our node for communication
-  gazebo::transport::NodePtr node(new gazebo::transport::Node());
-  node->Init();
-
-  // Listen to Gazebo pose information topic
-  gazebo::transport::SubscriberPtr sub =
-  node->Subscribe("~/pose/info", posesStampedCallback);
-
-  // Busy wait loop...replace with your own code as needed.
-  while (true)
+  try
   {
-    // Run simulation for 100 steps.
-    gazebo::runWorld(world, 100);
+    // Print console messages
+    gazebo::common::Console::SetQuiet(false);
+
+    // load gazebo server
+    gazebo::setupServer(_argc, _argv);
+
+    // Load a world
+    gazebo::physics::WorldPtr world = gazebo::loadWorld(str);
+
+    // sensors::run_once() and sensors::run_threads() are from Server::Run()
+    // Make sure the sensors are updated once before running the world.
+    // This makes sure plugins get loaded properly.
+    gazebo::sensors::run_once(true);
+
+    // Run the sensor threads
+    gazebo::sensors::run_threads();
+
+    // Create our node for communication
+    gazebo::transport::NodePtr node(new gazebo::transport::Node());
+    node->Init();
+
+    // Listen to Gazebo pose information topic
+    gazebo::transport::SubscriberPtr sub =
+    node->Subscribe("~/pose/info", posesStampedCallback);
+
+    // Busy wait loop...replace with your own code as needed.
+    while (true)
+    {
+      // Run simulation for 100 steps.
+      gazebo::runWorld(world, 100);
+    }
+
+    // Make sure to shut everything down.
+    gazebo::shutdown();
+  }
+  catch(gazebo::common::Exception &e)
+  {
+    std::cerr << "ERROR: " << e << std::endl;
+    return 1;
   }
 
-  // Make sure to shut everything down.
-  gazebo::shutdown();
+  return 0;
 }

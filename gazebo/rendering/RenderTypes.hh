@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 */
-#ifndef _RENDERTYPES_HH_
-#define _RENDERTYPES_HH_
+#ifndef GAZEBO_RENDERING_RENDERTYPES_HH_
+#define GAZEBO_RENDERING_RENDERTYPES_HH_
 
 #include <boost/shared_ptr.hpp>
 #include "gazebo/gazebo_config.h"
@@ -70,6 +70,8 @@ namespace gazebo
     class SelectionObj;
     class RayQuery;
     class Distortion;
+    class LensFlare;
+    class Road2d;
 
 #ifdef HAVE_OCULUS
     class OculusCamera;
@@ -194,6 +196,14 @@ namespace gazebo
     /// \def DistortionPtr
     /// \brief Shared pointer to Distortion
     typedef boost::shared_ptr<Distortion> DistortionPtr;
+
+    /// \def LensFlarePtr
+    /// \brief Shared pointer to LensFlare
+    typedef std::shared_ptr<LensFlare> LensFlarePtr;
+
+    /// \def Road2dPtr
+    /// \brief Shared pointer to Road2d
+    typedef std::shared_ptr<Road2d> Road2dPtr;
 
 #ifdef HAVE_OCULUS
     /// \def OculusCameraPtr

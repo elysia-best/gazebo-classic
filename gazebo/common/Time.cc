@@ -19,11 +19,13 @@
   #include <Windows.h>
   #include <Winsock2.h>
   #include <cstdint>
-  struct timespec
-  {
-    int64_t tv_sec;
-    int64_t tv_nsec;
-  };
+  #if defined(_MSC_VER) && (_MSC_VER < 1900)
+    struct timespec
+    {
+      int64_t tv_sec;
+      int64_t tv_nsec;
+    };
+  #endif
 #else
   #include <unistd.h>
   #include <sys/time.h>
@@ -72,7 +74,7 @@ Time::Time()
 #else
   // get clock resolution, skip sleep if resolution is larger then
   // requested sleep time
-  clock_getres(CLOCK_REALTIME, &clockResolution);
+  clock_getres(CLOCK_MONOTONIC, &clockResolution);
 #endif
 }
 
@@ -112,6 +114,18 @@ Time::Time(double _time)
 /////////////////////////////////////////////////
 Time::~Time()
 {
+}
+
+/////////////////////////////////////////////////
+Time Time::Maximum()
+{
+  // We do not maximize the nanoseconds, because then the Correct() function
+  // will overflow the seconds member data, which will make the seconds field
+  // negative. Instead, we set the nanoseconds field to one nanosecond beneath
+  // one second, so that it's as high as it can be without spilling into
+  // seconds.
+  return Time(std::numeric_limits<int32_t>::max(),
+              static_cast<int32_t>(1e9) - 1);
 }
 
 /////////////////////////////////////////////////
@@ -396,20 +410,20 @@ Time Time::Sleep(const common::Time &_time)
     }
 #elif defined(_WIN32)
     // Borrowed from roscpp_core/rostime/src/time.cpp
-    HANDLE timer = NULL;
+    HANDLE timer = nullptr;
     LARGE_INTEGER sleepTime;
     sleepTime.QuadPart = -
       static_cast<int64_t>(interval.tv_sec)*10000000LL -
       static_cast<int64_t>(interval.tv_nsec) / 100LL;
 
-    timer = CreateWaitableTimer(NULL, TRUE, NULL);
-    if (timer == NULL)
+    timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
+    if (timer == nullptr)
     {
       gzerr << "Unable to create waitable timer. Sleep will be incorrect.\n";
       return result;
     }
 
-    if (!SetWaitableTimer (timer, &sleepTime, 0, NULL, NULL, 0))
+    if (!SetWaitableTimer (timer, &sleepTime, 0, nullptr, nullptr, 0))
     {
       gzerr << "Unable to use waitable timer. Sleep will be incorrect.\n";
       return result;
@@ -424,7 +438,7 @@ Time Time::Sleep(const common::Time &_time)
     result.sec = 0;
     result.nsec = 0;
 #else
-    if (clock_nanosleep(CLOCK_REALTIME, 0, &interval, &remainder) == -1)
+    if (clock_nanosleep(CLOCK_MONOTONIC, 0, &interval, &remainder) == -1)
     {
       result.sec = remainder.tv_sec;
       result.nsec = remainder.tv_nsec;
@@ -433,8 +447,7 @@ Time Time::Sleep(const common::Time &_time)
   }
   else
   {
-    /// \TODO Make this a gzlog
-    gzwarn << "Sleep time is larger than clock resolution, skipping sleep\n";
+    gzlog << "Sleep time is larger than clock resolution, skipping sleep\n";
   }
 
   return result;

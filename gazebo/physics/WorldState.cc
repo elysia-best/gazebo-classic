@@ -17,12 +17,6 @@
 /* Desc: A world state
  * Author: Nate Koenig
  */
-
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
 #include <boost/algorithm/string.hpp>
 
 #include "gazebo/common/Console.hh"
@@ -48,13 +42,13 @@ WorldState::WorldState()
 
 /////////////////////////////////////////////////
 WorldState::WorldState(const WorldPtr _world)
-  : State(_world->GetName(), _world->GetRealTime(), _world->GetSimTime(),
-      _world->GetIterations())
+  : State(_world->Name(), _world->RealTime(), _world->SimTime(),
+      _world->Iterations())
 {
   this->world = _world;
 
   // Add a state for all the models
-  Model_V models = _world->GetModels();
+  Model_V models = _world->Models();
   for (Model_V::const_iterator iter = models.begin();
        iter != models.end(); ++iter)
   {
@@ -97,11 +91,13 @@ void WorldState::LoadWithFilter(const WorldPtr _world,
 void WorldState::Load(const WorldPtr _world)
 {
   this->world = _world;
-  this->name = _world->GetName();
+  this->name = _world->Name();
   this->wallTime = common::Time::GetWallTime();
-  this->simTime = _world->GetSimTime();
-  this->realTime = _world->GetRealTime();
-  this->iterations = _world->GetIterations();
+  this->simTime = _world->SimTime();
+  this->realTime = _world->RealTime();
+  this->iterations = _world->Iterations();
+  this->insertions.clear();
+  this->deletions.clear();
 
   std::string filter = worldStateFilter;
   std::list<std::string> mainParts, parts;
@@ -117,7 +113,7 @@ void WorldState::Load(const WorldPtr _world)
   std::list<std::string>::iterator partIter = parts.begin();
 
   // Add a state for all the models that match the filter
-  Model_V models = _world->GetModels();
+  Model_V models = _world->Models();
   for (Model_V::const_iterator iter = models.begin();
        iter != models.end(); ++iter)
   {
@@ -209,6 +205,55 @@ void WorldState::Load(const sdf::ElementPtr _elem)
             lightName, lightState));
 
       childElem = childElem->GetNextElement("light");
+    }
+  }
+
+  // Add insertions
+  this->insertions.clear();
+  if (_elem->HasElement("insertions"))
+  {
+    sdf::ElementPtr insertionsElem = _elem->GetElement("insertions");
+
+    // Models
+    if (insertionsElem->HasElement("model"))
+    {
+      sdf::ElementPtr modelElem = insertionsElem->GetElement("model");
+
+      while (modelElem)
+      {
+        this->insertions.push_back(modelElem->ToString(""));
+        modelElem = modelElem->GetNextElement("model");
+      }
+    }
+
+    // Lights
+    if (insertionsElem->HasElement("light"))
+    {
+      sdf::ElementPtr lightElem = insertionsElem->GetElement("light");
+
+      while (lightElem)
+      {
+        this->insertions.push_back(lightElem->ToString(""));
+        lightElem = lightElem->GetNextElement("light");
+      }
+    }
+  }
+
+  // Add deletions
+  this->deletions.clear();
+  if (_elem->HasElement("deletions"))
+  {
+    sdf::ElementPtr deletionsElem = _elem->GetElement("deletions");
+
+    if (deletionsElem->HasElement("name"))
+    {
+      sdf::ElementPtr nameElem = deletionsElem->GetElement("name");
+
+      while (nameElem)
+      {
+        this->deletions.push_back(nameElem->Get<std::string>());
+        nameElem = nameElem->GetNextElement("name");
+      }
     }
   }
 }
@@ -306,7 +351,50 @@ const std::vector<std::string> &WorldState::Insertions() const
 /////////////////////////////////////////////////
 void WorldState::SetInsertions(const std::vector<std::string> &_insertions)
 {
-  this->insertions = _insertions;
+  static sdf::SDFPtr rootSDF = nullptr;
+  if (rootSDF == nullptr)
+  {
+    rootSDF.reset(new sdf::SDF);
+    sdf::initFile("root.sdf", rootSDF);
+  }
+
+  // Unwrap insertions from <sdf>
+  for (const auto &insertion : _insertions)
+  {
+    rootSDF->Root()->ClearElements();
+    // <sdf>
+    if (sdf::readString(insertion, rootSDF))
+    {
+      // <model>
+      if (rootSDF->Root()->HasElement("model"))
+      {
+        this->insertions.push_back(
+            rootSDF->Root()->GetElement("model")->ToString(""));
+      }
+      // <light>
+      else if (rootSDF->Root()->HasElement("light"))
+      {
+        this->insertions.push_back(
+            rootSDF->Root()->GetElement("light")->ToString(""));
+      }
+      // <actor>
+      else if (rootSDF->Root()->HasElement("actor"))
+      {
+        this->insertions.push_back(
+            rootSDF->Root()->GetElement("actor")->ToString(""));
+      }
+      else
+      {
+        gzwarn << "Unsupported insertion [" << insertion << "]" << std::endl;
+        continue;
+      }
+    }
+    // Otherwise copy as-is without validating
+    else
+    {
+      this->insertions.push_back(insertion);
+    }
+  }
 }
 
 /////////////////////////////////////////////////
@@ -435,7 +523,7 @@ WorldState WorldState::operator-(const WorldState &_state) const
   {
     if (!_state.HasModelState(modelState.second.GetName()) && this->world)
     {
-      ModelPtr model = this->world->GetModel(modelState.second.GetName());
+      ModelPtr model = this->world->ModelByName(modelState.second.GetName());
       if (model)
         result.insertions.push_back(model->UnscaledSDF()->ToString(""));
     }
@@ -446,7 +534,7 @@ WorldState WorldState::operator-(const WorldState &_state) const
   {
     if (!_state.HasLightState(light.second.GetName()) && this->world)
     {
-      LightPtr lightPtr = this->world->Light(light.second.GetName());
+      LightPtr lightPtr = this->world->LightByName(light.second.GetName());
       result.insertions.push_back(lightPtr->GetSDF()->ToString(""));
     }
   }

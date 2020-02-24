@@ -18,8 +18,7 @@
 #ifndef _ODEGEARBOXJOINT_HH_
 #define _ODEGEARBOXJOINT_HH_
 
-#include "gazebo/math/Angle.hh"
-#include "gazebo/math/Vector3.hh"
+#include <string>
 
 #include "gazebo/physics/GearboxJoint.hh"
 #include "gazebo/physics/ode/ODEJoint.hh"
@@ -51,24 +50,26 @@ namespace gazebo
       public: virtual void Init();
 
       // Documentation inherited
-      public: virtual math::Vector3 GetAnchor(unsigned int _index) const;
+      public: virtual ignition::math::Vector3d Anchor(
+          const unsigned int _index) const;
 
       // Documentation inherited
-      public: virtual void SetAnchor(unsigned int _index,
-                                     const math::Vector3 &_anchor);
+      public: virtual void SetAnchor(const unsigned int _index,
+                                     const ignition::math::Vector3d &_anchor);
 
       // Documentation inherited
-      public: virtual math::Vector3 GetGlobalAxis(unsigned int _index) const;
+      public: virtual ignition::math::Vector3d GlobalAxis(
+          const unsigned int _index) const;
 
       // Documentation inherited
-      public: virtual void SetAxis(unsigned int _index,
-                                   const math::Vector3 &_axis);
+      public: virtual void SetAxis(const unsigned int _index,
+                                   const ignition::math::Vector3d &_axis);
 
       // Documentation inherited
       public: virtual void SetGearboxRatio(double _gearRatio);
 
       // Documentation inherited
-      public: virtual math::Angle GetAngleImpl(unsigned int _index) const;
+      public: virtual double PositionImpl(const unsigned int _index) const;
 
       // Documentation inherited
       public: virtual void SetVelocity(unsigned int _index, double _angle);
@@ -81,6 +82,15 @@ namespace gazebo
 
       // Documentation inherited
       public: virtual void SetParam(unsigned int _parameter, double _value);
+
+      // Documentation inherited.
+      public: virtual double GetParam(const std::string &_key,
+                                      unsigned int _index);
+
+      // Documentation inherited.
+      public: virtual bool SetParam(const std::string &_key,
+                                    unsigned int _index,
+                                    const boost::any &_value);
 
       // Documentation inherited
       protected: virtual void SetForceImpl(unsigned int _index, double _effort);

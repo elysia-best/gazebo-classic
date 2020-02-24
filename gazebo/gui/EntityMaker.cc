@@ -14,13 +14,6 @@
  * limitations under the License.
  *
 */
-
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include "gazebo/common/MouseEvent.hh"
 
 #include "gazebo/rendering/UserCamera.hh"
@@ -28,28 +21,19 @@
 #include "gazebo/gui/ModelManipulator.hh"
 #include "gazebo/gui/GuiEvents.hh"
 #include "gazebo/gui/GuiIface.hh"
-#include "gazebo/gui/EntityMakerPrivate.hh"
 #include "gazebo/gui/EntityMaker.hh"
 
 using namespace gazebo;
 using namespace gui;
 
 //////////////////////////////////////////////////
-EntityMaker::EntityMaker(EntityMakerPrivate &_dataPtr)
-  : dataPtr(&_dataPtr)
+EntityMaker::EntityMaker()
 {
-  this->dataPtr->node = transport::NodePtr(new transport::Node());
-  this->dataPtr->node->Init();
 }
 
 //////////////////////////////////////////////////
 EntityMaker::~EntityMaker()
 {
-  this->dataPtr->node->Fini();
-  this->dataPtr->node.reset();
-
-  delete this->dataPtr;
-  this->dataPtr = NULL;
 }
 
 /////////////////////////////////////////////////
@@ -83,11 +67,11 @@ void EntityMaker::OnMouseMove(const common::MouseEvent &_event)
   rendering::UserCameraPtr camera = gui::get_active_camera();
 
   ignition::math::Vector3d pos =
-      (ModelManipulator::GetMousePositionOnPlane(camera, _event)).Ign();
+      (ModelManipulator::MousePositionOnPlane(camera, _event));
 
   if (_event.Control())
   {
-    pos = ModelManipulator::SnapPoint(math::Vector3(pos)).Ign();
+    pos = ModelManipulator::SnapPoint(pos);
   }
   pos.Z(this->EntityPosition().Z());
 

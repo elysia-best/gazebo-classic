@@ -19,6 +19,7 @@
  * Date: 14 July 2008
  */
 
+#include <FreeImage.h>
 #include <boost/filesystem.hpp>
 #include <string>
 
@@ -26,11 +27,9 @@
 #include "gazebo/common/CommonIface.hh"
 #include "gazebo/common/Console.hh"
 #include "gazebo/common/Image.hh"
-#include "gazebo/math/Vector3.hh"
 
 using namespace gazebo;
 using namespace common;
-
 
 int Image::count = 0;
 
@@ -42,7 +41,7 @@ Image::Image(const std::string &_filename)
 
   count++;
 
-  this->bitmap = NULL;
+  this->bitmap = nullptr;
   if (!_filename.empty())
   {
     std::string filename = common::find_file(_filename);
@@ -60,7 +59,7 @@ Image::~Image()
 
   if (this->bitmap)
     FreeImage_Unload(this->bitmap);
-  this->bitmap = NULL;
+  this->bitmap = nullptr;
 
   if (count == 0)
     FreeImage_DeInitialise();
@@ -80,7 +79,7 @@ int Image::Load(const std::string &_filename)
 
     if (this->bitmap)
       FreeImage_Unload(this->bitmap);
-    this->bitmap = NULL;
+    this->bitmap = nullptr;
 
     if (fifmt == FIF_PNG)
       this->bitmap = FreeImage_Load(fifmt, this->fullName.c_str(), PNG_DEFAULT);
@@ -115,7 +114,7 @@ void Image::SetFromData(const unsigned char *_data, unsigned int _width,
 {
   if (this->bitmap)
     FreeImage_Unload(this->bitmap);
-  this->bitmap = NULL;
+  this->bitmap = nullptr;
 
   // int redmask = FI_RGBA_RED_MASK;
   int redmask = 0x0000ff;
@@ -268,7 +267,21 @@ unsigned int Image::GetBPP() const
 //////////////////////////////////////////////////
 Color Image::GetPixel(unsigned int _x, unsigned int _y) const
 {
-  Color clr;
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  return this->Pixel(_x, _y);
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Image::Pixel(const unsigned int _x,
+                                   const unsigned int _y) const
+{
+  ignition::math::Color clr;
 
   if (!this->Valid())
     return clr;
@@ -318,19 +331,32 @@ Color Image::GetPixel(unsigned int _x, unsigned int _y) const
 //////////////////////////////////////////////////
 Color Image::GetAvgColor()
 {
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  return this->AvgColor();
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Image::AvgColor()
+{
   unsigned int x, y;
   double rsum, gsum, bsum;
-  common::Color pixel;
+  ignition::math::Color pixel;
 
   rsum = gsum = bsum = 0.0;
   for (y = 0; y < this->GetHeight(); ++y)
   {
     for (x = 0; x < this->GetWidth(); ++x)
     {
-      pixel = this->GetPixel(x, y);
-      rsum += pixel.r;
-      gsum += pixel.g;
-      bsum += pixel.b;
+      pixel = this->Pixel(x, y);
+      rsum += pixel.R();
+      gsum += pixel.G();
+      bsum += pixel.B();
     }
   }
 
@@ -338,15 +364,28 @@ Color Image::GetAvgColor()
   gsum /= (this->GetWidth() * this->GetHeight());
   bsum /= (this->GetWidth() * this->GetHeight());
 
-  return Color(rsum, gsum, bsum);
+  return ignition::math::Color(rsum, gsum, bsum);
 }
 
 //////////////////////////////////////////////////
 Color Image::GetMaxColor() const
 {
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  return this->MaxColor();
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Image::MaxColor() const
+{
   unsigned int x, y;
-  Color clr;
-  Color maxClr;
+  ignition::math::Color clr;
+  ignition::math::Color maxClr;
 
   maxClr.Set(0, 0, 0, 0);
 
@@ -354,9 +393,9 @@ Color Image::GetMaxColor() const
   {
     for (x = 0; x < this->GetWidth(); x++)
     {
-      clr = this->GetPixel(x, y);
+      clr = this->Pixel(x, y);
 
-      if (clr.r + clr.g + clr.b > maxClr.r + maxClr.g + maxClr.b)
+      if (clr.R() + clr.G() + clr.B() > maxClr.R() + maxClr.G() + maxClr.B())
       {
         maxClr = clr;
       }
@@ -380,7 +419,7 @@ void Image::Rescale(int _width, int _height)
 //////////////////////////////////////////////////
 bool Image::Valid() const
 {
-  return this->bitmap != NULL;
+  return this->bitmap != nullptr;
 }
 
 //////////////////////////////////////////////////
@@ -428,8 +467,21 @@ Image::PixelFormat Image::ConvertPixelFormat(const std::string &_format)
   // Handle old format strings
   if (_format == "L8" || _format == "L_INT8")
     return L_INT8;
+  else if (_format == "L16" || _format == "L_INT16" || _format == "L_UINT16")
+  {
+    // Note: we are treating unsigned and signed 16bit the same but it is
+    // better to add a L_UINT16 format to distinguish between the two
+    return L_INT16;
+  }
   else if (_format == "R8G8B8" || _format == "RGB_INT8")
     return RGB_INT8;
+  else if (_format == "R16G16B16" || _format == "RGB_INT16"
+      || _format == "RGB_UINT16")
+  {
+    // Note: we are treating unsigned and signed 16bit the same but it is
+    // better to add a RGB_UINT16 format to distinguish between the two
+    return RGB_INT16;
+  }
 
   for (unsigned int i = 0; i < PIXEL_FORMAT_COUNT; ++i)
     if (PixelFormatNames[i] == _format)

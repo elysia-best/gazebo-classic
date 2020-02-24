@@ -15,18 +15,16 @@
  *
 */
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <memory>
 
 #include <string.h>
 #include <math.h>
 
+#include <ignition/math/Color.hh>
+#include <ignition/math/Matrix4.hh>
+
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/CommonIface.hh"
@@ -34,7 +32,6 @@
 #include "gazebo/common/Exception.hh"
 #include "gazebo/common/HeightmapData.hh"
 #include "gazebo/common/SystemPaths.hh"
-#include "gazebo/math/Helpers.hh"
 #include "gazebo/transport/TransportIface.hh"
 #include "gazebo/rendering/ogre_gazebo.h"
 #include "gazebo/rendering/RTShaderSystem.hh"
@@ -170,25 +167,15 @@ void Heightmap::LoadFromMsg(ConstVisualPtr &_msg)
     }
   }
 
-  this->Load();
-}
+  this->SetCastShadows(_msg->cast_shadows());
 
-//////////////////////////////////////////////////
-Ogre::TerrainGroup *Heightmap::GetOgreTerrain() const
-{
-  return this->OgreTerrain();
+  this->Load();
 }
 
 //////////////////////////////////////////////////
 Ogre::TerrainGroup *Heightmap::OgreTerrain() const
 {
   return this->dataPtr->terrainGroup;
-}
-
-//////////////////////////////////////////////////
-common::Image Heightmap::GetImage() const
-{
-  return this->Image();
 }
 
 //////////////////////////////////////////////////
@@ -512,11 +499,13 @@ void Heightmap::Load()
 
     // Add the top level terrain paging directory to the OGRE
     // ResourceGroupManager
+    boost::filesystem::path actualPagingDir =
+        this->dataPtr->gzPagingDir.make_preferred();
     if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(
-          this->dataPtr->gzPagingDir.string(), "General"))
+          actualPagingDir.string(), "General"))
     {
       Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-          this->dataPtr->gzPagingDir.string(), "FileSystem", "General", true);
+          actualPagingDir.string(), "FileSystem", "General", true);
       Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(
           "General");
     }
@@ -590,14 +579,9 @@ void Heightmap::Load()
 
       ignition::math::Vector3d camPos(5, -5, h + 200);
       ignition::math::Vector3d lookAt(0, 0, h);
-      ignition::math::Vector3d delta = lookAt - camPos;
+      auto mat = ignition::math::Matrix4d::LookAt(camPos, lookAt);
 
-      double yaw = atan2(delta.Y(), delta.X());
-      double pitch = atan2(-delta.Z(),
-                           sqrt(delta.X() * delta.X() + delta.Y() * delta.Y()));
-
-      userCam->SetWorldPose(ignition::math::Pose3d(camPos,
-          ignition::math::Quaterniond(0, pitch, yaw)));
+      userCam->SetWorldPose(mat.Pose());
     }
   }
 
@@ -682,10 +666,19 @@ void Heightmap::Load()
 ///////////////////////////////////////////////////
 void Heightmap::SaveHeightmap()
 {
-  // Calculate blend maps
   if (this->dataPtr->terrainsImported &&
       !this->dataPtr->terrainGroup->isDerivedDataUpdateInProgress())
   {
+    // check to see if all terrains have been loaded before saving
+    Ogre::TerrainGroup::TerrainIterator ti =
+      this->dataPtr->terrainGroup->getTerrainIterator();
+    while (ti.hasMoreElements())
+    {
+      Ogre::Terrain *t = ti.getNext()->instance;
+      if (!t->isLoaded())
+        return;
+    }
+
     // saving an ogre terrain data file can take quite some time for large dems.
     gzmsg << "Saving heightmap cache data to " << (this->dataPtr->gzPagingDir /
         boost::filesystem::path(this->dataPtr->filename).stem()).string()
@@ -728,13 +721,18 @@ void Heightmap::ConfigureTerrainDefaults()
   LightPtr directionalLight;
   for (unsigned int i = 0; i < this->dataPtr->scene->LightCount(); ++i)
   {
-    LightPtr light = this->dataPtr->scene->GetLight(i);
+    LightPtr light = this->dataPtr->scene->LightByIndex(i);
     if (light->Type() == "directional")
     {
       directionalLight = light;
       break;
     }
   }
+
+  this->dataPtr->terrainGlobals->setSkirtSize(this->dataPtr->skirtLength);
+
+  this->dataPtr->terrainGlobals->setCastsDynamicShadows(
+        this->dataPtr->castShadows);
 
   this->dataPtr->terrainGlobals->setCompositeMapAmbient(
       this->dataPtr->scene->OgreSceneManager()->getAmbientLight());
@@ -746,8 +744,9 @@ void Heightmap::ConfigureTerrainDefaults()
     this->dataPtr->terrainGlobals->setLightMapDirection(
         Conversions::Convert(directionalLight->Direction()));
 
+    auto const &ignDiffuse = directionalLight->DiffuseColor();
     this->dataPtr->terrainGlobals->setCompositeMapDiffuse(
-        Conversions::Convert(directionalLight->DiffuseColor()));
+        Conversions::Convert(ignDiffuse));
   }
   else
   {
@@ -877,6 +876,13 @@ bool Heightmap::InitBlendMaps(Ogre::Terrain *_terrain)
       this->dataPtr->diffuseTextures.size() <= 1u)
     return false;
 
+  // Bounds check for following loop
+  if (_terrain->getLayerCount() < this->dataPtr->blendHeight.size() + 1)
+  {
+      gzerr << "Invalid terrain, too few layers to initialize blend map\n";
+      return false;
+  }
+
   Ogre::Real val, height;
   unsigned int i = 0;
 
@@ -921,12 +927,6 @@ bool Heightmap::InitBlendMaps(Ogre::Terrain *_terrain)
 }
 
 /////////////////////////////////////////////////
-double Heightmap::GetHeight(double _x, double _y, double _z)
-{
-  return this->Height(_x, _y, _z);
-}
-
-/////////////////////////////////////////////////
 double Heightmap::Height(const double _x, const double _y, const double _z)
     const
 {
@@ -945,13 +945,6 @@ double Heightmap::Height(const double _x, const double _y, const double _z)
 }
 
 /////////////////////////////////////////////////
-Ogre::TerrainGroup::RayResult Heightmap::GetMouseHit(CameraPtr _camera,
-    math::Vector2i _mousePos)
-{
-  return this->MouseHit(_camera, _mousePos.Ign());
-}
-
-/////////////////////////////////////////////////
 Ogre::TerrainGroup::RayResult Heightmap::MouseHit(CameraPtr _camera,
     const ignition::math::Vector2i &_mousePos) const
 {
@@ -963,15 +956,6 @@ Ogre::TerrainGroup::RayResult Heightmap::MouseHit(CameraPtr _camera,
 
   // The terrain uses a special ray intersection test.
   return this->dataPtr->terrainGroup->rayIntersects(mouseRay);
-}
-
-/////////////////////////////////////////////////
-bool Heightmap::Smooth(CameraPtr _camera, math::Vector2i _mousePos,
-                         double _outsideRadius, double _insideRadius,
-                         double _weight)
-{
-  return this->Smooth(_camera, _mousePos.Ign(), _outsideRadius, _insideRadius,
-      _weight);
 }
 
 /////////////////////////////////////////////////
@@ -991,15 +975,6 @@ bool Heightmap::Smooth(CameraPtr _camera,
 }
 
 /////////////////////////////////////////////////
-bool Heightmap::Flatten(CameraPtr _camera, math::Vector2i _mousePos,
-                         double _outsideRadius, double _insideRadius,
-                         double _weight)
-{
-  return this->Flatten(_camera, _mousePos.Ign(), _outsideRadius, _insideRadius,
-      _weight);
-}
-
-/////////////////////////////////////////////////
 bool Heightmap::Flatten(CameraPtr _camera,
                         const ignition::math::Vector2i &_mousePos,
                         const double _outsideRadius, const double _insideRadius,
@@ -1013,14 +988,6 @@ bool Heightmap::Flatten(CameraPtr _camera,
         _insideRadius, _weight, "flatten");
 
   return terrainResult.hit;
-}
-
-/////////////////////////////////////////////////
-bool Heightmap::Raise(CameraPtr _camera, math::Vector2i _mousePos,
-    double _outsideRadius, double _insideRadius, double _weight)
-{
-  return this->Raise(_camera, _mousePos.Ign(), _outsideRadius, _insideRadius,
-      _weight);
 }
 
 /////////////////////////////////////////////////
@@ -1041,14 +1008,6 @@ bool Heightmap::Raise(CameraPtr _camera,
 }
 
 /////////////////////////////////////////////////
-bool Heightmap::Lower(CameraPtr _camera, math::Vector2i _mousePos,
-    double _outsideRadius, double _insideRadius, double _weight)
-{
-  return this->Lower(_camera, _mousePos.Ign(), _outsideRadius, _insideRadius,
-      _weight);
-}
-
-/////////////////////////////////////////////////
 bool Heightmap::Lower(CameraPtr _camera,
     const ignition::math::Vector2i &_mousePos,
     const double _outsideRadius, const double _insideRadius,
@@ -1063,12 +1022,6 @@ bool Heightmap::Lower(CameraPtr _camera,
         _insideRadius, _weight, "lower");
 
   return terrainResult.hit;
-}
-
-/////////////////////////////////////////////////
-double Heightmap::GetAvgHeight(Ogre::Vector3 _pos, double _radius)
-{
-  return this->AvgHeight(Conversions::ConvertIgn(_pos), _radius);
 }
 
 /////////////////////////////////////////////////
@@ -1247,6 +1200,40 @@ unsigned int Heightmap::LOD() const
 }
 
 /////////////////////////////////////////////////
+void Heightmap::SetSkirtLength(const double _value)
+{
+  this->dataPtr->skirtLength = _value;
+  if (this->dataPtr->terrainGlobals)
+  {
+    this->dataPtr->terrainGlobals->setSkirtSize(
+        this->dataPtr->skirtLength);
+  }
+}
+
+/////////////////////////////////////////////////
+bool Heightmap::CastShadows() const
+{
+  return this->dataPtr->castShadows;
+}
+
+/////////////////////////////////////////////////
+void Heightmap::SetCastShadows(const bool _value)
+{
+  this->dataPtr->castShadows = _value;
+  if (this->dataPtr->terrainGlobals)
+  {
+    this->dataPtr->terrainGlobals->setCastsDynamicShadows(
+        this->dataPtr->castShadows);
+  }
+}
+
+/////////////////////////////////////////////////
+double Heightmap::SkirtLength() const
+{
+  return this->dataPtr->skirtLength;
+}
+
+/////////////////////////////////////////////////
 void Heightmap::SetMaterial(const std::string &_materialName)
 {
   this->dataPtr->materialName = _materialName;
@@ -1289,12 +1276,6 @@ void Heightmap::CreateMaterial()
 
     this->SetupShadows(true);
   }
-}
-
-/////////////////////////////////////////////////
-unsigned int Heightmap::GetTerrainSubdivisionCount() const
-{
-  return this->TerrainSubdivisionCount();
 }
 
 /////////////////////////////////////////////////
@@ -3340,9 +3321,9 @@ Ogre::MaterialPtr TerrainMaterial::Profile::generate(
       Ogre::Vector4 splitPoints;
       const Ogre::PSSMShadowCameraSetup::SplitPointList& splitPointList =
           pssm->getSplitPoints();
-      // populate from split point 1 not 0
-      for (unsigned int t = 1u; t < numTextures; ++t)
-        splitPoints[t-1] = splitPointList[t];
+      // populate from split point 1 not 0, and include shadowFarDistance
+      for (unsigned int t = 0u; t < numTextures; ++t)
+        splitPoints[t] = splitPointList[t+1];
       params->setNamedConstant("pssmSplitPoints", splitPoints);
 
       // set up uv transform

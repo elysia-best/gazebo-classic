@@ -19,12 +19,6 @@
  * Date: 6th December 2011
  */
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include "gazebo/transport/transport.hh"
 #include "gazebo/rendering/Conversions.hh"
 #include "gazebo/rendering/Scene.hh"
@@ -65,6 +59,6 @@ RFIDTagVisual::~RFIDTagVisual()
 /////////////////////////////////////////////////
 void RFIDTagVisual::OnScan(ConstPosePtr &/*_msg*/)
 {
-  // math::Vector3 pt = msgs::Convert(_msg->position());
+  // auto pt = msgs::Convert(_msg->position());
   // this->sceneNode->setPosition(Conversions::Convert(pt));
 }

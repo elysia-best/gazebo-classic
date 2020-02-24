@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef _GAZEBO_USER_CMD_MANAGER_HH_
-#define _GAZEBO_USER_CMD_MANAGER_HH_
+#ifndef GAZEBO_PHYSICS_USERCMDMANAGER_HH_
+#define GAZEBO_PHYSICS_USERCMDMANAGER_HH_
 
 #include <string>
 
@@ -32,7 +32,7 @@ namespace gazebo
 
     /// \brief Class which represents a user command, which can be "undone"
     /// and "redone".
-    class GAZEBO_VISIBLE UserCmd
+    class GZ_PHYSICS_VISIBLE UserCmd
     {
       /// \brief Constructor
       /// \param[in] _id Unique ID for this command
@@ -74,11 +74,11 @@ namespace gazebo
     class UserCmdManagerPrivate;
 
     /// \brief Manages user commands from the server side.
-    class GAZEBO_VISIBLE UserCmdManager
+    class GZ_PHYSICS_VISIBLE UserCmdManager
     {
       /// \brief Constructor.
       /// \param[in] _world Pointer to the world.
-      public: UserCmdManager(const WorldPtr _world);
+      public: explicit UserCmdManager(const WorldPtr _world);
 
       /// \brief Destructor.
       public: virtual ~UserCmdManager();

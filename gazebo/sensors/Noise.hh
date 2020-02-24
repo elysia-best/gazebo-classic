@@ -37,7 +37,7 @@ namespace gazebo
 
     /// \class NoiseFactory Noise.hh sensors/sensors.hh
     /// \brief Use this noise manager for creating and loading noise models.
-    class GAZEBO_VISIBLE NoiseFactory
+    class GZ_SENSORS_VISIBLE NoiseFactory
     {
       /// \brief Load a noise model based on the input sdf parameters and
       /// sensor type.
@@ -52,7 +52,7 @@ namespace gazebo
 
     /// \class Noise Noise.hh
     /// \brief Noise models for sensor output signals.
-    class GAZEBO_VISIBLE Noise
+    class GZ_SENSORS_VISIBLE Noise
     {
       /// \brief Which noise types we support
       public: enum NoiseType
@@ -119,7 +119,7 @@ namespace gazebo
       private: sdf::ElementPtr sdf;
 
       /// \brief Callback function for applying custom noise to sensor data.
-      private: boost::function<double (double)> customNoiseCallback;
+      private: std::function<double (double)> customNoiseCallback;
     };
     /// \}
   }

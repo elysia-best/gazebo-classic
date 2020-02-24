@@ -14,12 +14,6 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <list>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -231,6 +225,7 @@ boost::shared_ptr<msgs::Response> transport::request(
     }
   }
 
+  node->Fini();
   requestPub.reset();
   responseSub.reset();
   node.reset();
@@ -409,6 +404,14 @@ transport::ConnectionPtr transport::connectToMaster()
 /////////////////////////////////////////////////
 bool transport::waitForNamespaces(const gazebo::common::Time &_maxWait)
 {
+  // If the ConnectionManager has not been initialized, then there is no point
+  // in waiting for namespaces.
+  if (!ConnectionManager::Instance()->IsInitialized())
+  {
+    gzerr << "ConnectionManager has not been initialized!\n";
+    return false;
+  }
+
   std::list<std::string> namespaces;
   gazebo::common::Time startTime = gazebo::common::Time::GetWallTime();
 
@@ -426,7 +429,5 @@ bool transport::waitForNamespaces(const gazebo::common::Time &_maxWait)
     gazebo::common::Time::Sleep(waitTime);
   }
 
-  if (gazebo::common::Time::GetWallTime() - startTime <= _maxWait)
-    return true;
-  return false;
+  return !namespaces.empty();
 }

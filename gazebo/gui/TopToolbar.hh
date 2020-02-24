@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef _GAZEBO_TOP_TOOLBAR_HH_
-#define _GAZEBO_TOP_TOOLBAR_HH_
+#ifndef GAZEBO_GUI_TOPTOOLBAR_HH_
+#define GAZEBO_GUI_TOPTOOLBAR_HH_
 
 #include <string>
 
@@ -29,13 +29,13 @@ namespace gazebo
     class TopToolbarPrivate;
 
     /// \brief Toolbar on the top of the main window.
-    class GAZEBO_VISIBLE TopToolbar : public QFrame
+    class GZ_GUI_VISIBLE TopToolbar : public QFrame
     {
       Q_OBJECT
 
       /// \brief Constructor.
       /// \param[in] _parent Parent widget.
-      public: TopToolbar(QWidget *_parent = 0);
+      public: explicit TopToolbar(QWidget *_parent = 0);
 
       /// \brief Destructor.
       public: virtual ~TopToolbar();

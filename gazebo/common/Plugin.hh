@@ -17,15 +17,6 @@
 #ifndef _GZ_PLUGIN_HH_
 #define _GZ_PLUGIN_HH_
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  // This was put here because all the plugins are going to use it
-  // This doesn't guarantee something else won't cause it,
-  // but this saves putting this in every plugin
-#include <Winsock2.h>
-#endif
-
 #ifndef _WIN32
   #include <unistd.h>
 #endif
@@ -40,6 +31,7 @@
 #include <string>
 
 #include <sdf/sdf.hh>
+#include <boost/filesystem.hpp>
 
 #include "gazebo/common/CommonTypes.hh"
 #include "gazebo/common/SystemPaths.hh"
@@ -88,7 +80,7 @@ namespace gazebo
     /// \brief Constructor
     public: PluginT()
             {
-              this->dlHandle = NULL;
+              this->dlHandle = nullptr;
             }
 
     /// \brief Destructor
@@ -136,9 +128,28 @@ namespace gazebo
               // error loading plugin libraries with different extensions
               {
                 size_t soSuffix = filename.rfind(".so");
-                const std::string macSuffix(".dylib");
                 if (soSuffix != std::string::npos)
+                {
+                  const std::string macSuffix(".dylib");
                   filename.replace(soSuffix, macSuffix.length(), macSuffix);
+                }
+              }
+#elif _WIN32
+              // Corresponding windows hack
+              {
+                // replace .so with .dll
+                size_t soSuffix = filename.rfind(".so");
+                if (soSuffix != std::string::npos)
+                {
+                  const std::string winSuffix(".dll");
+                  filename.replace(soSuffix, winSuffix.length(), winSuffix);
+                }
+                size_t libPrefix = filename.find("lib");
+                if (libPrefix == 0)
+                {
+                  // remove the lib prefix
+                  filename.erase(0, 3);
+                }
               }
 #endif  // ifdef __APPLE__
 
@@ -146,6 +157,8 @@ namespace gazebo
                    iter!= pluginPaths.end(); ++iter)
               {
                 fullname = (*iter)+std::string("/")+filename;
+                fullname = boost::filesystem::path(fullname)
+                    .make_preferred().string();
                 if (stat(fullname.c_str(), &st) == 0)
                 {
                   found = true;
@@ -191,6 +204,51 @@ namespace gazebo
     public: PluginType GetType() const
             {
               return this->type;
+            }
+
+    /// \brief Load parameter value from _sdf and store it to the given
+    ///        reference, using the supplied default value if the element in
+    ///        _sdf is not found. A message is written using gzmsg reporting
+    ///       whether the default value was used or not.
+    /// \param[in] _sdf The SDF element of the plugin.
+    /// \param[in] _name Name of a tag inside the SDF.
+    /// \param[out] _target The reference to store the param value to.
+    /// \param[in] _defaultValue The default value.
+    protected: template <typename V> void LoadParam(const sdf::ElementPtr &_sdf,
+                const std::string &_name, V &_target,
+                V _defaultValue = V()) const
+            {
+              auto result = _sdf->Get<V>(_name, _defaultValue);
+
+              if (!result.second)
+              {
+                gzmsg << this->handleName.c_str() << " Plugin missing <"
+                      << _name.c_str() << ">, defaults to "
+                      << result.first << std::endl;
+              }
+              else
+              {
+                gzmsg << this->handleName.c_str() << " Plugin <"
+                      << _name.c_str() << "> set to "
+                      << result.first << std::endl;
+              }
+              _target = result.first;
+            }
+
+    /// \brief Load parameter value from _sdf and store it to the given
+    ///        reference, using the supplied default value if the element in
+    ///        _sdf is not found. A message is written using gzmsg reporting
+    ///        whether the default value was used or not. String specialization
+    ///        to allow accepting const char* values for std::string parameters.
+    /// \param[in] _sdf The SDF element of the plugin.
+    /// \param[in] _name Name of a tag inside the SDF.
+    /// \param[out] _target The reference to store the param value to.
+    /// \param[in] _defaultValue The default value.
+    protected: void LoadParam(sdf::ElementPtr &_sdf,
+                const std::string &_name, std::string &_target,
+                const char* _defaultValue) const
+            {
+              this->LoadParam<std::string>(_sdf, _name, _target, _defaultValue);
             }
 
     /// \brief Type of plugin
@@ -314,7 +372,7 @@ namespace gazebo
     /// Called before Gazebo is loaded. Must not block.
     /// \param _argc Number of command line arguments.
     /// \param _argv Array of command line arguments.
-    public: virtual void Load(int _argc = 0, char **_argv = NULL) = 0;
+    public: virtual void Load(int _argc = 0, char **_argv = nullptr) = 0;
 
     /// \brief Initialize the plugin
     ///
@@ -325,7 +383,7 @@ namespace gazebo
     public: virtual void Reset() {}
   };
 
-  /// \brief A plugin loaded within the gzserver on startup.  See
+  /// \brief A plugin with access to rendering::Visual.  See
   /// <a href="http://gazebosim.org/tutorials?tut=plugins_hello_world
   /// &cat=write_plugin">reference</a>.
   class VisualPlugin : public PluginT<VisualPlugin>
@@ -359,7 +417,7 @@ namespace gazebo
 /// to add the plugin to the registered list.
 /// \return the name of the registered plugin
 #define GZ_REGISTER_MODEL_PLUGIN(classname) \
-  extern "C" GZ_COMMON_VISIBLE gazebo::ModelPlugin *RegisterPlugin(); \
+  extern "C" GZ_PLUGIN_VISIBLE gazebo::ModelPlugin *RegisterPlugin(); \
   gazebo::ModelPlugin *RegisterPlugin() \
   {\
     return new classname();\
@@ -370,7 +428,7 @@ namespace gazebo
 /// to add the plugin to the registered list.
 /// \return the name of the registered plugin
 #define GZ_REGISTER_WORLD_PLUGIN(classname) \
-  extern "C" GZ_COMMON_VISIBLE gazebo::WorldPlugin *RegisterPlugin(); \
+  extern "C" GZ_PLUGIN_VISIBLE gazebo::WorldPlugin *RegisterPlugin(); \
   gazebo::WorldPlugin *RegisterPlugin() \
   {\
     return new classname();\
@@ -381,7 +439,7 @@ namespace gazebo
 /// the plugin to the registered list.
 /// \return the name of the registered plugin
 #define GZ_REGISTER_SENSOR_PLUGIN(classname) \
-  extern "C" GZ_COMMON_VISIBLE gazebo::SensorPlugin *RegisterPlugin(); \
+  extern "C" GZ_PLUGIN_VISIBLE gazebo::SensorPlugin *RegisterPlugin(); \
   gazebo::SensorPlugin *RegisterPlugin() \
   {\
     return new classname();\
@@ -392,8 +450,7 @@ namespace gazebo
 /// library to add the plugin to the registered list.
 /// \return the name of the registered plugin
 #define GZ_REGISTER_SYSTEM_PLUGIN(classname) \
-  extern "C" GZ_COMMON_VISIBLE gazebo::SystemPlugin *RegisterPlugin(); \
-  GZ_COMMON_VISIBLE \
+  extern "C" GZ_PLUGIN_VISIBLE gazebo::SystemPlugin *RegisterPlugin(); \
   gazebo::SystemPlugin *RegisterPlugin() \
   {\
     return new classname();\
@@ -404,7 +461,7 @@ namespace gazebo
 /// library to add the plugin to the registered list.
 /// \return the name of the registered plugin
 #define GZ_REGISTER_VISUAL_PLUGIN(classname) \
-  extern "C" GZ_COMMON_VISIBLE gazebo::VisualPlugin *RegisterPlugin(); \
+  extern "C" GZ_PLUGIN_VISIBLE gazebo::VisualPlugin *RegisterPlugin(); \
   gazebo::VisualPlugin *RegisterPlugin() \
   {\
     return new classname();\

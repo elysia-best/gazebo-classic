@@ -14,12 +14,6 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include "gazebo/common/Exception.hh"
 
 #include "gazebo/physics/World.hh"
@@ -70,7 +64,7 @@ void RFIDTag::Load(const std::string &_worldName)
         this->sdf->GetElement("topic")->Get<std::string>());
   }
 
-  this->dataPtr->entity = this->world->GetEntity(this->ParentName());
+  this->dataPtr->entity = this->world->EntityByName(this->ParentName());
 
   // Add the tag to all the RFID sensors.
   Sensor_V sensors = SensorManager::Instance()->GetSensors();
@@ -102,10 +96,10 @@ bool RFIDTag::UpdateImpl(const bool /*_force*/)
   if (this->dataPtr->scanPub)
   {
     msgs::Pose msg;
-    msgs::Set(&msg, this->dataPtr->entity->GetWorldPose().Ign());
+    msgs::Set(&msg, this->dataPtr->entity->WorldPose());
 
-    // msg.set_position(link->GetWorldPose().pos);
-    // msg.set_orientation(link->GetWorldPose().rot);
+    // msg.set_position(link->WorldPose().Pos());
+    // msg.set_orientation(link->WorldPose().Rot());
     // msgs::LaserScan msg;
 
     // msg.set_frame(this->link->GetScopedName());
@@ -133,5 +127,5 @@ bool RFIDTag::UpdateImpl(const bool /*_force*/)
 /////////////////////////////////////////////////
 ignition::math::Pose3d RFIDTag::TagPose() const
 {
-  return this->dataPtr->entity->GetWorldPose().Ign();
+  return this->dataPtr->entity->WorldPose();
 }

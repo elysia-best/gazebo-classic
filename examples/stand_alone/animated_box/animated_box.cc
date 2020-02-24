@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 */
-#include <boost/bind.hpp>
 #include <gazebo/gazebo.hh>
 #include <ignition/math.hh>
 #include <gazebo/physics/physics.hh>
@@ -71,6 +70,7 @@ namespace gazebo
 
         // set the animation
         _parent->SetAnimation(anim);
+        std::cout << "Animated_box plugin is loaded" << std::endl;
     }
 
     // Pointer to the model

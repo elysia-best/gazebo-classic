@@ -14,15 +14,7 @@
  * limitations under the License.
  *
 */
-/* Desc: Map shape
- * Author: Nate Koenig
-*/
-
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
+#include <ignition/math/Color.hh>
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <string.h>
@@ -115,7 +107,7 @@ void MapShape::FillMsg(msgs::Geometry &_msg)
 {
   _msg.set_type(msgs::Geometry::IMAGE);
   _msg.mutable_image()->set_uri(this->GetURI());
-  _msg.mutable_image()->set_scale(this->GetScale().x);
+  _msg.mutable_image()->set_scale(this->Scale().X());
   _msg.mutable_image()->set_threshold(this->GetThreshold());
   _msg.mutable_image()->set_height(this->GetHeight());
   _msg.mutable_image()->set_granularity(this->GetGranularity());
@@ -129,7 +121,7 @@ std::string MapShape::GetURI() const
 }
 
 //////////////////////////////////////////////////
-void MapShape::SetScale(const math::Vector3 &_scale)
+void MapShape::SetScale(const ignition::math::Vector3d &_scale)
 {
   if (this->scale == _scale)
     return;
@@ -142,10 +134,10 @@ void MapShape::SetScale(const math::Vector3 &_scale)
 }
 
 //////////////////////////////////////////////////
-math::Vector3 MapShape::GetScale() const
+ignition::math::Vector3d MapShape::Scale() const
 {
   double mapScale = this->sdf->Get<double>("scale");
-  return math::Vector3(mapScale, mapScale, mapScale);
+  return ignition::math::Vector3d(mapScale, mapScale, mapScale);
 }
 
 //////////////////////////////////////////////////
@@ -178,7 +170,7 @@ void MapShape::CreateBoxes(QuadNode * /*_node*/)
     std::ostringstream stream;
 
     // Create the box geometry
-    CollisionPtr collision = this->GetWorld()->GetPhysicsEngine()->CreateCollision("box", this->collisionParent->GetLink());
+    CollisionPtr collision = this->GetWorld()-Physics()->CreateCollision("box", this->collisionParent->GetLink());
     collision->SetSaveable(false);
 
     stream << "<gazebo:world xmlns:gazebo =\"http://playerstage.sourceforge.net/gazebo/xmlschema/#gz\" xmlns:collision =\"http://playerstage.sourceforge.net/gazebo/xmlschema/#collision\">";
@@ -411,7 +403,7 @@ void MapShape::GetPixelCount(unsigned int xStart, unsigned int yStart,
                                  unsigned int &freePixels,
                                  unsigned int &occPixels)
 {
-  common::Color pixColor;
+  ignition::math::Color pixColor;
   unsigned char v;
   unsigned int x, y;
 
@@ -421,10 +413,10 @@ void MapShape::GetPixelCount(unsigned int xStart, unsigned int yStart,
   {
     for (x = xStart; x < xStart + width; x++)
     {
-      pixColor = this->mapImage->GetPixel(x, y);
+      pixColor = this->mapImage->Pixel(x, y);
 
       v = (unsigned char)(255 *
-          ((pixColor.r + pixColor.g + pixColor.b) / 3.0));
+          ((pixColor.R() + pixColor.G() + pixColor.B()) / 3.0));
       // if (this->sdf->Get<bool>("negative"))
         // v = 255 - v;
 

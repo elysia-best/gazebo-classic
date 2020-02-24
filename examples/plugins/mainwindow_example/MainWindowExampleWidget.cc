@@ -14,12 +14,14 @@
  * limitations under the License.
  *
 */
+#include <functional>
 #include <sstream>
 #include <vector>
 
-#include <gazebo/msgs/msgs.hh>
-#include <gazebo/gui/gui.hh>
+#include <gazebo/gui/GuiEvents.hh>
+#include <gazebo/gui/GuiIface.hh>
 #include <gazebo/gui/MainWindow.hh>
+#include <gazebo/msgs/msgs.hh>
 
 #include "MainWindowExampleWidget.hh"
 
@@ -85,7 +87,7 @@ MainWindowExampleWidget::MainWindowExampleWidget()
       &MainWindowExampleWidget::OnStats, this);
 
   this->connections.push_back(gui::Events::ConnectMainWindowReady(
-              boost::bind(&MainWindowExampleWidget::PauseWorld, this)));
+              std::bind(&MainWindowExampleWidget::PauseWorld, this)));
 }
 
 /////////////////////////////////////////////////

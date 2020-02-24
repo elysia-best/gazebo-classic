@@ -18,9 +18,8 @@
 
 #include <string>
 #include <vector>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 
+#include "gazebo/common/CommonIface.hh"
 #include "gazebo/common/SystemPaths.hh"
 #include "test/util.hh"
 
@@ -28,6 +27,70 @@ using namespace gazebo;
 
 class SystemPathsTest : public gazebo::testing::AutoLogFixture { };
 
+//////////////////////////////////////////////////
+TEST_F(SystemPathsTest, FindFileURI)
+{
+  auto sysPaths = common::SystemPaths::Instance();
+
+  // Failure cases
+  {
+    EXPECT_EQ("", sysPaths->FindFileURI("bad://uri"));
+    EXPECT_EQ("", sysPaths->FindFileURI("file://bad_file"));
+    EXPECT_EQ("", sysPaths->FindFileURI("/bad_bad_file"));
+    EXPECT_EQ("", sysPaths->FindFileURI("bad_bad_file"));
+
+    // Not testing this on purpose, models.gazebosim.org takes a long time
+    // retrieving the list of models.
+    // EXPECT_EQ("", sysPaths->FindFileURI("model://bad_bad_model"));
+  }
+}
+
+//////////////////////////////////////////////////
+TEST_F(SystemPathsTest, FindFile)
+{
+  auto sysPaths = common::SystemPaths::Instance();
+
+  // Failure cases
+  {
+    EXPECT_EQ("", sysPaths->FindFile("bad://uri"));
+    EXPECT_EQ("", sysPaths->FindFile("file://bad_file"));
+    EXPECT_EQ("", sysPaths->FindFile("/bad_bad_file"));
+    EXPECT_EQ("", sysPaths->FindFile("bad_bad_file"));
+  }
+
+  // Existing absolute paths
+  {
+    EXPECT_EQ("/tmp", sysPaths->FindFile("/tmp"));
+    EXPECT_EQ("/home", sysPaths->FindFile("/home"));
+  }
+
+  // Custom callback
+  {
+    auto tmpCb = [](const std::string &_s)
+      {
+        return _s == "tmp" ? "/tmp" : "";
+      };
+    auto homeCb = [](const std::string &_s)
+      {
+        return _s == "home" ? "/home" : "";
+      };
+    auto badCb = [](const std::string &_s)
+      {
+        return _s == "bad" ? "/bad" : "";
+      };
+
+    sysPaths->AddFindFileCallback(tmpCb);
+    sysPaths->AddFindFileCallback(homeCb);
+    sysPaths->AddFindFileCallback(badCb);
+
+    EXPECT_EQ("/tmp", sysPaths->FindFile("tmp"));
+    EXPECT_EQ("/home", sysPaths->FindFile("home"));
+    EXPECT_EQ("", sysPaths->FindFile("bad"));
+    EXPECT_EQ("", sysPaths->FindFile("banana"));
+  }
+}
+
+//////////////////////////////////////////////////
 TEST_F(SystemPathsTest, SystemPaths)
 {
   std::vector<std::string> tmpstrings;
@@ -51,30 +114,30 @@ TEST_F(SystemPathsTest, SystemPaths)
   paths->ClearOgrePaths();
   paths->ClearPluginPaths();
 
-  std::string gzResourcePath = "GAZEBO_RESOURCE_PATH=" + paths->GetTmpPath() +
+  std::string gzResourcePath = "GAZEBO_RESOURCE_PATH=" + paths->TmpPath() +
       "/resource:/test/me/now";
   putenv(const_cast<char*>(gzResourcePath.c_str()));
   const std::list<std::string> &pathList1 = paths->GetGazeboPaths();
   EXPECT_EQ(static_cast<unsigned int>(2), pathList1.size());
-  EXPECT_STREQ((paths->GetTmpPath() + "/resource").c_str(),
+  EXPECT_STREQ((paths->TmpPath() + "/resource").c_str(),
       pathList1.front().c_str());
   EXPECT_STREQ("/test/me/now", pathList1.back().c_str());
 
-  std::string ogreResourcePath = "OGRE_RESOURCE_PATH=" + paths->GetTmpPath() +
+  std::string ogreResourcePath = "OGRE_RESOURCE_PATH=" + paths->TmpPath() +
       "/ogre:/test/ogre/now";
   putenv(const_cast<char*>(ogreResourcePath.c_str()));
   const std::list<std::string> &pathList2 = paths->GetOgrePaths();
   EXPECT_EQ(static_cast<unsigned int>(2), pathList2.size());
-  EXPECT_STREQ((paths->GetTmpPath() + "/ogre").c_str(),
+  EXPECT_STREQ((paths->TmpPath() + "/ogre").c_str(),
       pathList2.front().c_str());
   EXPECT_STREQ("/test/ogre/now", pathList2.back().c_str());
 
-  std::string gzPluginPath = "GAZEBO_PLUGIN_PATH=" + paths->GetTmpPath() +
+  std::string gzPluginPath = "GAZEBO_PLUGIN_PATH=" + paths->TmpPath() +
       "/plugin:/test/plugin/now";
   putenv(const_cast<char*>(gzPluginPath.c_str()));
   const std::list<std::string> &pathList3 = paths->GetPluginPaths();
   EXPECT_EQ(static_cast<unsigned int>(2), pathList3.size());
-  EXPECT_STREQ((paths->GetTmpPath() + "/plugin").c_str(),
+  EXPECT_STREQ((paths->TmpPath() + "/plugin").c_str(),
       pathList3.front().c_str());
   EXPECT_STREQ("/test/plugin/now", pathList3.back().c_str());
 
@@ -103,19 +166,19 @@ TEST_F(SystemPathsTest, SystemPaths)
   putenv(const_cast<char*>("GAZEBO_RESOURCE_PATH="));
   paths->ClearGazeboPaths();
   // In this case, we expect to get the compiled-in default
-  boost::split(tmpstrings, GAZEBO_RESOURCE_PATH, boost::is_any_of(":"));
+  tmpstrings = common::split(GAZEBO_RESOURCE_PATH, ":");
   EXPECT_EQ(tmpstrings.size(), paths->GetGazeboPaths().size());
 
   putenv(const_cast<char*>("OGRE_RESOURCE_PATH="));
   paths->ClearOgrePaths();
   // In this case, we expect to get the compiled-in default
-  boost::split(tmpstrings, OGRE_RESOURCE_PATH, boost::is_any_of(":"));
+  tmpstrings = common::split(OGRE_RESOURCE_PATH, ":");
   EXPECT_EQ(tmpstrings.size(), paths->GetOgrePaths().size());
 
   putenv(const_cast<char*>("GAZEBO_PLUGIN_PATH="));
   paths->ClearPluginPaths();
   // In this case, we expect to get the compiled-in default
-  boost::split(tmpstrings, GAZEBO_PLUGIN_PATH, boost::is_any_of(":"));
+  tmpstrings = common::split(GAZEBO_PLUGIN_PATH, ":");
   EXPECT_EQ(tmpstrings.size(), paths->GetPluginPaths().size());
 
   std::cout << "GAZEBO_RESOURCE_BACKUP[" << gazeboResourcePathBackup << "]\n";

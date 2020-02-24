@@ -14,18 +14,15 @@
  * limitations under the License.
  *
 */
-#ifndef _MAIN_WINDOW_EXAMPLE_WIDGET_HH_
-#define _MAIN_WINDOW_EXAMPLE_WIDGET_HH_
+#ifndef MAIN_WINDOW_EXAMPLE_WIDGET_HH_
+#define MAIN_WINDOW_EXAMPLE_WIDGET_HH_
 
 #include <string>
 #include <vector>
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gui/GuiPlugin.hh>
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <gazebo/transport/transport.hh>
-# include <gazebo/gui/gui.hh>
-#endif
+#include <gazebo/transport/transport.hh>
 
 namespace gazebo
 {

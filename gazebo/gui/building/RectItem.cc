@@ -47,7 +47,7 @@ RectItem::RectItem() : EditorItem(), dataPtr(new RectItemPrivate())
   this->drawingWidth = this->width;
   this->drawingHeight = this->height;
 
-  this->borderColor = common::Color::Black;
+  this->borderColor = ignition::math::Color::Black;
 
   for (int i = 0; i < 8; ++i)
   {
@@ -906,7 +906,7 @@ void RectItem::SetPosition(double _x, double _y)
 /////////////////////////////////////////////////
 void RectItem::SetRotation(double _angle)
 {
-  this->rotate(_angle - this->rotationAngle);
+  this->setRotation(_angle);
   this->rotationAngle = _angle;
   emit YawChanged(this->rotationAngle);
 }

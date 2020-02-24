@@ -14,13 +14,20 @@
  * limitations under the License.
  *
 */
-
-#ifndef _COMMONIFACE_HH_
-#define _COMMONIFACE_HH_
+#ifndef GAZEBO_COMMON_COMMONIFACE_HH_
+#define GAZEBO_COMMON_COMMONIFACE_HH_
 
 #include <string>
 #include <vector>
+
+#include <boost/version.hpp>
+#if BOOST_VERSION < 106600
 #include <boost/uuid/sha1.hpp>
+#else
+#include <boost/uuid/detail/sha1.hpp>
+#endif
+
+#include <boost/filesystem.hpp>
 #include <iomanip>
 #include <sstream>
 
@@ -72,7 +79,7 @@ namespace gazebo
 
     /// \brief Cross platform retrieval of an environment variable.
     /// \param[in] _name Name of the environment variable to get.
-    /// \return Environment variable contents, or NULL on error.
+    /// \return Environment variable contents, or nullptr on error.
     GZ_COMMON_VISIBLE
     const char *getEnv(const char *_name);
 
@@ -113,6 +120,14 @@ namespace gazebo
     bool copyFile(const std::string &_existingFilename,
                   const std::string &_newFilename);
 
+    /// \brief Copy a directory, overwrite the destination directory if exists.
+    /// \param[in] _source Path to an existing directory to copy from.
+    /// \param[in] _destination Path to the destination directory.
+    /// \return True on success.
+    GZ_COMMON_VISIBLE
+    bool copyDir(const boost::filesystem::path &_source,
+                 const boost::filesystem::path &_destination);
+
     /// \brief Move a file.
     /// \param[in] _existingFilename Full path to an existing file.
     /// \param[in] _newFilename Full path of the new file.
@@ -147,6 +162,25 @@ namespace gazebo
     std::string replaceAll(const std::string &_orig,
                            const std::string &_key,
                            const std::string &_replacement);
+
+    /// \brief Splits a string into tokens.
+    /// \param[in] _str Input string.
+    /// \param[in] _delim Token delimiter.
+    /// \return Vector of tokens.
+    GZ_COMMON_VISIBLE
+    std::vector<std::string> split(const std::string &_str,
+                                   const std::string &_delim);
+
+    /// \brief Generates a path for a file which doesn't collide with existing
+    /// files, by appending numbers to it (i.e. (0), (1), ...)
+    /// \param[in] _pathAndName Full absolute path and file name up to the
+    /// file extension.
+    /// \param[in] _extension File extension, such as "pdf".
+    /// \return Full path with name and extension, which doesn't collide with
+    /// existing files
+    GZ_COMMON_VISIBLE
+    std::string unique_file_path(const std::string &_pathAndName,
+                                 const std::string &_extension);
     /// \}
   }
 
@@ -161,7 +195,7 @@ namespace gazebo
 
     if (_buffer.size() == 0)
     {
-      sha1.process_bytes(NULL, 0);
+      sha1.process_bytes(nullptr, 0);
     }
     else
     {

@@ -14,15 +14,18 @@
  * limitations under the License.
  *
 */
-#ifndef _GAZEBO_GUI_CESSNA_PLUGIN_HH_
-#define _GAZEBO_GUI_CESSNA_PLUGIN_HH_
+#ifndef GAZEBO_PLUGINS_CESSNAGUIPLUGIN_HH_
+#define GAZEBO_PLUGINS_CESSNAGUIPLUGIN_HH_
 
 #include <mutex>
+
+#include <ignition/math/Angle.hh>
+
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gui/GuiPlugin.hh>
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <gazebo/transport/transport.hh>
-# include <gazebo/gui/gui.hh>
+// moc parsing error of tbb headers
+#ifndef Q_MOC_RUN
+#include <gazebo/transport/transport.hh>
 #endif
 
 namespace gazebo
@@ -110,7 +113,7 @@ namespace gazebo
     private: transport::SubscriberPtr stateSub;
 
     /// \brief Angle increment/decrement each time a key is pressed;
-    private: math::Angle angleStep;
+    private: ignition::math::Angle angleStep;
 
     /// \brief State received from the Cessna plugin.
     private: msgs::Cessna state;

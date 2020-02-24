@@ -14,22 +14,19 @@
  * limitations under the License.
  *
 */
-/* Desc: A link state
- * Author: Nate Koenig
- */
+#ifndef GAZEBO_PHYSICS_LINKSTATE_HH_
+#define GAZEBO_PHYSICS_LINKSTATE_HH_
 
-#ifndef _LINKSTATE_HH_
-#define _LINKSTATE_HH_
-
+#include <iomanip>
 #include <iostream>
 #include <vector>
 #include <string>
 
+#include <ignition/math/Pose3.hh>
 #include <sdf/sdf.hh>
 
 #include "gazebo/physics/State.hh"
 #include "gazebo/physics/CollisionState.hh"
-#include "gazebo/math/Pose.hh"
 #include "gazebo/util/system.hh"
 
 namespace gazebo
@@ -97,20 +94,20 @@ namespace gazebo
       public: virtual void Load(const sdf::ElementPtr _elem);
 
       /// \brief Get the link pose.
-      /// \return The math::Pose of the Link.
-      public: const math::Pose &GetPose() const;
+      /// \return The ignition::math::Pose3d of the Link.
+      public: const ignition::math::Pose3d &Pose() const;
 
       /// \brief Get the link velocity.
-      /// \return The velocity represented as a math::Pose.
-      public: const math::Pose &GetVelocity() const;
+      /// \return The velocity represented as a ignition::math::Pose3d.
+      public: const ignition::math::Pose3d &Velocity() const;
 
       /// \brief Get the link acceleration.
-      /// \return The acceleration represented as a math::Pose.
-      public: const math::Pose &GetAcceleration() const;
+      /// \return The acceleration represented as a ignition::math::Pose3d.
+      public: const ignition::math::Pose3d &Acceleration() const;
 
-      /// \brief Get the force applied to the Link.
-      /// \return Magnitude of the force.
-      public: const math::Pose &GetWrench() const;
+      /// \brief Get the force and torque applied to the Link.
+      /// \return The wrench represented as an ignition::math::Pose3d.
+      public: const ignition::math::Pose3d &Wrench() const;
 
       /// \brief Get the number of link states.
       ///
@@ -189,32 +186,32 @@ namespace gazebo
       public: inline friend std::ostream &operator<<(std::ostream &_out,
                   const gazebo::physics::LinkState &_state)
       {
-        math::Vector3 q(_state.pose.rot.GetAsEuler());
+        ignition::math::Vector3d euler(_state.pose.Rot().Euler());
         _out.unsetf(std::ios_base::floatfield);
         _out << std::setprecision(4)
           << "<link name='" << _state.name << "'>"
           << "<pose>"
-          << ignition::math::precision(_state.pose.pos.x, 4) << " "
-          << ignition::math::precision(_state.pose.pos.y, 4) << " "
-          << ignition::math::precision(_state.pose.pos.z, 4) << " "
-          << ignition::math::precision(q.x, 4) << " "
-          << ignition::math::precision(q.y, 4) << " "
-          << ignition::math::precision(q.z, 4) << " "
+          << ignition::math::precision(_state.pose.Pos().X(), 4) << " "
+          << ignition::math::precision(_state.pose.Pos().Y(), 4) << " "
+          << ignition::math::precision(_state.pose.Pos().Z(), 4) << " "
+          << ignition::math::precision(euler.X(), 4) << " "
+          << ignition::math::precision(euler.Y(), 4) << " "
+          << ignition::math::precision(euler.Z(), 4) << " "
           << "</pose>";
 
         if (_state.RecordVelocity())
         {
           /// Disabling this for efficiency.
-          q = _state.velocity.rot.GetAsEuler();
+          euler = _state.velocity.Rot().Euler();
           _out.unsetf(std::ios_base::floatfield);
           _out << std::setprecision(4)
             << "<velocity>"
-            << ignition::math::precision(_state.velocity.pos.x, 4) << " "
-            << ignition::math::precision(_state.velocity.pos.y, 4) << " "
-            << ignition::math::precision(_state.velocity.pos.z, 4) << " "
-            << ignition::math::precision(q.x, 4) << " "
-            << ignition::math::precision(q.y, 4) << " "
-            << ignition::math::precision(q.z, 4) << " "
+            << ignition::math::precision(_state.velocity.Pos().X(), 4) << " "
+            << ignition::math::precision(_state.velocity.Pos().Y(), 4) << " "
+            << ignition::math::precision(_state.velocity.Pos().Z(), 4) << " "
+            << ignition::math::precision(euler.X(), 4) << " "
+            << ignition::math::precision(euler.Y(), 4) << " "
+            << ignition::math::precision(euler.Z(), 4) << " "
             << "</velocity>";
         }
         // << "<acceleration>" << _state.acceleration << "</acceleration>"
@@ -243,16 +240,19 @@ namespace gazebo
       public: bool RecordVelocity() const;
 
       /// \brief 3D pose of the link relative to the model.
-      private: math::Pose pose;
+      private: ignition::math::Pose3d pose;
 
-      /// \brief Velocity of the link (linear and angular).
-      private: math::Pose velocity;
+      /// \brief Velocity of the link (linear and angular)
+      /// in the world frame.
+      private: ignition::math::Pose3d velocity;
 
-      /// \brief Acceleration of the link (linear and angular).
-      private: math::Pose acceleration;
+      /// \brief Acceleration of the link (linear and angular)
+      /// in the world frame.
+      private: ignition::math::Pose3d acceleration;
 
-      /// \brief Force on the link(linear and angular).
-      private: math::Pose wrench;
+      /// \brief Force on the link(linear and angular)
+      /// in the world frame.
+      private: ignition::math::Pose3d wrench;
 
       /// \brief State of all the child Collision objects.
       private: std::vector<CollisionState> collisionStates;

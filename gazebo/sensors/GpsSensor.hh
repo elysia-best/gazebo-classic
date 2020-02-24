@@ -23,7 +23,6 @@
 #include <ignition/math/Angle.hh>
 #include <sdf/sdf.hh>
 
-#include "gazebo/common/CommonTypes.hh"
 #include "gazebo/sensors/Sensor.hh"
 #include "gazebo/sensors/SensorTypes.hh"
 #include "gazebo/util/system.hh"
@@ -40,7 +39,7 @@ namespace gazebo
 
     /// \class GpsSensor GpsSensor.hh sensors/sensors.hh
     /// \brief GpsSensor to provide position measurement.
-    class GAZEBO_VISIBLE GpsSensor: public Sensor
+    class GZ_SENSORS_VISIBLE GpsSensor: public Sensor
     {
       /// \brief Constructor.
       public: GpsSensor();
@@ -74,12 +73,23 @@ namespace gazebo
 
       /// \brief Accessor for current altitude
       /// \return Current altitude above sea level.
-      /// \deprecated See Altitude()
-      public: double GetAltitude() const GAZEBO_DEPRECATED(7.0);
-
-      /// \brief Accessor for current altitude
-      /// \return Current altitude above sea level.
       public: double Altitude() const;
+
+      /// \brief Accessor for curent velocity in East-North-Up frame
+      /// \return Current velocity
+      public: ignition::math::Vector3d VelocityENU() const;
+
+      /// \brief Accessor for current velocity in East direction
+      /// \return Current velocity towards East
+      public: double VelocityEast() const;
+
+      /// \brief Accessor for current velocity in North direction
+      /// \return Current velocity towards North
+      public: double VelocityNorth() const;
+
+      /// \brief Accessor for current velocity in Up direction
+      /// \return Current velocity towards Up
+      public: double VelocityUp() const;
 
       /// \internal
       /// \brief Private data pointer

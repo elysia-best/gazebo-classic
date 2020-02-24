@@ -14,52 +14,103 @@
  * limitations under the License.
  *
 */
-
 #include <sdf/sdf.hh>
 
 #include <ignition/math/Helpers.hh>
 
-#include "gazebo/common/Assert.hh"
 #include "gazebo/rendering/ogre_gazebo.h"
 #include "gazebo/rendering/Camera.hh"
-#include "gazebo/rendering/DistortionPrivate.hh"
 #include "gazebo/rendering/Distortion.hh"
 
 using namespace gazebo;
 using namespace rendering;
 
+namespace gazebo
+{
+  namespace rendering
+  {
+    /// \brief Private data for the Distortion class
+    class DistortionPrivate : public Ogre::CompositorInstance::Listener
+    {
+      /// \brief Radial distortion coefficient k1.
+      public: double k1 = 0;
+
+      /// \brief Radial distortion coefficient k2.
+      public: double k2 = 0;
+
+      /// \brief Radial distortion coefficient k3.
+      public: double k3 = 0;
+
+      /// \brief Tangential distortion coefficient p1.
+      public: double p1 = 0;
+
+      /// \brief Tangential distortion coefficient p2.
+      public: double p2 = 0;
+
+      /// \brief Lens center used for distortion
+      public: ignition::math::Vector2d lensCenter = {0.5, 0.5};
+
+      /// \brief Scale applied to distorted image.
+      public: ignition::math::Vector2d distortionScale = {1.0, 1.0};
+
+      /// \brief True if the distorted image will be cropped to remove the
+      /// black pixels at the corners of the image.
+      public: bool distortionCrop = true;
+
+      /// \brief Lens distortion compositor
+      public: Ogre::CompositorInstance *lensDistortionInstance;
+
+      /// \brief Ogre Material that contains the distortion shader
+      public: Ogre::MaterialPtr distortionMaterial;
+
+      /// \brief Connection for the pre render event.
+      public: event::ConnectionPtr preRenderConnection;
+
+      /// \brief Mapping of distorted to undistorted normalized pixels
+      public: std::vector<ignition::math::Vector2d> distortionMap;
+
+      /// \brief Width of distortion texture map
+      public: unsigned int distortionTexWidth;
+
+      /// \brief Height of distortion texture map
+      public: unsigned int distortionTexHeight;
+
+      // \brief Set scale parameter in shader before rendering frame
+      public:
+      virtual void notifyMaterialRender(Ogre::uint32 _passId,
+                                        Ogre::MaterialPtr& _material)
+      {
+        // @todo Explore more efficent implementations as it is run every frame
+        Ogre::GpuProgramParametersSharedPtr params =
+            _material->getTechnique(0)->getPass(_passId)
+                     ->getFragmentProgramParameters();
+        params->setNamedConstant("scale",
+            Ogre::Vector3(1.0/distortionScale.X(),
+            1.0/distortionScale.Y(), 1.0));
+      }
+    };
+  }
+}
 //////////////////////////////////////////////////
 Distortion::Distortion()
   : dataPtr(new DistortionPrivate)
 {
-  this->dataPtr->k1 = 0;
-  this->dataPtr->k2 = 0;
-  this->dataPtr->k3 = 0;
-  this->dataPtr->p1 = 0;
-  this->dataPtr->p2 = 0;
-  this->dataPtr->lensCenter = ignition::math::Vector2d(0.5, 0.5);
-  this->dataPtr->distortionScale = ignition::math::Vector2d(1.0, 1.0);
-  this->dataPtr->distortionCrop = true;
 }
 
 //////////////////////////////////////////////////
 Distortion::~Distortion()
 {
-  delete this->dataPtr;
-  this->dataPtr = NULL;
 }
 
 //////////////////////////////////////////////////
 void Distortion::Load(sdf::ElementPtr _sdf)
 {
-  this->sdf = _sdf;
-  this->dataPtr->k1 = this->sdf->Get<double>("k1");
-  this->dataPtr->k2 = this->sdf->Get<double>("k2");
-  this->dataPtr->k3 = this->sdf->Get<double>("k3");
-  this->dataPtr->p1 = this->sdf->Get<double>("p1");
-  this->dataPtr->p2 = this->sdf->Get<double>("p2");
-  this->dataPtr->lensCenter =
-    this->sdf->Get<ignition::math::Vector2d>("center");
+  this->dataPtr->k1 = _sdf->Get<double>("k1");
+  this->dataPtr->k2 = _sdf->Get<double>("k2");
+  this->dataPtr->k3 = _sdf->Get<double>("k3");
+  this->dataPtr->p1 = _sdf->Get<double>("p1");
+  this->dataPtr->p2 = _sdf->Get<double>("p2");
+  this->dataPtr->lensCenter = _sdf->Get<ignition::math::Vector2d>("center");
 
   this->dataPtr->distortionCrop = this->dataPtr->k1 < 0;
 }
@@ -122,11 +173,10 @@ void Distortion::SetCamera(CameraPtr _camera)
     {
       double u = j*incrU;
       ignition::math::Vector2d uv(u, v);
-      ignition::math::Vector2d out = this->Distort(
-          uv,
-          this->dataPtr->lensCenter,
-          this->dataPtr->k1, this->dataPtr->k2, this->dataPtr->k3,
-          this->dataPtr->p1, this->dataPtr->p2).Ign();
+      ignition::math::Vector2d out =
+        this->Distort(uv, this->dataPtr->lensCenter,
+            this->dataPtr->k1, this->dataPtr->k2, this->dataPtr->k3,
+            this->dataPtr->p1, this->dataPtr->p2);
 
       // compute the index in the distortion map
       unsigned int idxU = out.X() * this->dataPtr->distortionTexWidth;
@@ -277,67 +327,63 @@ void Distortion::SetCamera(CameraPtr _camera)
   this->CalculateAndApplyDistortionScale();
 
   this->dataPtr->lensDistortionInstance->setEnabled(true);
+
+  // Add callback to set scaling factor before rendering
+  // See https://bitbucket.org/osrf/gazebo/pull-requests/2963
+  this->dataPtr->lensDistortionInstance->addListener(this->dataPtr.get());
 }
 
 //////////////////////////////////////////////////
 void Distortion::CalculateAndApplyDistortionScale()
 {
-  if (!this->dataPtr->distortionMaterial.isNull())
-  {
-    if (this->dataPtr->distortionCrop && this->dataPtr->k1 < 0)
-    {
-      // I believe that if not used with a square distortion texture, this
-      // calculation will result in stretching of the final output image.
-      ignition::math::Vector2d boundA = this->Distort(
-          ignition::math::Vector2d(0, 0),
-          this->dataPtr->lensCenter,
-          this->dataPtr->k1, this->dataPtr->k2, this->dataPtr->k3,
-          this->dataPtr->p1, this->dataPtr->p2).Ign();
-      ignition::math::Vector2d boundB = this->Distort(
-          ignition::math::Vector2d(1, 1),
-          this->dataPtr->lensCenter,
-          this->dataPtr->k1, this->dataPtr->k2, this->dataPtr->k3,
-          this->dataPtr->p1, this->dataPtr->p2).Ign();
-      this->dataPtr->distortionScale = boundB - boundA;
-    }
-    else
-    {
-      this->dataPtr->distortionScale = ignition::math::Vector2d(1, 1);
-    }
+  if (this->dataPtr->distortionMaterial.isNull())
+    return;
 
-    // Both invalid: scale very close to 0 OR negative scale
-    if (this->dataPtr->distortionScale.X() < 1e-7 ||
-        this->dataPtr->distortionScale.Y() < 1e-7)
+  // Scale up image if cropping enabled and valid
+  if (this->dataPtr->distortionCrop && this->dataPtr->k1 < 0)
+  {
+    // I believe that if not used with a square distortion texture, this
+    // calculation will result in stretching of the final output image.
+    ignition::math::Vector2d boundA = this->Distort(
+        ignition::math::Vector2d(0, 0),
+        this->dataPtr->lensCenter,
+        this->dataPtr->k1, this->dataPtr->k2, this->dataPtr->k3,
+        this->dataPtr->p1, this->dataPtr->p2);
+    ignition::math::Vector2d boundB = this->Distort(
+        ignition::math::Vector2d(1, 1),
+        this->dataPtr->lensCenter,
+        this->dataPtr->k1, this->dataPtr->k2, this->dataPtr->k3,
+        this->dataPtr->p1, this->dataPtr->p2);
+    ignition::math::Vector2d newScale = boundB - boundA;
+    // If distortionScale is extremely small, don't crop
+    if (newScale.X() < 1e-7 || newScale.Y() < 1e-7)
     {
-      gzerr << "Distortion model attempted to apply a scale parameter of ("
-            << this->dataPtr->distortionScale.X() << ", "
-            << this->dataPtr->distortionScale.Y() << ", which is invalid.\n";
+          gzerr << "Distortion model attempted to apply a scale parameter of ("
+                << this->dataPtr->distortionScale.X() << ", "
+                << this->dataPtr->distortionScale.Y()
+                << ", which is invalid.\n";
     }
     else
-    {
-      Ogre::GpuProgramParametersSharedPtr params =
-          this->dataPtr->distortionMaterial->getTechnique(0)->getPass(0)->
-              getFragmentProgramParameters();
-      params->setNamedConstant("scale",
-          Ogre::Vector3(1.0/this->dataPtr->distortionScale.X(),
-          1.0/this->dataPtr->distortionScale.Y(), 1.0));
-    }
+      this->dataPtr->distortionScale = newScale;
   }
+  // Otherwise no scaling
+  else
+    this->dataPtr->distortionScale = ignition::math::Vector2d(1, 1);
 }
 
 //////////////////////////////////////////////////
-math::Vector2d Distortion::Distort(
-    const math::Vector2d &_in,
-    const math::Vector2d &_center, double _k1, double _k2, double _k3,
+ignition::math::Vector2d Distortion::Distort(
+    const ignition::math::Vector2d &_in,
+    const ignition::math::Vector2d &_center, double _k1, double _k2, double _k3,
     double _p1, double _p2)
 {
   // apply Brown's distortion model, see
   // http://en.wikipedia.org/wiki/Distortion_%28optics%29#Software_correction
 
-  ignition::math::Vector2d normalized2d = (_in - _center).Ign();
+  ignition::math::Vector2d normalized2d = _in - _center;
   ignition::math::Vector3d normalized(normalized2d.X(), normalized2d.Y(), 0);
-  double rSq = normalized.X() * normalized.X()
-      + normalized.Y() * normalized.Y();
+  double rSq = normalized.X() * normalized.X() +
+               normalized.Y() * normalized.Y();
 
   // radial
   ignition::math::Vector3d dist = normalized * (1.0 +
@@ -350,14 +396,12 @@ math::Vector2d Distortion::Distort(
       2 * _p1 * normalized.X() * normalized.Y();
   dist.Y() += _p1 * (rSq + 2 * (normalized.Y()*normalized.Y())) +
       2 * _p2 * normalized.X() * normalized.Y();
-  ignition::math::Vector2d out =
-      _center.Ign() + ignition::math::Vector2d(dist.X(), dist.Y());
 
-  return out;
+  return _center + ignition::math::Vector2d(dist.X(), dist.Y());
 }
 
 //////////////////////////////////////////////////
-void Distortion::SetCrop(bool _crop)
+void Distortion::SetCrop(const bool _crop)
 {
   // Only update the distortion scale if the crop value is going to flip.
   if (this->dataPtr->distortionCrop != _crop)
@@ -368,43 +412,43 @@ void Distortion::SetCrop(bool _crop)
 }
 
 //////////////////////////////////////////////////
-double Distortion::GetK1() const
-{
-  return this->dataPtr->k1;
-}
-
-//////////////////////////////////////////////////
-double Distortion::GetK2() const
-{
-  return this->dataPtr->k2;
-}
-
-//////////////////////////////////////////////////
-double Distortion::GetK3() const
-{
-  return this->dataPtr->k3;
-}
-
-//////////////////////////////////////////////////
-double Distortion::GetP1() const
-{
-  return this->dataPtr->p1;
-}
-
-//////////////////////////////////////////////////
-double Distortion::GetP2() const
-{
-  return this->dataPtr->p2;
-}
-
-//////////////////////////////////////////////////
 bool Distortion::Crop() const
 {
   return this->dataPtr->distortionCrop;
 }
 
 //////////////////////////////////////////////////
-math::Vector2d Distortion::GetCenter() const
+double Distortion::K1() const
+{
+  return this->dataPtr->k1;
+}
+
+//////////////////////////////////////////////////
+double Distortion::K2() const
+{
+  return this->dataPtr->k2;
+}
+
+//////////////////////////////////////////////////
+double Distortion::K3() const
+{
+  return this->dataPtr->k3;
+}
+
+//////////////////////////////////////////////////
+double Distortion::P1() const
+{
+  return this->dataPtr->p1;
+}
+
+//////////////////////////////////////////////////
+double Distortion::P2() const
+{
+  return this->dataPtr->p2;
+}
+
+//////////////////////////////////////////////////
+ignition::math::Vector2d Distortion::Center() const
 {
   return this->dataPtr->lensCenter;
 }

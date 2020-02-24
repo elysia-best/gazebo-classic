@@ -18,16 +18,8 @@
 #ifndef _GEARBOXJOINT_HH_
 #define _GEARBOXJOINT_HH_
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <string>
 
-#include "gazebo/math/Angle.hh"
-#include "gazebo/math/Vector3.hh"
 #include "gazebo/msgs/msgs.hh"
 #include "gazebo/util/system.hh"
 
@@ -45,14 +37,15 @@ namespace gazebo
     {
       /// \brief Constructor
       /// \param[in] _parent Parent link
-      public: GearboxJoint(BasePtr _parent) : T(_parent), gearRatio(1.0)
+      public: explicit GearboxJoint(BasePtr _parent)
+              : T(_parent), gearRatio(1.0)
               { this->AddType(Base::GEARBOX_JOINT); }
       /// \brief Destructor
       public: virtual ~GearboxJoint()
               { }
 
       // Documentation inherited.
-      public: virtual unsigned int GetAngleCount() const
+      public: virtual unsigned int DOF() const
               {return 2;}
 
       /// \brief Load joint

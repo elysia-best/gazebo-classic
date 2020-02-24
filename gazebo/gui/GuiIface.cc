@@ -15,15 +15,17 @@
  *
 */
 #ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-  #define snprintf _snprintf
+  // snprintf is available since VS 2015
+  #if defined(_MSC_VER) && (_MSC_VER < 1900)
+     #define snprintf _snprintf
+  #endif
 #endif
 
 #include <signal.h>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+
+#include <ignition/math/SemanticVersion.hh>
 
 #include "gazebo/gui/qt.h"
 #include "gazebo/gazebo_client.hh"
@@ -37,6 +39,8 @@
 #include "gazebo/gui/MainWindow.hh"
 #include "gazebo/gui/ModelRightMenu.hh"
 #include "gazebo/gui/GuiIface.hh"
+#include "gazebo/gui/GuiPlugin.hh"
+#include "gazebo/gui/RenderWidget.hh"
 
 #ifdef WIN32
 # define HOMEDIR "HOMEPATH"
@@ -55,6 +59,9 @@ po::variables_map vm;
 
 boost::property_tree::ptree g_propTree;
 
+// Names of all GUI plugins loaded at start. Parsed from command line arguments.
+std::vector<std::string> g_plugins_to_load;
+
 using namespace gazebo;
 
 gui::ModelRightMenu *g_modelRightMenu = NULL;
@@ -71,6 +78,18 @@ bool g_fullscreen = false;
 // qRegisterMetaType is also required, see below.
 Q_DECLARE_METATYPE(common::Time)
 
+// This makes it possible to use std::string in QT signals and slots.
+// qRegisterMetaType is also required, see below.
+Q_DECLARE_METATYPE(std::string)
+
+// This makes it possible to use std::set<std::string> in QT signals and slots.
+// qRegisterMetaType is also required, see below.
+Q_DECLARE_METATYPE(std::set<std::string>)
+
+// This makes it possible to use ignition::msgs::JointCmd in signals and slots.
+// qRegisterMetaType is also required, see below.
+Q_DECLARE_METATYPE(ignition::msgs::JointCmd)
+
 //////////////////////////////////////////////////
 // QT message handler that pipes qt messages into gazebo's console system.
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -78,7 +97,8 @@ void messageHandler(QtMsgType _type, const QMessageLogContext &_context,
     const QString &_msg)
 {
   std::string msg = _msg.toStdString();
-  msg += "(" + _context.function + ")";
+  if (_context.function)
+    msg += std::string("(") + _context.function + ")";
 #else
 void messageHandler(QtMsgType _type, const char *_msg)
 {
@@ -121,6 +141,7 @@ void print_usage()
 //////////////////////////////////////////////////
 void signal_handler(int)
 {
+  event::Events::sigInt();
   gazebo::gui::stop();
   gazebo::client::shutdown();
 }
@@ -133,7 +154,10 @@ bool parse_args(int _argc, char **_argv)
     ("version,v", "Output version information.")
     ("verbose", "Increase the messages written to the terminal.")
     ("help,h", "Produce this help message.")
-    ("gui-plugin,g", po::value<std::vector<std::string> >(), "Load a plugin.");
+    ("gui-client-plugin", po::value<std::vector<std::string> >(),
+     "Load a GUI plugin.")
+    ("gui-plugin,g", po::value<std::vector<std::string> >(),
+     "Load a System plugin (deprecated, backwards compatibility reasons).");
 
   po::options_description desc("Options");
   desc.add(v_desc);
@@ -168,9 +192,13 @@ bool parse_args(int _argc, char **_argv)
     gazebo::common::Console::SetQuiet(false);
   }
 
-  /// Load all the plugins specified on the command line
+  /// Load the System plugins specified on the command line
+  /// see https://bitbucket.org/osrf/gazebo/issues/2279 for details
   if (vm.count("gui-plugin"))
   {
+    gzwarn << "g/gui-plugin is really loading a SystemPlugin. "
+           << "To load a GUI plugin please use --gui-client-plugin \n";
+
     std::vector<std::string> pp =
       vm["gui-plugin"].as<std::vector<std::string> >();
 
@@ -178,6 +206,19 @@ bool parse_args(int _argc, char **_argv)
          iter != pp.end(); ++iter)
     {
       gazebo::client::addPlugin(*iter);
+    }
+  }
+
+  /// Load the GUI plugins specified on the command line
+  if (vm.count("gui-client-plugin"))
+  {
+    std::vector<std::string> pp =
+      vm["gui-client-plugin"].as<std::vector<std::string> >();
+
+    for (std::vector<std::string>::iterator iter = pp.begin();
+         iter != pp.end(); ++iter)
+    {
+       g_plugins_to_load.push_back(*iter);
     }
   }
 
@@ -286,8 +327,8 @@ bool gui::load()
   g_argv = new char*[g_argc];
   for (int i = 0; i < g_argc; i++)
   {
-    g_argv[i] = new char[strlen("gazebo")];
-    snprintf(g_argv[i], strlen("gazebo"), "gazebo");
+    g_argv[i] = new char[strlen("gazebo") + 1];
+    snprintf(g_argv[i], strlen("gazebo") + 1, "gazebo");
   }
 
   // Register custom message handler
@@ -297,12 +338,27 @@ bool gui::load()
   qInstallMsgHandler(messageHandler);
 #endif
 
+#ifdef __APPLE__
+  // gazebo issue #2531
+  // seems to be related to QTBUG-71044
+  // Setting the QT_MAC_WANTS_LAYER environment variable fixes the problem
+  // on Mojave + Qt 5.12
+  ignition::math::SemanticVersion sv;
+  sv.Parse(QSysInfo::productVersion().toStdString());
+  ignition::math::SemanticVersion mojave(10, 14);
+  if (sv >= mojave)
+  {
+    QByteArray result = qgetenv("QT_MAC_WANTS_LAYER");
+    if (result.isEmpty())
+      qputenv("QT_MAC_WANTS_LAYER", QByteArray("1"));
+  }
+#endif
+
   g_app = new QApplication(g_argc, g_argv);
   set_style();
 
   if (!gui::register_metatypes())
     std::cerr << "Unable to register Qt metatypes" << std::endl;
-
 
   g_splashScreen = new gui::SplashScreen();
 
@@ -321,6 +377,7 @@ unsigned int gui::get_entity_id(const std::string &_name)
   else
     return 0;
 }
+
 
 /////////////////////////////////////////////////
 bool gui::run(int _argc, char **_argv)
@@ -342,6 +399,18 @@ bool gui::run(int _argc, char **_argv)
 
   gazebo::gui::init();
 
+  // the plugins have to be created after g_app has been created,
+  // otherwise Qt will complain about no existing QApplication.
+  GZ_ASSERT(g_app, "QApplication must have been created");
+
+  gazebo::gui::MainWindow *mainWindow = gazebo::gui::get_main_window();
+
+  GZ_ASSERT(mainWindow, "Main Window has to be available!");
+  GZ_ASSERT(mainWindow->RenderWidget(),
+            "Main window's RenderWidget must have been created");
+
+  mainWindow->RenderWidget()->AddPlugins(g_plugins_to_load);
+
 #ifndef _WIN32
   // Now that we're about to run, install a signal handler to allow for
   // graceful shutdown on Ctrl-C.
@@ -352,24 +421,35 @@ bool gui::run(int _argc, char **_argv)
     std::cerr << "sigemptyset failed while setting up for SIGINT" << std::endl;
   if (sigaction(SIGINT, &sigact, NULL))
   {
-    std::cerr << "signal(2) failed while setting up for SIGINT" << std::endl;
+    std::cerr << "sigaction(2) failed while setting up for SIGINT" << std::endl;
     return false;
   }
+
+  // The following was added in
+  // https://bitbucket.org/osrf/gazebo/pull-requests/2923, but it is causing
+  // shutdown issues when gazebo is used with ros.
+  // if (sigaction(SIGTERM, &sigact, NULL))
+  // {
+  //   std::cerr << "sigaction(15) failed while setting up for SIGTERM"
+  //             << std::endl;
+  //   return false;
+  // }
 #endif
 
   g_app->exec();
 
   gazebo::gui::fini();
-  gazebo::client::shutdown();
 
   delete g_splashScreen;
   delete g_main_win;
+  gazebo::client::shutdown();
   return true;
 }
 
 /////////////////////////////////////////////////
 void gui::stop()
 {
+  event::Events::stop();
   gazebo::client::shutdown();
   g_active_camera.reset();
   g_app->quit();
@@ -417,6 +497,18 @@ bool gui::register_metatypes()
   // Register common::Time as a type that can be used in signals and slots.
   // Q_DECLARE_METATYPE is also required, see above.
   qRegisterMetaType<common::Time>();
+
+  // Register std::string as a type that can be used in signals and slots.
+  // Q_DECLARE_METATYPE is also required, see above.
+  qRegisterMetaType<std::string>();
+
+  // Register std::set<std::string> as a type that can be used in signals and
+  // slots. Q_DECLARE_METATYPE is also required, see above.
+  qRegisterMetaType< std::set<std::string> >();
+
+  // Register ignition::msgs::JointCmd as a type that can be used in signals and
+  // slots. Q_DECLARE_METATYPE is also required, see above.
+  qRegisterMetaType<ignition::msgs::JointCmd>();
 
   return true;
 }

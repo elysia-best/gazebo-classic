@@ -14,17 +14,13 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
 #include <boost/algorithm/string.hpp>
 #include <functional>
 
 #include "gazebo/common/Events.hh"
 #include "gazebo/common/Exception.hh"
 #include "gazebo/common/Image.hh"
+#include "gazebo/common/CommonIface.hh"
 
 #include "gazebo/msgs/msgs.hh"
 
@@ -53,7 +49,6 @@ CameraSensor::CameraSensor()
 : Sensor(sensors::IMAGE),
   dataPtr(new CameraSensorPrivate)
 {
-  this->dataPtr->rendered = false;
   this->connections.push_back(
       event::Events::ConnectRender(
         std::bind(&CameraSensor::Render, this)));
@@ -76,7 +71,17 @@ std::string CameraSensor::Topic() const
 {
   std::string topicName = "~/";
   topicName += this->ParentName() + "/" + this->Name() + "/image";
-  boost::replace_all(topicName, "::", "/");
+  common::replaceAll(topicName, topicName, "::", "/");
+
+  return topicName;
+}
+
+//////////////////////////////////////////////////
+std::string CameraSensor::TopicIgn() const
+{
+  std::string topicName = this->ScopedName() + "/image";
+  common::replaceAll(topicName, topicName, "::", "/");
+  common::replaceAll(topicName, topicName, " ", "_");
 
   return topicName;
 }
@@ -85,8 +90,12 @@ std::string CameraSensor::Topic() const
 void CameraSensor::Load(const std::string &_worldName)
 {
   Sensor::Load(_worldName);
-  this->imagePub = this->node->Advertise<msgs::ImageStamped>(
-      this->Topic(), 50);
+  this->imagePub = this->node->Advertise<msgs::ImageStamped>(this->Topic(), 50);
+
+  ignition::transport::AdvertiseMessageOptions opts;
+  opts.SetMsgsPerSec(50);
+  this->imagePubIgn = this->nodeIgn.Advertise<ignition::msgs::Image>(
+      this->TopicIgn(), opts);
 }
 
 //////////////////////////////////////////////////
@@ -99,7 +108,7 @@ void CameraSensor::Init()
     return;
   }
 
-  std::string worldName = this->world->GetName();
+  std::string worldName = this->world->Name();
 
   if (!worldName.empty())
   {
@@ -143,7 +152,7 @@ void CameraSensor::Init()
       cameraPose = cameraSdf->Get<ignition::math::Pose3d>("pose") + cameraPose;
 
     this->camera->SetWorldPose(cameraPose);
-    this->camera->AttachToVisual(this->ParentId(), true);
+    this->camera->AttachToVisual(this->ParentId(), true, 0, 0);
 
     if (cameraSdf->HasElement("noise"))
     {
@@ -201,32 +210,52 @@ bool CameraSensor::UpdateImpl(const bool /*_force*/)
 
   this->camera->PostRender();
 
-  if (this->imagePub && this->imagePub->HasConnections())
+
+  if ((this->imagePub && this->imagePub->HasConnections()) ||
+      this->imagePubIgn.HasConnections())
   {
-    msgs::ImageStamped msg;
-    msgs::Set(msg.mutable_time(), this->scene->SimTime());
-    msg.mutable_image()->set_width(this->camera->ImageWidth());
-    msg.mutable_image()->set_height(this->camera->ImageHeight());
-    msg.mutable_image()->set_pixel_format(common::Image::ConvertPixelFormat(
-          this->camera->ImageFormat()));
+    auto simTime = this->scene->SimTime();
+    if (this->imagePub && this->imagePub->HasConnections())
+    {
+      msgs::ImageStamped msg;
+      msgs::Set(msg.mutable_time(), simTime);
+      msg.mutable_image()->set_width(this->camera->ImageWidth());
+      msg.mutable_image()->set_height(this->camera->ImageHeight());
+      msg.mutable_image()->set_pixel_format(common::Image::ConvertPixelFormat(
+            this->camera->ImageFormat()));
 
-    msg.mutable_image()->set_step(this->camera->ImageWidth() *
-        this->camera->ImageDepth());
-    msg.mutable_image()->set_data(this->camera->ImageData(),
-        msg.image().width() * this->camera->ImageDepth() *
-        msg.image().height());
+      msg.mutable_image()->set_step(this->camera->ImageWidth() *
+          this->camera->ImageDepth());
+      msg.mutable_image()->set_data(this->camera->ImageData(),
+          msg.image().width() * this->camera->ImageDepth() *
+          msg.image().height());
 
-    this->imagePub->Publish(msg);
+      this->imagePub->Publish(msg);
+    }
+
+    if (this->imagePubIgn.HasConnections())
+    {
+      ignition::msgs::Image msg;
+      msg.mutable_header()->mutable_stamp()->set_sec(simTime.sec);
+      msg.mutable_header()->mutable_stamp()->set_nsec(simTime.nsec);
+
+      msg.set_width(this->camera->ImageWidth());
+      msg.set_height(this->camera->ImageHeight());
+      msg.set_pixel_format(common::Image::ConvertPixelFormat(
+            this->camera->ImageFormat()));
+
+      msg.set_step(this->camera->ImageWidth() *
+          this->camera->ImageDepth());
+      msg.set_data(this->camera->ImageData(),
+          msg.width() * this->camera->ImageDepth() *
+          msg.height());
+
+      this->imagePubIgn.Publish(msg);
+    }
   }
 
   this->dataPtr->rendered = false;
   return true;
-}
-
-//////////////////////////////////////////////////
-unsigned int CameraSensor::GetImageWidth() const
-{
-  return this->ImageWidth();
 }
 
 //////////////////////////////////////////////////
@@ -247,12 +276,6 @@ unsigned int CameraSensor::ImageWidth() const
 }
 
 //////////////////////////////////////////////////
-unsigned int CameraSensor::GetImageHeight() const
-{
-  return this->ImageHeight();
-}
-
-//////////////////////////////////////////////////
 unsigned int CameraSensor::ImageHeight() const
 {
   if (this->camera)
@@ -270,18 +293,12 @@ unsigned int CameraSensor::ImageHeight() const
 }
 
 //////////////////////////////////////////////////
-const unsigned char *CameraSensor::GetImageData()
-{
-  return this->ImageData();
-}
-
-//////////////////////////////////////////////////
 const unsigned char *CameraSensor::ImageData() const
 {
   if (this->camera)
     return this->camera->ImageData(0);
   else
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////
@@ -299,13 +316,8 @@ bool CameraSensor::SaveFrame(const std::string &_filename)
 bool CameraSensor::IsActive() const
 {
   return Sensor::IsActive() ||
-    (this->imagePub && this->imagePub->HasConnections());
-}
-
-//////////////////////////////////////////////////
-rendering::CameraPtr CameraSensor::GetCamera() const
-{
-  return this->Camera();
+    (this->imagePub && this->imagePub->HasConnections()) ||
+    this->imagePubIgn.HasConnections();
 }
 
 //////////////////////////////////////////////////
@@ -313,3 +325,16 @@ rendering::CameraPtr CameraSensor::Camera() const
 {
   return this->camera;
 }
+
+//////////////////////////////////////////////////
+bool CameraSensor::Rendered() const
+{
+  return this->dataPtr->rendered;
+}
+
+//////////////////////////////////////////////////
+void CameraSensor::SetRendered(const bool _value)
+{
+  this->dataPtr->rendered = _value;
+}
+

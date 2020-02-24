@@ -76,7 +76,7 @@ namespace gazebo
       };
 
       /// \brief Constructor
-      public: DARTPhysics(WorldPtr _world);
+      public: explicit DARTPhysics(WorldPtr _world);
 
       /// \brief Destructor
       public: virtual ~DARTPhysics();
@@ -125,9 +125,16 @@ namespace gazebo
       // Documentation inherited
       public: virtual ShapePtr CreateShape(const std::string &_shapeType,
                                            CollisionPtr _collision);
+      /// \brief Get the constraint LCP solver type.
+      /// \return The solver type: dantzig (default) or pgs.
+      public: std::string GetSolverType() const;
+
+      /// \brief Set the constraint LCP solver type.
+      /// \param[in] _type The solver type (dantzig or pgs).
+      public: void SetSolverType(const std::string &_type);
 
       // Documentation inherited
-      public: virtual void SetGravity(const gazebo::math::Vector3 &_gravity);
+      public: virtual void SetGravity(const ignition::math::Vector3d &_gravity);
 
       // Documentation inherited
       public: virtual void DebugPrint() const;
@@ -145,7 +152,7 @@ namespace gazebo
 
       /// \brief Get pointer to DART World associated with this DART Physics.
       /// \return The pointer to DART World.
-      public: dart::simulation::World *GetDARTWorld();
+      public: dart::simulation::WorldPtr DARTWorld() const;
 
       // Documentation inherited
       protected: virtual void OnRequest(ConstRequestPtr &_msg);
@@ -161,7 +168,7 @@ namespace gazebo
 
       /// \internal
       /// \brief Pointer to private data.
-      private: DARTPhysicsPrivate *dataPtr;
+      private: DARTPhysicsPrivate *dataPtr = nullptr;
     };
 
   /// \}

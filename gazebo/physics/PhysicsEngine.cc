@@ -15,11 +15,7 @@
  *
 */
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
+#include <boost/lexical_cast.hpp>
 
 #include <sdf/sdf.hh>
 
@@ -30,8 +26,6 @@
 
 #include "gazebo/transport/TransportIface.hh"
 #include "gazebo/transport/Node.hh"
-
-#include "gazebo/math/Rand.hh"
 
 #include "gazebo/physics/ContactManager.hh"
 #include "gazebo/physics/Link.hh"
@@ -55,7 +49,7 @@ PhysicsEngine::PhysicsEngine(WorldPtr _world)
   this->maxStepSize = 0;
 
   this->node = transport::NodePtr(new transport::Node());
-  this->node->Init(this->world->GetName());
+  this->node->Init(this->world->Name());
   this->physicsSub = this->node->Subscribe("~/physics",
       &PhysicsEngine::OnPhysicsMsg, this);
 
@@ -90,9 +84,12 @@ void PhysicsEngine::Fini()
 {
   // Clean up transport
   {
-    this->responsePub.reset();
+    this->physicsSub.reset();
     this->requestSub.reset();
+    this->responsePub.reset();
 
+    if (this->node)
+      this->node->Fini();
     this->node.reset();
   }
 
@@ -124,24 +121,12 @@ PhysicsEngine::~PhysicsEngine()
 }
 
 //////////////////////////////////////////////////
-math::Vector3 PhysicsEngine::GetGravity() const
-{
-  return this->world->Gravity();
-}
-
-//////////////////////////////////////////////////
-ignition::math::Vector3d PhysicsEngine::MagneticField() const
-{
-  return this->world->MagneticField();
-}
-
-//////////////////////////////////////////////////
 CollisionPtr PhysicsEngine::CreateCollision(const std::string &_shapeType,
                                             const std::string &_linkName)
 {
   CollisionPtr result;
   LinkPtr link =
-    boost::dynamic_pointer_cast<Link>(this->world->GetEntity(_linkName));
+    boost::dynamic_pointer_cast<Link>(this->world->EntityByName(_linkName));
 
   if (!link)
     gzerr << "Unable to find link[" << _linkName << "]\n";
@@ -225,7 +210,7 @@ void PhysicsEngine::OnRequest(ConstRequestPtr &/*_msg*/)
 //////////////////////////////////////////////////
 void PhysicsEngine::OnPhysicsMsg(ConstPhysicsPtr &_msg)
 {
-  this->world->GetPresetManager()->CurrentProfile(_msg->profile_name());
+  this->world->PresetMgr()->CurrentProfile(_msg->profile_name());
 }
 
 //////////////////////////////////////////////////
@@ -247,39 +232,14 @@ bool PhysicsEngine::SetParam(const std::string &_key,
       this->SetTargetRealTimeFactor(boost::any_cast<double>(_value));
     else if (_key == "gravity")
     {
-      boost::any copy = _value;
-#ifndef _WIN32
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-      if (_value.type() == typeid(sdf::Vector3))
-      {
-        copy = boost::lexical_cast<ignition::math::Vector3d>
-            (boost::any_cast<sdf::Vector3>(_value));
-      }
-      else if (_value.type() == typeid(math::Vector3))
-      {
-        copy = boost::lexical_cast<ignition::math::Vector3d>
-            (boost::any_cast<math::Vector3>(_value));
-      }
+      boost::any copy = boost::lexical_cast<ignition::math::Vector3d>
+          (boost::any_cast<ignition::math::Vector3d>(_value));
       this->SetGravity(boost::any_cast<ignition::math::Vector3d>(copy));
     }
     else if (_key == "magnetic_field")
     {
-      boost::any copy = _value;
-      if (_value.type() == typeid(sdf::Vector3))
-      {
-        copy = boost::lexical_cast<ignition::math::Vector3d>
-            (boost::any_cast<sdf::Vector3>(_value));
-      }
-      else if (_value.type() == typeid(math::Vector3))
-      {
-        copy = boost::lexical_cast<ignition::math::Vector3d>
-            (boost::any_cast<math::Vector3>(_value));
-      }
-#ifndef _WIN32
-#pragma GCC diagnostic pop
-#endif
+      boost::any copy = boost::lexical_cast<ignition::math::Vector3d>
+          (boost::any_cast<ignition::math::Vector3d>(_value));
       this->world->SetMagneticField(
           boost::any_cast<ignition::math::Vector3d>(copy));
     }
@@ -326,7 +286,7 @@ bool PhysicsEngine::GetParam(const std::string &_key,
   else if (_key == "real_time_factor")
     _value = this->GetTargetRealTimeFactor();
   else if (_key == "gravity")
-    _value = this->GetGravity();
+    _value = this->world->Gravity();
   else if (_key == "magnetic_field")
     _value = this->world->MagneticField();
   else
@@ -349,4 +309,10 @@ ContactManager *PhysicsEngine::GetContactManager() const
 sdf::ElementPtr PhysicsEngine::GetSDF() const
 {
   return this->sdf;
+}
+
+//////////////////////////////////////////////////
+WorldPtr PhysicsEngine::World() const
+{
+  return this->world;
 }

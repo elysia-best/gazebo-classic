@@ -22,6 +22,7 @@
 #include "gazebo/physics/bullet/BulletCollision.hh"
 #include "gazebo/physics/bullet/BulletPhysics.hh"
 #include "gazebo/physics/bullet/BulletMeshShape.hh"
+#include "gazebo/common/Console.hh"
 
 using namespace gazebo;
 using namespace physics;
@@ -50,17 +51,23 @@ void BulletMeshShape::Init()
 {
   MeshShape::Init();
 
+  if (!this->submesh && !this->mesh)
+  {
+    gzerr << "Cannot load Bullet mesh with no shape initialized.\n";
+    return;
+  }
+
   BulletCollisionPtr bParent =
     boost::static_pointer_cast<BulletCollision>(this->collisionParent);
 
   if (this->submesh)
   {
     this->bulletMesh->Init(this->submesh, bParent,
-        this->sdf->Get<math::Vector3>("scale"));
+        this->sdf->Get<ignition::math::Vector3d>("scale"));
   }
   else
   {
     this->bulletMesh->Init(this->mesh, bParent,
-        this->sdf->Get<math::Vector3>("scale"));
+        this->sdf->Get<ignition::math::Vector3d>("scale"));
   }
 }

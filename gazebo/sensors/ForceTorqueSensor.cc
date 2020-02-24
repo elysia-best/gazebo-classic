@@ -14,12 +14,6 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <boost/algorithm/string.hpp>
 
 #include "gazebo/physics/World.hh"
@@ -114,7 +108,7 @@ void ForceTorqueSensor::Load(const std::string &_worldName,
             "parentJoint should be defined by single argument Load()");
   ignition::math::Quaterniond rotationChildSensor =
     (this->pose +
-     this->dataPtr->parentJoint->GetInitialAnchorPose().Ign()).Rot();
+     this->dataPtr->parentJoint->InitialAnchorPose()).Rot();
 
   this->dataPtr->rotationSensorChild =
     ignition::math::Matrix3d(rotationChildSensor.Inverse());
@@ -152,11 +146,11 @@ void ForceTorqueSensor::Load(const std::string &_worldName,
 void ForceTorqueSensor::Load(const std::string &_worldName)
 {
   Sensor::Load(_worldName);
-  GZ_ASSERT(this->world != NULL,
+  GZ_ASSERT(this->world != nullptr,
       "ForceTorqueSensor did not get a valid World pointer");
 
   this->dataPtr->parentJoint = boost::dynamic_pointer_cast<physics::Joint>(
-      this->world->GetByName(this->ParentName()));
+      this->world->BaseByName(this->ParentName()));
 
   if (!this->dataPtr->parentJoint)
   {
@@ -186,12 +180,6 @@ void ForceTorqueSensor::Fini()
 }
 
 //////////////////////////////////////////////////
-physics::JointPtr ForceTorqueSensor::GetJoint() const
-{
-  return this->Joint();
-}
-
-//////////////////////////////////////////////////
 physics::JointPtr ForceTorqueSensor::Joint() const
 {
   return this->dataPtr->parentJoint;
@@ -214,7 +202,7 @@ bool ForceTorqueSensor::UpdateImpl(const bool /*_force*/)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
-  this->lastMeasurementTime = this->world->GetSimTime();
+  this->lastMeasurementTime = this->world->SimTime();
   msgs::Set(this->dataPtr->wrenchMsg.mutable_time(),
       this->lastMeasurementTime);
 
@@ -228,26 +216,26 @@ bool ForceTorqueSensor::UpdateImpl(const bool /*_force*/)
   {
     if (this->dataPtr->parentToChild)
     {
-      measuredForce = wrench.body1Force.Ign();
-      measuredTorque = wrench.body1Torque.Ign();
+      measuredForce = wrench.body1Force;
+      measuredTorque = wrench.body1Torque;
     }
     else
     {
-      measuredForce = -1*wrench.body1Force.Ign();
-      measuredTorque = -1*wrench.body1Torque.Ign();
+      measuredForce = -1*wrench.body1Force;
+      measuredTorque = -1*wrench.body1Torque;
     }
   }
   else if (this->dataPtr->measureFrame == ForceTorqueSensorPrivate::CHILD_LINK)
   {
     if (!this->dataPtr->parentToChild)
     {
-      measuredForce = wrench.body2Force.Ign();
-      measuredTorque = wrench.body2Torque.Ign();
+      measuredForce = wrench.body2Force;
+      measuredTorque = wrench.body2Torque;
     }
     else
     {
-      measuredForce = -1*wrench.body2Force.Ign();
-      measuredTorque = -1*wrench.body2Torque.Ign();
+      measuredForce = -1*wrench.body2Force;
+      measuredTorque = -1*wrench.body2Torque;
     }
   }
   else
@@ -258,16 +246,16 @@ bool ForceTorqueSensor::UpdateImpl(const bool /*_force*/)
     if (!this->dataPtr->parentToChild)
     {
       measuredForce = this->dataPtr->rotationSensorChild *
-        wrench.body2Force.Ign();
+        wrench.body2Force;
       measuredTorque = this->dataPtr->rotationSensorChild *
-        wrench.body2Torque.Ign();
+        wrench.body2Torque;
     }
     else
     {
       measuredForce = this->dataPtr->rotationSensorChild *
-        (-1*wrench.body2Force.Ign());
+        (-1*wrench.body2Force);
       measuredTorque = this->dataPtr->rotationSensorChild *
-        (-1*wrench.body2Torque.Ign());
+        (-1*wrench.body2Torque);
     }
   }
 
@@ -295,10 +283,4 @@ event::ConnectionPtr ForceTorqueSensor::ConnectUpdate(
     std::function<void (msgs::WrenchStamped)> _subscriber)
 {
   return this->dataPtr->update.Connect(_subscriber);
-}
-
-//////////////////////////////////////////////////
-void ForceTorqueSensor::DisconnectUpdate(event::ConnectionPtr &_conn)
-{
-  this->dataPtr->update.Disconnect(_conn);
 }

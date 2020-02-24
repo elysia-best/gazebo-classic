@@ -40,26 +40,25 @@ Material::Material()
   this->name = "gazebo_material_" + boost::lexical_cast<std::string>(counter++);
   this->blendMode = REPLACE;
   this->shadeMode = GOURAUD;
-  this->transparency = 0;
-  this->shininess = 0;
   this->ambient.Set(0.4, 0.4, 0.4, 1);
   this->diffuse.Set(0.5, 0.5, 0.5, 1);
   this->specular.Set(0, 0, 0, 1);
-  this->lighting = false;
   this->dstBlendFactor = this->srcBlendFactor = 1.0;
 }
 
 //////////////////////////////////////////////////
-Material::Material(const Color &_clr)
+Material::Material(const Color &_clr) : Material(_clr.Ign())
+{
+}
+
+//////////////////////////////////////////////////
+Material::Material(const ignition::math::Color &_clr)
 {
   this->name = "gazebo_material_" + boost::lexical_cast<std::string>(counter++);
   this->blendMode = REPLACE;
   this->shadeMode = GOURAUD;
-  this->transparency = 0;
-  this->shininess = 0;
   this->ambient = _clr;
   this->diffuse = _clr;
-  this->lighting = false;
 }
 
 //////////////////////////////////////////////////
@@ -94,9 +93,6 @@ void Material::SetTextureImage(const std::string &_tex,
       this->texImage = SystemPaths::Instance()->FindFile(_tex);
       if (!boost::filesystem::exists(this->texImage))
       {
-        // this line is deprecated in gazebo8. A change in Material_TEST
-        // is necessary.
-        this->texImage = _resourcePath + "/../materials/textures/" + _tex;
         gzerr << "Unable to find texture[" << _tex << "] in path["
               << _resourcePath << "]\n";
       }
@@ -113,11 +109,30 @@ std::string Material::GetTextureImage() const
 //////////////////////////////////////////////////
 void Material::SetAmbient(const Color &_clr)
 {
+  this->SetAmbient(_clr.Ign());
+}
+
+//////////////////////////////////////////////////
+void Material::SetAmbient(const ignition::math::Color &_clr)
+{
   this->ambient = _clr;
 }
 
 //////////////////////////////////////////////////
 Color Material::GetAmbient() const
+{
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  return this->Ambient();
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Material::Ambient() const
 {
   return this->ambient;
 }
@@ -125,12 +140,30 @@ Color Material::GetAmbient() const
 //////////////////////////////////////////////////
 void Material::SetDiffuse(const Color &_clr)
 {
+  this->SetDiffuse(_clr.Ign());
+}
+
+//////////////////////////////////////////////////
+void Material::SetDiffuse(const ignition::math::Color &_clr)
+{
   this->diffuse = _clr;
-  this->lighting = true;
 }
 
 //////////////////////////////////////////////////
 Color Material::GetDiffuse() const
+{
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  return this->Diffuse();
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Material::Diffuse() const
 {
   return this->diffuse;
 }
@@ -138,12 +171,30 @@ Color Material::GetDiffuse() const
 //////////////////////////////////////////////////
 void Material::SetSpecular(const Color &_clr)
 {
+  this->SetSpecular(_clr.Ign());
+}
+
+//////////////////////////////////////////////////
+void Material::SetSpecular(const ignition::math::Color &_clr)
+{
   this->specular = _clr;
-  this->lighting = true;
 }
 
 //////////////////////////////////////////////////
 Color Material::GetSpecular() const
+{
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  return this->Specular();
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Material::Specular() const
 {
   return this->specular;
 }
@@ -151,11 +202,30 @@ Color Material::GetSpecular() const
 //////////////////////////////////////////////////
 void Material::SetEmissive(const Color &_clr)
 {
+  this->SetEmissive(_clr.Ign());
+}
+
+//////////////////////////////////////////////////
+void Material::SetEmissive(const ignition::math::Color &_clr)
+{
   this->emissive = _clr;
 }
 
 //////////////////////////////////////////////////
 Color Material::GetEmissive() const
+{
+#ifndef _WIN32
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  return this->Emissive();
+#ifndef _WIN32
+  #pragma GCC diagnostic pop
+#endif
+}
+
+//////////////////////////////////////////////////
+ignition::math::Color Material::Emissive() const
 {
   return this->emissive;
 }
@@ -165,7 +235,6 @@ void Material::SetTransparency(double _t)
 {
   this->transparency = std::min(_t, 1.0);
   this->transparency = std::max(this->transparency, 0.0);
-  this->lighting = true;
 }
 
 //////////////////////////////////////////////////
@@ -178,7 +247,6 @@ double Material::GetTransparency() const
 void Material::SetShininess(double _s)
 {
   this->shininess = _s;
-  this->lighting = true;
 }
 
 //////////////////////////////////////////////////
@@ -195,7 +263,7 @@ void Material::SetBlendFactors(double _srcFactor, double _dstFactor)
 }
 
 //////////////////////////////////////////////////
-void Material::GetBlendFactors(double &_srcFactor, double &_dstFactor)
+void Material::GetBlendFactors(double &_srcFactor, double &_dstFactor) const
 {
   _srcFactor = this->srcBlendFactor;
   _dstFactor = this->dstBlendFactor;

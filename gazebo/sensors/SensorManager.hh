@@ -31,6 +31,9 @@
 #include "gazebo/sensors/SensorTypes.hh"
 #include "gazebo/util/system.hh"
 
+/// \brief Explicit instantiation for typed SingletonT.
+GZ_SINGLETON_DECLARE(GZ_SENSORS_VISIBLE, gazebo, sensors, SensorManager)
+
 namespace gazebo
 {
   /// \ingroup gazebo_sensors
@@ -39,7 +42,7 @@ namespace gazebo
   {
     /// \cond
     /// \brief A simulation time event
-    class GAZEBO_VISIBLE SimTimeEvent
+    class GZ_SENSORS_VISIBLE SimTimeEvent
     {
       /// \brief The time at which to trigger the condition.
       public: common::Time time;
@@ -50,7 +53,7 @@ namespace gazebo
 
     /// \brief Monitors simulation time, and notifies conditions when
     /// a specified time has been reached.
-    class GAZEBO_VISIBLE SimTimeEventHandler
+    class GZ_SENSORS_VISIBLE SimTimeEventHandler
     {
       /// \brief Constructor
       public: SimTimeEventHandler();
@@ -85,7 +88,7 @@ namespace gazebo
     /// \{
     /// \class SensorManager SensorManager.hh sensors/sensors.hh
     /// \brief Class to manage and update all sensors
-    class GAZEBO_VISIBLE SensorManager : public SingletonT<SensorManager>
+    class GZ_SENSORS_VISIBLE SensorManager : public SingletonT<SensorManager>
     {
       /// \brief This is a singletone class. Use SensorManager::Instance()
       /// to get a pointer to this class.
@@ -113,6 +116,10 @@ namespace gazebo
 
       /// \brief Finalize all the sensors
       public: void Fini();
+
+      /// \brief Get whether there's at least one sensor container running.
+      /// \return True if running.
+      public: bool Running() const;
 
       /// \brief Get all the sensor types
       /// \param[out] All the sensor types.
@@ -144,7 +151,7 @@ namespace gazebo
 
       /// \brief Get a sensor
       /// \param[in] _name The name of a sensor to find.
-      /// \return A pointer to the sensor. NULL if not found.
+      /// \return A pointer to the sensor. nullptr if not found.
       public: SensorPtr GetSensor(const std::string &_name) const;
 
       /// \brief Get all the sensors.
@@ -195,6 +202,10 @@ namespace gazebo
                  /// \brief Stop the run thread.
                  public: void Stop();
 
+                 /// \brief Get whether running or stopped.
+                 /// \return True if running.
+                 public: bool Running() const;
+
                  /// \brief Update the sensors.
                  /// \param[in] _force True to force the sensors to update,
                  /// even if they are not active.
@@ -207,7 +218,7 @@ namespace gazebo
                  /// \brief Get a sensor by name.
                  /// \param[in] _useLeafName False indicates that _name
                  /// should be compared against the scoped name of a sensor.
-                 /// \return Pointer to the matching sensor. NULL if no
+                 /// \return Pointer to the matching sensor. nullptr if no
                  /// sensor is found.
                  public: SensorPtr GetSensor(const std::string &_name,
                                              bool _useLeafName = false) const;
@@ -292,7 +303,8 @@ namespace gazebo
       /// \brief Pointer to the sim time event handler.
       private: SimTimeEventHandler *simTimeEventHandler;
 
-      /// \brief All the worlds that have sensors.
+      /// \brief All the worlds whose sensors have been initialized. This
+      /// includes worlds without sensors..
       private: std::map<std::string, physics::WorldPtr> worlds;
 
       /// \brief Connect to the time reset event.

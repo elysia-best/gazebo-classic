@@ -18,7 +18,7 @@
 #include <ignition/math/Angle.hh>
 #include <ignition/math/Vector2.hh>
 
-#include "gazebo/common/Color.hh"
+#include <ignition/math/Color.hh>
 
 #include "gazebo/gui/Conversions.hh"
 #include "gazebo/gui/building/EditorView.hh"
@@ -50,7 +50,7 @@ WallSegmentItem::WallSegmentItem(const ignition::math::Vector2d &_start,
 
   this->SetThickness(this->dataPtr->wallThickness);
   this->SetLine(_start, _end);
-  this->SetColor(common::Color(247, 142, 30));
+  this->SetColor(ignition::math::Color(247, 142, 30));
 
   this->zValueIdle = 0;
   this->zValueSelected = 5;
@@ -163,12 +163,12 @@ void WallSegmentItem::SegmentUpdated()
       (this->line().length()+2*t)*this->itemScale);
 
   // Doors, windows...
-  QList<QGraphicsItem *> children = this->childItems();
-  for (int j = 0; j < children.size(); ++j)
+  QList<QGraphicsItem *> mychildren = this->childItems();
+  for (int j = 0; j < mychildren.size(); ++j)
   {
     // TODO find a more generic way than casting child as rect item,
     // and need to keep wall-children pos ratio fixed
-    RectItem *rectItem = dynamic_cast<RectItem *>(children[j]);
+    RectItem *rectItem = dynamic_cast<RectItem *>(mychildren[j]);
     if (rectItem)
     {
       rectItem->SetRotation(-this->line().angle() + rectItem->AngleOnWall());
@@ -231,7 +231,7 @@ void WallSegmentItem::SetHighlighted(bool _highlighted)
     this->ShowHandles(false);
     this->dataPtr->measure->setVisible(false);
     this->setZValue(this->zValueIdle);
-    this->SetColor(common::Color::Black);
+    this->SetColor(ignition::math::Color::Black);
     this->Set3dTransparency(0.4);
   }
 }

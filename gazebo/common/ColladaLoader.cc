@@ -18,16 +18,18 @@
 #include <tinyxml.h>
 #include <math.h>
 #include <sstream>
+#include <set>
+#include <memory>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
 
-#include "gazebo/math/Helpers.hh"
-#include "gazebo/math/Angle.hh"
-#include "gazebo/math/Vector2d.hh"
-#include "gazebo/math/Vector3.hh"
-#include "gazebo/math/Matrix4.hh"
-#include "gazebo/math/Quaternion.hh"
+#include <ignition/math/Color.hh>
+#include <ignition/math/Helpers.hh>
+#include <ignition/math/Matrix4.hh>
+#include <ignition/math/Vector2.hh>
+#include <ignition/math/Vector3.hh>
+
 #include "gazebo/common/Console.hh"
 #include "gazebo/common/Material.hh"
 #include "gazebo/common/Mesh.hh"
@@ -98,11 +100,8 @@ Mesh *ColladaLoader::Load(const std::string &_filename)
 
   TiXmlDocument xmlDoc;
 
-  this->dataPtr->path.clear();
-  if (_filename.rfind('/') != std::string::npos)
-  {
-    this->dataPtr->path = _filename.substr(0, _filename.rfind('/'));
-  }
+  boost::filesystem::path p(_filename);
+  this->dataPtr->path = p.parent_path().generic_string();
 
   this->dataPtr->filename = _filename;
   if (!xmlDoc.LoadFile(_filename))
@@ -131,8 +130,13 @@ Mesh *ColladaLoader::Load(const std::string &_filename)
 
   this->LoadScene(mesh);
 
+  if (mesh->HasSkeleton())
+    ApplyInvBindTransform(mesh->GetSkeleton());
+
   // This will make the model the correct size.
   mesh->Scale(this->dataPtr->meter);
+  if (mesh->HasSkeleton())
+    mesh->GetSkeleton()->Scale(this->dataPtr->meter);
 
   return mesh;
 }
@@ -146,6 +150,7 @@ void ColladaLoader::LoadScene(Mesh *_mesh)
     sceneXml->FirstChildElement("instance_visual_scene")->Attribute("url");
 
   TiXmlElement *visSceneXml = this->GetElementId("visual_scene", sceneURL);
+  this->dataPtr->currentScene = visSceneXml;
 
   if (!visSceneXml)
   {
@@ -154,6 +159,7 @@ void ColladaLoader::LoadScene(Mesh *_mesh)
   }
 
   TiXmlElement *nodeXml = visSceneXml->FirstChildElement("node");
+
   while (nodeXml)
   {
     this->LoadNode(nodeXml, _mesh, ignition::math::Matrix4d::Identity);
@@ -225,6 +231,8 @@ void ColladaLoader::LoadNode(TiXmlElement *_elem, Mesh *_mesh,
       bindMatXml = bindMatXml->NextSiblingElement("bind_material");
     }
 
+    if (_mesh->GetSkeleton())
+      _mesh->GetSkeleton()->SetNumVertAttached(0);
     this->LoadGeometry(geomXml, transform, _mesh);
     instGeomXml = instGeomXml->NextSiblingElement("instance_geometry");
   }
@@ -235,10 +243,6 @@ void ColladaLoader::LoadNode(TiXmlElement *_elem, Mesh *_mesh,
   {
     std::string contrURL = instContrXml->Attribute("url");
     TiXmlElement *contrXml = this->GetElementId("controller", contrURL);
-
-    TiXmlElement *instSkelXml = instContrXml->FirstChildElement("skeleton");
-    std::string rootURL = instSkelXml->GetText();
-    TiXmlElement *rootNodeXml = this->GetElementId("node", rootURL);
 
     this->dataPtr->materialMap.clear();
     TiXmlElement *bindMatXml, *techniqueXml, *matXml;
@@ -259,7 +263,26 @@ void ColladaLoader::LoadNode(TiXmlElement *_elem, Mesh *_mesh,
       bindMatXml = bindMatXml->NextSiblingElement("bind_material");
     }
 
-    this->LoadController(contrXml, rootNodeXml, transform, _mesh);
+    std::vector<TiXmlElement*> rootNodeXmls;
+    TiXmlNode *child = nullptr;
+    while ((child = instContrXml->IterateChildren("skeleton", child)))
+    {
+      TiXmlElement *instSkelXml = child->ToElement();
+      std::string rootURL = instSkelXml->GetText();
+      rootNodeXmls.emplace_back(this->GetElementId("node", rootURL));
+    }
+    // no skeleton tag present, assume whole scene is a skeleton
+    if (rootNodeXmls.empty())
+    {
+      TiXmlNode *childNode = nullptr;
+      while ((childNode =
+          this->dataPtr->currentScene->IterateChildren("node", childNode)))
+      {
+        rootNodeXmls.emplace_back(childNode->ToElement());
+      }
+    }
+
+    this->LoadController(contrXml, rootNodeXmls, transform, _mesh);
     instContrXml = instContrXml->NextSiblingElement("instance_controller");
   }
 }
@@ -289,7 +312,7 @@ ignition::math::Matrix4d ColladaLoader::LoadNodeTransform(TiXmlElement *_elem)
       ignition::math::Vector3d translate;
       translate = boost::lexical_cast<ignition::math::Vector3d>(transStr);
       // translate *= this->dataPtr->meter;
-      transform.Translate(translate);
+      transform.SetTranslation(translate);
     }
 
     TiXmlElement *rotateXml = _elem->FirstChildElement("rotate");
@@ -329,18 +352,9 @@ ignition::math::Matrix4d ColladaLoader::LoadNodeTransform(TiXmlElement *_elem)
 
 /////////////////////////////////////////////////
 void ColladaLoader::LoadController(TiXmlElement *_contrXml,
-      TiXmlElement *_skelXml,
+      const std::vector<TiXmlElement*> &rootNodeXmls,
       const ignition::math::Matrix4d &_transform, Mesh *_mesh)
 {
-  Skeleton *skeleton = new Skeleton(this->LoadSkeletonNodes(_skelXml, NULL));
-  _mesh->SetSkeleton(skeleton);
-
-  TiXmlElement *rootXml = _contrXml->GetDocument()->RootElement();
-
-  if (rootXml->FirstChildElement("library_animations"))
-    this->LoadAnimations(rootXml->FirstChildElement("library_animations"),
-        skeleton);
-
   TiXmlElement *skinXml = _contrXml->FirstChildElement("skin");
   std::string geomURL = skinXml->Attribute("source");
 
@@ -355,8 +369,6 @@ void ColladaLoader::LoadController(TiXmlElement *_contrXml,
                 values[4], values[5], values[6], values[7],
                 values[8], values[9], values[10], values[11],
                 values[12], values[13], values[14], values[15]);
-
-  skeleton->SetBindShapeTransform(bindTrans);
 
   TiXmlElement *jointsXml = skinXml->FirstChildElement("joints");
   std::string jointsURL, invBindMatURL;
@@ -386,7 +398,32 @@ void ColladaLoader::LoadController(TiXmlElement *_contrXml,
   std::string jointsStr = jointsXml->FirstChildElement("Name_array")->GetText();
 
   std::vector<std::string> joints;
-  boost::split(joints, jointsStr, boost::is_any_of("   "));
+  boost::split(joints, jointsStr, boost::is_any_of(" \t"));
+
+  // Load the skeleton
+  Skeleton *skeleton = nullptr;
+  if (_mesh->HasSkeleton())
+    skeleton = _mesh->GetSkeleton();
+  for (TiXmlElement *rootNodeXml : rootNodeXmls)
+  {
+    SkeletonNode *rootSkelNode =
+        this->LoadSkeletonNodes(rootNodeXml, nullptr);
+    if (skeleton)
+      this->MergeSkeleton(skeleton, rootSkelNode);
+    else
+    {
+      skeleton = new Skeleton(rootSkelNode);
+      _mesh->SetSkeleton(skeleton);
+    }
+  }
+  skeleton->SetBindShapeTransform(bindTrans);
+
+  TiXmlElement *rootXml = _contrXml->GetDocument()->RootElement();
+  if (rootXml->FirstChildElement("library_animations"))
+  {
+    this->LoadAnimations(rootXml->FirstChildElement("library_animations"),
+        skeleton);
+  }
 
   TiXmlElement *invBMXml = this->GetElementId("source", invBindMatURL);
 
@@ -399,7 +436,7 @@ void ColladaLoader::LoadController(TiXmlElement *_contrXml,
   std::string posesStr = invBMXml->FirstChildElement("float_array")->GetText();
 
   std::vector<std::string> strs;
-  boost::split(strs, posesStr, boost::is_any_of("   "));
+  boost::split(strs, posesStr, boost::is_any_of(" \t"));
 
   for (unsigned int i = 0; i < joints.size(); ++i)
   {
@@ -453,28 +490,28 @@ void ColladaLoader::LoadController(TiXmlElement *_contrXml,
 
   std::string wString = weightsXml->FirstChildElement("float_array")->GetText();
   std::vector<std::string> wStrs;
-  boost::split(wStrs, wString, boost::is_any_of("   "));
+  boost::split(wStrs, wString, boost::is_any_of(" \t"));
 
   std::vector<float> weights;
   for (unsigned int i = 0; i < wStrs.size(); ++i)
-    weights.push_back(math::parseFloat(wStrs[i]));
+    weights.push_back(ignition::math::parseFloat(wStrs[i]));
 
   std::string cString = vertWeightsXml->FirstChildElement("vcount")->GetText();
   std::string vString = vertWeightsXml->FirstChildElement("v")->GetText();
   std::vector<std::string> vCountStrs;
   std::vector<std::string> vStrs;
 
-  boost::split(vCountStrs, cString, boost::is_any_of("   "));
-  boost::split(vStrs, vString, boost::is_any_of("   "));
+  boost::split(vCountStrs, cString, boost::is_any_of(" \t"));
+  boost::split(vStrs, vString, boost::is_any_of(" \t"));
 
   std::vector<unsigned int> vCount;
   std::vector<unsigned int> v;
 
   for (unsigned int i = 0; i < vCountStrs.size(); ++i)
-    vCount.push_back(math::parseInt(vCountStrs[i]));
+    vCount.push_back(ignition::math::parseInt(vCountStrs[i]));
 
   for (unsigned int i = 0; i < vStrs.size(); ++i)
-    v.push_back(math::parseInt(vStrs[i]));
+    v.push_back(ignition::math::parseInt(vStrs[i]));
 
   skeleton->SetNumVertAttached(vCount.size());
 
@@ -502,7 +539,7 @@ void ColladaLoader::LoadAnimations(TiXmlElement *_xml, Skeleton *_skel)
     while (childXml)
     {
       this->LoadAnimationSet(childXml, _skel);
-      childXml->NextSiblingElement("animation");
+      childXml = childXml->NextSiblingElement("animation");
     }
   }
   else
@@ -567,8 +604,8 @@ void ColladaLoader::LoadAnimationSet(TiXmlElement *_xml, Skeleton *_skel)
           }
         }
 
-      TiXmlElement *frameTimesXml = NULL;
-      TiXmlElement *frameTransXml = NULL;
+      TiXmlElement *frameTimesXml = nullptr;
+      TiXmlElement *frameTransXml = nullptr;
 
       TiXmlElement *sampXml = this->GetElementId("sampler", sourceURL);
       TiXmlElement *inputXml = sampXml->FirstChildElement("input");
@@ -589,35 +626,63 @@ void ColladaLoader::LoadAnimationSet(TiXmlElement *_xml, Skeleton *_skel)
       TiXmlElement *timeArray = frameTimesXml->FirstChildElement("float_array");
       std::string timeStr = timeArray->GetText();
       std::vector<std::string> timeStrs;
-      boost::split(timeStrs, timeStr, boost::is_any_of("   "));
+      boost::split(timeStrs, timeStr, boost::is_any_of(" \t"));
 
       std::vector<double> times;
       for (unsigned int i = 0; i < timeStrs.size(); ++i)
-        times.push_back(math::parseFloat(timeStrs[i]));
+        times.push_back(ignition::math::parseFloat(timeStrs[i]));
 
       TiXmlElement *output = frameTransXml->FirstChildElement("float_array");
       std::string outputStr = output->GetText();
       std::vector<std::string> outputStrs;
-      boost::split(outputStrs, outputStr, boost::is_any_of("   "));
+      boost::split(outputStrs, outputStr, boost::is_any_of(" \t"));
 
       std::vector<double> values;
       for (unsigned int i = 0; i < outputStrs.size(); ++i)
-        values.push_back(math::parseFloat(outputStrs[i]));
+        values.push_back(ignition::math::parseFloat(outputStrs[i]));
 
       TiXmlElement *accessor =
         frameTransXml->FirstChildElement("technique_common");
       accessor = accessor->FirstChildElement("accessor");
 
-      unsigned int stride =
-        ignition::math::parseInt(accessor->Attribute("stride"));
+      // stride is optional, default to 1
+      unsigned int stride = 1;
+      auto *strideAttribute = accessor->Attribute("stride");
+      if (strideAttribute)
+      {
+        stride = static_cast<unsigned int>(
+            ignition::math::parseInt(strideAttribute));
+      }
 
+      SkeletonNode *targetNode = _skel->GetNodeById(targetBone);
+      if (targetNode == nullptr)
+      {
+        TiXmlElement *targetNodeXml = this->GetElementId("node", targetBone);
+        if (targetNodeXml == nullptr)
+        {
+          gzerr << "Failed to load animation, '" << targetBone << "' not found"
+              << std::endl;
+          gzthrow("Failed to load animation");
+        }
+        targetNode = this->LoadSkeletonNodes(targetNodeXml, nullptr);
+        this->MergeSkeleton(_skel, targetNode);
+      }
+
+      // In COLLOADA, `target` is specified to be the `id` of a node, however
+      // the nodes are identified by `name` in this loader. Here, we resolve
+      // `targetBone` to the node's `name` to prevent missing animations.
+      std::string targetBoneName = targetNode->GetName();
       for (unsigned int i = 0; i < times.size(); ++i)
       {
-        if (animation[targetBone].find(times[i]) == animation[targetBone].end())
-          animation[targetBone][times[i]] =
-                      _skel->GetNodeById(targetBone)->GetTransforms();
+        if (animation[targetBoneName].find(times[i])
+            == animation[targetBoneName].end())
+        {
+          animation[targetBoneName][times[i]] =
+              _skel->GetNodeById(targetBone)->GetTransforms();
+        }
 
-        std::vector<NodeTransform> *frame = &animation[targetBone][times[i]];
+        std::vector<NodeTransform> *frame =
+            &animation[targetBoneName][times[i]];
 
         for (unsigned int j = 0; j < (*frame).size(); ++j)
         {
@@ -662,22 +727,34 @@ void ColladaLoader::LoadAnimationSet(TiXmlElement *_xml, Skeleton *_skel)
 }
 
 /////////////////////////////////////////////////
-SkeletonNode* ColladaLoader::LoadSkeletonNodes(TiXmlElement *_xml,
+SkeletonNode* ColladaLoader::LoadSingleSkeletonNode(TiXmlElement *_xml,
       SkeletonNode *_parent)
 {
   std::string name;
   if (_xml->Attribute("sid"))
     name = _xml->Attribute("sid");
-  else
+  else if (_xml->Attribute("name"))
     name = _xml->Attribute("name");
+  else
+    name = _xml->Attribute("id");
 
   SkeletonNode* node = new SkeletonNode(_parent, name, _xml->Attribute("id"));
 
-  if (std::string(_xml->Attribute("type")) == std::string("NODE"))
+  if (!_xml->Attribute("type")
+      || std::string(_xml->Attribute("type")) == "NODE")
+  {
     node->SetType(SkeletonNode::NODE);
+  }
 
+  return node;
+}
+
+/////////////////////////////////////////////////
+SkeletonNode* ColladaLoader::LoadSkeletonNodes(TiXmlElement *_xml,
+      SkeletonNode *_parent)
+{
+  SkeletonNode *node = this->LoadSingleSkeletonNode(_xml, _parent);
   this->SetSkeletonNodeTransform(_xml, node);
-
   TiXmlElement *childXml = _xml->FirstChildElement("node");
   while (childXml)
   {
@@ -719,7 +796,7 @@ void ColladaLoader::SetSkeletonNodeTransform(TiXmlElement *_elem,
       ignition::math::Vector3d translate;
       translate = boost::lexical_cast<ignition::math::Vector3d>(transStr);
       // translate *= this->dataPtr->meter;
-      transform.Translate(translate);
+      transform.SetTranslation(translate);
 
       NodeTransform nt(transform);
       if (_elem->FirstChildElement("translate")->Attribute("sid"))
@@ -766,7 +843,8 @@ void ColladaLoader::SetSkeletonNodeTransform(TiXmlElement *_elem,
       scaleMat.Scale(scale);
 
       NodeTransform nt(scaleMat);
-      if (_elem->FirstChildElement("matrix")->Attribute("sid"))
+      TiXmlElement *matrix = _elem->FirstChildElement("matrix");
+      if (matrix && matrix->Attribute("sid"))
         nt.SetSID(_elem->FirstChildElement("matrix")->Attribute("sid"));
       nt.SetType(NodeTransform::SCALE);
       nt.SetSourceValues(scale);
@@ -846,7 +924,7 @@ TiXmlElement *ColladaLoader::GetElementId(TiXmlElement *_parent,
     elem = elem->NextSiblingElement();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /////////////////////////////////////////////////
@@ -951,12 +1029,12 @@ void ColladaLoader::LoadPositions(const std::string &_id,
 
   std::vector<std::string> strs;
   std::vector<std::string>::iterator iter, end;
-  boost::split(strs, valueStr, boost::is_any_of("   "));
+  boost::split(strs, valueStr, boost::is_any_of(" \t"));
 
   end = strs.end();
   for (iter = strs.begin(); iter != end; iter += 3)
   {
-    ignition::math::Vector3d vec(math::parseFloat(*iter),
+    ignition::math::Vector3d vec(ignition::math::parseFloat(*iter),
         ignition::math::parseFloat(*(iter+1)),
         ignition::math::parseFloat(*(iter+2)));
 
@@ -988,7 +1066,7 @@ void ColladaLoader::LoadNormals(const std::string &_id,
   }
 
   ignition::math::Matrix4d rotMat = _transform;
-  rotMat.Translate(ignition::math::Vector3d::Zero);
+  rotMat.SetTranslation(ignition::math::Vector3d::Zero);
 
   TiXmlElement *normalsXml = this->GetElementId("source", _id);
   if (!normalsXml)
@@ -1215,7 +1293,7 @@ Material *ColladaLoader::LoadMaterial(const std::string &_name)
 
   TiXmlElement *matXml = this->GetElementId("material", _name);
   if (!matXml || !matXml->FirstChildElement("instance_effect"))
-    return NULL;
+    return nullptr;
 
   Material *mat = new Material();
   std::string effectName =
@@ -1235,6 +1313,7 @@ Material *ColladaLoader::LoadMaterial(const std::string &_name)
       this->LoadColorOrTexture(lambertXml, "ambient", mat);
       this->LoadColorOrTexture(lambertXml, "emission", mat);
       this->LoadColorOrTexture(lambertXml, "diffuse", mat);
+      // order matters: transparency needs to be loaded before transparent.
       if (lambertXml->FirstChildElement("transparency"))
       {
         mat->SetTransparency(
@@ -1245,6 +1324,11 @@ Material *ColladaLoader::LoadMaterial(const std::string &_name)
       {
         TiXmlElement *transXml = lambertXml->FirstChildElement("transparent");
         this->LoadTransparent(transXml, mat);
+      }
+      else
+      {
+        // no <transparent> tag, revert to zero transparency
+        mat->SetTransparency(0.0);
       }
     }
     else if (phongXml)
@@ -1257,6 +1341,7 @@ Material *ColladaLoader::LoadMaterial(const std::string &_name)
         mat->SetShininess(
             this->LoadFloat(phongXml->FirstChildElement("shininess")));
 
+      // order matters: transparency needs to be loaded before transparent
       if (phongXml->FirstChildElement("transparency"))
         mat->SetTransparency(
             this->LoadFloat(phongXml->FirstChildElement("transparency")));
@@ -1264,6 +1349,11 @@ Material *ColladaLoader::LoadMaterial(const std::string &_name)
       {
         TiXmlElement *transXml = phongXml->FirstChildElement("transparent");
         this->LoadTransparent(transXml, mat);
+      }
+      else
+      {
+        // no <transparent> tag, revert to zero transparency
+        mat->SetTransparency(0.0);
       }
     }
     else if (blinnXml)
@@ -1276,6 +1366,7 @@ Material *ColladaLoader::LoadMaterial(const std::string &_name)
         mat->SetShininess(
             this->LoadFloat(blinnXml->FirstChildElement("shininess")));
 
+      // order matters: transparency needs to be loaded before transparent
       if (blinnXml->FirstChildElement("transparency"))
         mat->SetTransparency(
             this->LoadFloat(blinnXml->FirstChildElement("transparency")));
@@ -1283,6 +1374,11 @@ Material *ColladaLoader::LoadMaterial(const std::string &_name)
       {
         TiXmlElement *transXml = blinnXml->FirstChildElement("transparent");
         this->LoadTransparent(transXml, mat);
+      }
+      else
+      {
+        // no <transparent> tag, revert to zero transparency
+        mat->SetTransparency(0.0);
       }
     }
   }
@@ -1312,7 +1408,7 @@ void ColladaLoader::LoadColorOrTexture(TiXmlElement *_elem,
   if (typeElem->FirstChildElement("color"))
   {
     std::string colorStr = typeElem->FirstChildElement("color")->GetText();
-    Color color = boost::lexical_cast<Color>(colorStr);
+    auto color = boost::lexical_cast<ignition::math::Color>(colorStr);
     if (_type == "diffuse")
       _mat->SetDiffuse(color);
     else if (_type == "ambient")
@@ -1324,8 +1420,32 @@ void ColladaLoader::LoadColorOrTexture(TiXmlElement *_elem,
   }
   else if (typeElem->FirstChildElement("texture"))
   {
+    if (_type == "ambient")
+    {
+      gzwarn << "ambient texture not supported" << std::endl;
+      return;
+    }
+    if (_type == "emission")
+    {
+      gzwarn << "emission texture not supported" << std::endl;
+      return;
+    }
+    if (_type == "specular")
+    {
+      gzwarn << "specular texture not supported" << std::endl;
+      return;
+    }
+
+    // gazebo rendering pipeline doesn't respect the blend mode, here we set
+    // the diffuse to full white as a workaround.
+    if (_type == "diffuse"
+        && _mat->GetBlendMode() == Material::BlendMode::REPLACE)
+    {
+      _mat->SetDiffuse(ignition::math::v4::Color(1, 1, 1, 1));
+    }
+
     _mat->SetLighting(true);
-    TiXmlElement *imageXml = NULL;
+    TiXmlElement *imageXml = nullptr;
     std::string textureName =
       typeElem->FirstChildElement("texture")->Attribute("texture");
     TiXmlElement *textureXml = this->GetElementId("newparam", textureName);
@@ -1475,10 +1595,10 @@ void ColladaLoader::LoadPolylist(TiXmlElement *_polylistXml,
   std::vector<std::string> vcountStrs;
   TiXmlElement *vcountXml = _polylistXml->FirstChildElement("vcount");
   std::string vcountStr = vcountXml->GetText();
-  boost::split(vcountStrs, vcountStr, boost::is_any_of("   "));
+  boost::split(vcountStrs, vcountStr, boost::is_any_of(" \t"));
   std::vector<int> vcounts;
   for (unsigned int j = 0; j < vcountStrs.size(); ++j)
-    vcounts.push_back(math::parseInt(vcountStrs[j]));
+    vcounts.push_back(ignition::math::parseInt(vcountStrs[j]));
 
   // read p
   TiXmlElement *pXml = _polylistXml->FirstChildElement("p");
@@ -1491,7 +1611,7 @@ void ColladaLoader::LoadPolylist(TiXmlElement *_polylistXml,
   memset(values, 0, inputSize);
 
   std::vector<std::string> strs;
-  boost::split(strs, pStr, boost::is_any_of("   "));
+  boost::split(strs, pStr, boost::is_any_of(" \t"));
   std::vector<std::string>::iterator strsIter = strs.begin();
   for (unsigned int l = 0; l < vcounts.size(); ++l)
   {
@@ -1694,7 +1814,7 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
                                   const ignition::math::Matrix4d &_transform,
                                   Mesh *_mesh)
 {
-  SubMesh *subMesh = new SubMesh;
+  std::unique_ptr<SubMesh> subMesh(new SubMesh);
   subMesh->SetName(this->dataPtr->currentNodeName);
   bool combinedVertNorms = false;
 
@@ -1735,7 +1855,10 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
   bool hasNormals = false;
   bool hasTexcoords = false;
   unsigned int offsetSize = 0;
-  std::map<const unsigned int, int> inputs;
+
+  // read input elements. A vector of int is used because there can be
+  // multiple TEXCOORD inputs.
+  std::map<const unsigned int, std::set<int>> inputs;
 
   // look up table of position/normal/texcoord duplicate indices
   std::map<unsigned int, unsigned int> texDupMap;
@@ -1747,6 +1870,7 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
     std::string semantic = trianglesInputXml->Attribute("semantic");
     std::string source = trianglesInputXml->Attribute("source");
     std::string offset = trianglesInputXml->Attribute("offset");
+
     if (semantic == "VERTEX")
     {
       unsigned int count = norms.size();
@@ -1754,32 +1878,34 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
           positionDupMap, normalDupMap);
       if (norms.size() > count)
         combinedVertNorms = true;
-      inputs[VERTEX] = ignition::math::parseInt(offset);
+      inputs[VERTEX].insert(ignition::math::parseInt(offset));
       hasVertices = true;
     }
     else if (semantic == "NORMAL")
     {
       this->LoadNormals(source, _transform, norms, normalDupMap);
       combinedVertNorms = false;
-      inputs[NORMAL] = ignition::math::parseInt(offset);
+      inputs[NORMAL].insert(ignition::math::parseInt(offset));
       hasNormals = true;
     }
-    else if (semantic == "TEXCOORD" && !hasTexcoords)
+    else if (semantic == "TEXCOORD")
     {
       // we currently only support one set of UVs
       this->LoadTexCoords(source, texcoords, texDupMap);
-      inputs[TEXCOORD] = ignition::math::parseInt(offset);
+      inputs[TEXCOORD].insert(ignition::math::parseInt(offset));
       hasTexcoords = true;
     }
     else
     {
-      inputs[otherSemantics++] = ignition::math::parseInt(offset);
+      inputs[otherSemantics++].insert(ignition::math::parseInt(offset));
       gzwarn << "Triangle input semantic: '" << semantic << "' is currently"
           << " not supported" << std::endl;
     }
     trianglesInputXml = trianglesInputXml->NextSiblingElement("input");
-    offsetSize++;
   }
+
+  for (const auto &input : inputs)
+    offsetSize += input.second.size();
 
   TiXmlElement *pXml = _trianglesXml->FirstChildElement("p");
   if (!pXml || !pXml->GetText())
@@ -1824,15 +1950,15 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
   // indices, used for identifying vertices that can be shared.
   std::map<unsigned int, std::vector<GeometryIndices> > vertexIndexMap;
 
-  unsigned int *values = new unsigned int[offsetSize];
+  std::vector<unsigned int> values(offsetSize);
   std::vector<std::string> strs;
 
-  boost::split(strs, pStr, boost::is_any_of("   "));
+  boost::split(strs, pStr, boost::is_any_of(" \t"));
 
   for (unsigned int j = 0; j < strs.size(); j += offsetSize)
   {
     for (unsigned int i = 0; i < offsetSize; ++i)
-      values[i] = ignition::math::parseInt(strs[j+i]);
+      values.at(i) = ignition::math::parseInt(strs[j+i]);
 
     unsigned int daeVertIndex = 0;
     bool addIndex = !hasVertices;
@@ -1843,7 +1969,7 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
     {
       // Get the vertex position index value. If the position is a duplicate
       // then reset the index to the first instance of the duplicated position
-      daeVertIndex = values[inputs[VERTEX]];
+      daeVertIndex = values.at(*inputs[VERTEX].begin());
       if (positionDupMap.find(daeVertIndex) != positionDupMap.end())
         daeVertIndex = positionDupMap[daeVertIndex];
 
@@ -1870,7 +1996,8 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
             // Get the vertex normal index value. If the normal is a duplicate
             // then reset the index to the first instance of the duplicated
             // position
-            unsigned int remappedNormalIndex = values[inputs[NORMAL]];
+            unsigned int remappedNormalIndex =
+              values.at(*inputs[NORMAL].begin());
             if (normalDupMap.find(remappedNormalIndex) != normalDupMap.end())
               remappedNormalIndex = normalDupMap[remappedNormalIndex];
 
@@ -1882,7 +2009,8 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
             // Get the vertex texcoord index value. If the texcoord is a
             // duplicate then reset the index to the first instance of the
             // duplicated texcoord
-            unsigned int remappedTexcoordIndex = values[inputs[TEXCOORD]];
+            unsigned int remappedTexcoordIndex =
+                values.at(*inputs[TEXCOORD].begin());
             if (texDupMap.find(remappedTexcoordIndex) != texDupMap.end())
               remappedTexcoordIndex = texDupMap[remappedTexcoordIndex];
 
@@ -1921,10 +2049,10 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
         {
           Skeleton *skel = _mesh->GetSkeleton();
           for (unsigned int i = 0;
-              i < skel->GetNumVertNodeWeights(values[daeVertIndex]); ++i)
+              i < skel->GetNumVertNodeWeights(daeVertIndex); ++i)
           {
             std::pair<std::string, double> node_weight =
-              skel->GetVertNodeWeight(values[daeVertIndex], i);
+              skel->GetVertNodeWeight(daeVertIndex, i);
             SkeletonNode *node =
                 _mesh->GetSkeleton()->GetNodeByName(node_weight.first);
             subMesh->AddNodeAssignment(subMesh->GetVertexCount()-1,
@@ -1936,7 +2064,8 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
       }
       if (hasNormals)
       {
-        unsigned int inputRemappedNormalIndex = values[inputs[NORMAL]];
+        unsigned int inputRemappedNormalIndex =
+          values.at(*inputs[NORMAL].begin());
         if (normalDupMap.find(inputRemappedNormalIndex) != normalDupMap.end())
           inputRemappedNormalIndex = normalDupMap[inputRemappedNormalIndex];
         subMesh->AddNormal(norms[inputRemappedNormalIndex]);
@@ -1944,7 +2073,8 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
       }
       if (hasTexcoords)
       {
-        unsigned int inputRemappedTexcoordIndex = values[inputs[TEXCOORD]];
+        unsigned int inputRemappedTexcoordIndex =
+            values.at(*inputs[TEXCOORD].begin());
         if (texDupMap.find(inputRemappedTexcoordIndex) != texDupMap.end())
           inputRemappedTexcoordIndex = texDupMap[inputRemappedTexcoordIndex];
         subMesh->AddTexCoord(texcoords[inputRemappedTexcoordIndex].X(),
@@ -1962,8 +2092,7 @@ void ColladaLoader::LoadTriangles(TiXmlElement *_trianglesXml,
     }
   }
 
-  delete [] values;
-  _mesh->AddSubMesh(subMesh);
+  _mesh->AddSubMesh(subMesh.release());
 }
 
 /////////////////////////////////////////////////
@@ -2023,12 +2152,18 @@ void ColladaLoader::LoadTransparent(TiXmlElement *_elem, Material *_mat)
   const char *opaqueCStr = _elem->Attribute("opaque");
   if (!opaqueCStr)
   {
-    // gzerr << "No Opaque set\n";
+    // no opaque mode, revert transparency to 0.0
+    _mat->SetTransparency(0.0);
     return;
   }
 
   // TODO: Handle transparent textures
-  if (_elem->FirstChildElement("color"))
+  if (_elem->FirstChildElement("texture"))
+  {
+    gzwarn << "texture based transparency not supported" << std::endl;
+    _mat->SetTransparency(0.0);
+  }
+  else if (_elem->FirstChildElement("color"))
   {
     const char *colorCStr = _elem->FirstChildElement("color")->GetText();
     if (!colorCStr)
@@ -2039,22 +2174,118 @@ void ColladaLoader::LoadTransparent(TiXmlElement *_elem, Material *_mat)
 
     std::string opaqueStr = opaqueCStr;
     std::string colorStr = colorCStr;
-    Color color = boost::lexical_cast<Color>(colorStr);
+    auto color = boost::lexical_cast<ignition::math::Color>(colorStr);
 
+    // src is the texel value and dst is the existing pixel value
     double srcFactor = 0;
     double dstFactor = 0;
 
+    // Calculate alpha based on opaque mode.
+    // Equations are extracted from collada spec
+    // Make sure to update the final transparency value
+    // final mat transparency = 1 - srcFactor = dstFactor
     if (opaqueStr == "RGB_ZERO")
     {
-      srcFactor = color.r * _mat->GetTransparency();
-      dstFactor = 1.0 - color.r * _mat->GetTransparency();
+      // Lunimance based on ISO/CIE color standards ITU-R BT.709-4
+      float luminance = 0.212671 * color.R() +
+                        0.715160 * color.G() +
+                        0.072169 * color.B();
+      // result.a = fb.a * (lumiance(transparent.rgb) * transparency) + mat.a *
+      // (1.0f - luminance(transparent.rgb) * transparency)
+      // where fb corresponds to the framebuffer (existing pixel) and
+      // mat corresponds to material before transparency (texel)
+      dstFactor = luminance * _mat->GetTransparency();
+      srcFactor = 1.0 - luminance * _mat->GetTransparency();
+      _mat->SetTransparency(dstFactor);
+    }
+    else if (opaqueStr == "RGB_ONE")
+    {
+      // Lunimance based on ISO/CIE color standards ITU-R BT.709-4
+      float luminance = 0.212671 * color.R() +
+                        0.715160 * color.G() +
+                        0.072169 * color.B();
+
+      // result.a = fb.a * (1.0f - lumiance(transparent.rgb) * transparency) +
+      // mat.a * (luminance(transparent.rgb) * transparency)
+      // where fb corresponds to the framebuffer (existing pixel) and
+      // mat corresponds to material before transparency (texel)
+      dstFactor = 1.0 - luminance * _mat->GetTransparency();
+      srcFactor = luminance * _mat->GetTransparency();
+      _mat->SetTransparency(dstFactor);
     }
     else if (opaqueStr == "A_ONE")
     {
-      srcFactor = 1.0 - color.a * _mat->GetTransparency();
-      dstFactor = color.a * _mat->GetTransparency();
+      // result.a = fb.a * (1.0f - transparent.a * transparency) + mat.a *
+      // (transparent.a * transparency)
+      // where fb corresponds to the framebuffer (existing pixel) and
+      // mat corresponds to material before transparency (texel)
+      dstFactor = 1.0 - color.A() * _mat->GetTransparency();
+      srcFactor = color.A() * _mat->GetTransparency();
+      _mat->SetTransparency(dstFactor);
+    }
+    else if (opaqueStr == "A_ZERO")
+    {
+      // result.a = fb.a * (transparent.a * transparency) + mat.a *
+      // (1.0f - transparent.a * transparency)
+      // where fb corresponds to the framebuffer (existing pixel) and
+      // mat corresponds to material before transparency (texel)
+      dstFactor = color.A() * _mat->GetTransparency();
+      srcFactor = 1.0 - color.A() * _mat->GetTransparency();
+      _mat->SetTransparency(dstFactor);
     }
 
     _mat->SetBlendFactors(srcFactor, dstFactor);
+  }
+}
+
+/////////////////////////////////////////////////
+void ColladaLoader::MergeSkeleton(Skeleton *_skeleton, SkeletonNode *_mergeNode)
+{
+  if (_skeleton->GetNodeById(_mergeNode->GetId()))
+    return;
+
+  SkeletonNode *currentRoot = _skeleton->GetRootNode();
+  if (currentRoot->GetId() == _mergeNode->GetId())
+    return;
+
+  if (_mergeNode->GetChildById(currentRoot->GetId()))
+  {
+    _skeleton->SetRootNode(_mergeNode);
+    return;
+  }
+
+  SkeletonNode *dummyRoot = nullptr;
+  if (currentRoot->GetId() == "gazebo-dummy-root")
+    dummyRoot = currentRoot;
+  else
+  {
+    dummyRoot =
+        new SkeletonNode(nullptr, "gazebo-dummy-root", "gazebo-dummy-root");
+  }
+  if (dummyRoot != currentRoot)
+  {
+    dummyRoot->AddChild(currentRoot);
+    currentRoot->SetParent(dummyRoot);
+  }
+  dummyRoot->AddChild(_mergeNode);
+  _mergeNode->SetParent(dummyRoot);
+  dummyRoot->SetTransform(ignition::math::Matrix4d::Identity);
+  _skeleton->SetRootNode(dummyRoot);
+}
+
+/////////////////////////////////////////////////
+void ColladaLoader::ApplyInvBindTransform(Skeleton *_skeleton)
+{
+  std::list<SkeletonNode*> queue;
+  queue.push_back(_skeleton->GetRootNode());
+
+  while (!queue.empty())
+  {
+    SkeletonNode *node = queue.front();
+    if (node->HasInvBindTransform())
+      node->SetModelTransform(node->InverseBindTransform().Inverse(), false);
+    for (unsigned int i = 0; i < node->GetChildCount(); i++)
+      queue.push_back(node->GetChild(i));
+    queue.pop_front();
   }
 }

@@ -15,10 +15,6 @@
  *
  */
 #ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-
   #include <io.h>
 
   // Seems like W_OK does not exists on Windows.
@@ -86,10 +82,12 @@ LogRecord::LogRecord()
   if (!homePath)
   {
     common::SystemPaths *paths = common::SystemPaths::Instance();
-    this->dataPtr->logBasePath = paths->GetTmpPath() + "/gazebo";
+    this->dataPtr->logBasePath = paths->TmpPath() + "/gazebo";
   }
   else
+  {
     this->dataPtr->logBasePath = boost::filesystem::path(homePath);
+  }
 
   this->dataPtr->logBasePath /= "/.gazebo/log/";
 
@@ -167,6 +165,10 @@ bool LogRecord::Start(const std::string &_encoding, const std::string &_path)
   // Get the current time as an ISO string.
   std::string logTimeDir = common::Time::GetWallTimeAsISOString();
 
+  // remove ":" if the dir is to be added to env path, e.g. for playback
+  // with resources
+  logTimeDir = common::replaceAll(logTimeDir, ":", "");
+
   // Override the default path settings if the _path parameter is set.
   if (!_path.empty())
   {
@@ -236,12 +238,6 @@ bool LogRecord::Start(const std::string &_encoding, const std::string &_path)
 }
 
 //////////////////////////////////////////////////
-const std::string &LogRecord::GetEncoding() const
-{
-  return this->Encoding();
-}
-
-//////////////////////////////////////////////////
 const std::string &LogRecord::Encoding() const
 {
   return this->dataPtr->encoding;
@@ -250,6 +246,12 @@ const std::string &LogRecord::Encoding() const
 //////////////////////////////////////////////////
 void LogRecord::Fini()
 {
+  this->dataPtr->logControlSub.reset();
+  this->dataPtr->logStatusPub.reset();
+  if (this->dataPtr->node)
+    this->dataPtr->node->Fini();
+  this->dataPtr->node.reset();
+
   {
     std::unique_lock<std::mutex> lock(this->dataPtr->controlMutex);
     this->dataPtr->cleanupCondition.notify_all();
@@ -264,10 +266,6 @@ void LogRecord::Fini()
 
   // Remove all the logs.
   this->ClearLogs();
-
-  this->dataPtr->logControlSub.reset();
-  this->dataPtr->logStatusPub.reset();
-  this->dataPtr->node.reset();
 }
 
 //////////////////////////////////////////////////
@@ -279,6 +277,8 @@ void LogRecord::Stop()
   if (this->dataPtr->cleanupThread && this->dataPtr->cleanupThread->joinable())
     this->dataPtr->cleanupThread->join();
   this->dataPtr->cleanupThread.reset();
+  this->dataPtr->savedModels.clear();
+  this->dataPtr->savedFiles.clear();
 }
 
 //////////////////////////////////////////////////
@@ -301,12 +301,6 @@ void LogRecord::ClearLogs()
 void LogRecord::SetPaused(const bool _paused)
 {
   this->dataPtr->paused = _paused;
-}
-
-//////////////////////////////////////////////////
-bool LogRecord::GetPaused() const
-{
-  return this->Paused();
 }
 
 //////////////////////////////////////////////////
@@ -340,15 +334,21 @@ void LogRecord::SetFilter(const std::string &_filter)
 }
 
 //////////////////////////////////////////////////
-bool LogRecord::GetRunning() const
-{
-  return this->Running();
-}
-
-//////////////////////////////////////////////////
 bool LogRecord::Running() const
 {
   return this->dataPtr->running;
+}
+
+//////////////////////////////////////////////////
+bool LogRecord::RecordResources() const
+{
+  return this->dataPtr->recordResources;
+}
+
+//////////////////////////////////////////////////
+void LogRecord::SetRecordResources(const bool _record)
+{
+  this->dataPtr->recordResources = _record;
 }
 
 //////////////////////////////////////////////////
@@ -433,12 +433,6 @@ bool LogRecord::Remove(const std::string &_name)
 }
 
 //////////////////////////////////////////////////
-std::string LogRecord::GetFilename(const std::string &_name) const
-{
-  return this->Filename(_name);
-}
-
-//////////////////////////////////////////////////
 std::string LogRecord::Filename(const std::string &_name) const
 {
   std::lock_guard<std::mutex> logLock(this->dataPtr->writeMutex);
@@ -456,12 +450,6 @@ std::string LogRecord::Filename(const std::string &_name) const
     result = this->dataPtr->logs.begin()->second->CompleteFilename();
 
   return result;
-}
-
-//////////////////////////////////////////////////
-unsigned int LogRecord::GetFileSize(const std::string &_name) const
-{
-  return this->FileSize(_name);
 }
 
 //////////////////////////////////////////////////
@@ -524,27 +512,161 @@ void LogRecord::SetBasePath(const std::string &_path)
 }
 
 //////////////////////////////////////////////////
-std::string LogRecord::GetBasePath() const
-{
-  return this->BasePath();
-}
-
-//////////////////////////////////////////////////
 std::string LogRecord::BasePath() const
 {
   return this->dataPtr->logBasePath.string();
 }
 
 //////////////////////////////////////////////////
-bool LogRecord::GetFirstUpdate() const
-{
-  return this->FirstUpdate();
-}
-
-//////////////////////////////////////////////////
 bool LogRecord::FirstUpdate() const
 {
   return this->dataPtr->firstUpdate;
+}
+
+//////////////////////////////////////////////////
+bool LogRecord::SaveModels(const std::set<std::string> &_models)
+{
+  std::set<std::string> diff;
+  std::set_difference(_models.begin(), _models.end(),
+      this->dataPtr->savedModels.begin(), this->dataPtr->savedModels.end(),
+      std::inserter(diff, diff.begin()));
+
+  for (auto &model: diff)
+  {
+    if (model.empty())
+      continue;
+
+    this->dataPtr->savedModels.insert(model);
+
+    bool modelFound = false;
+    for (const auto &path : common::SystemPaths::Instance()->GetModelPaths())
+    {
+      boost::filesystem::path srcModelPath(path);
+      srcModelPath /= model;
+      if (boost::filesystem::exists(srcModelPath))
+      {
+        modelFound = true;
+        boost::filesystem::path destModelPath =
+          this->dataPtr->logCompletePath / model;
+        if (!gazebo::common::copyDir(srcModelPath, destModelPath))
+        {
+          gzerr << "Failed to copy model from '" << srcModelPath.string()
+                 << "' to '" << destModelPath.string() << "'" << std::endl;
+        }
+        break;
+      }
+    }
+
+    if (!modelFound)
+    {
+      gzwarn << "Model: " << model << " not found, "
+        << "please check the value of env variable GAZEBO_MODEL_PATH\n";
+    }
+  }
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool LogRecord::SaveFiles(const std::set<std::string> &_files)
+{
+  if (_files.empty())
+    return false;
+
+  bool saveError = false;
+  std::set<std::string> diff;
+  std::set_difference(_files.begin(), _files.end(),
+      this->dataPtr->savedFiles.begin(),
+      this->dataPtr->savedFiles.end(),
+      std::inserter(diff, diff.begin()));
+
+  for (auto &file : diff)
+  {
+    if (file.empty())
+      continue;
+
+    this->dataPtr->savedFiles.insert(file);
+
+    bool fileFound = false;
+    std::string prefix = "file://";
+    std::string fileName = file;
+
+    boost::filesystem::path srcPath;
+    if (fileName.compare(0, prefix.size(), prefix) == 0)
+    {
+      // strip prefix
+      fileName = file.substr(prefix.size());
+      // search in gazebo path
+      for (const auto &path : common::SystemPaths::Instance()->GetGazeboPaths())
+      {
+        auto p = boost::filesystem::path(path) / fileName;
+        if (common::exists(p.string()))
+        {
+          srcPath = path;
+          fileFound = true;
+          break;
+        }
+      }
+    }
+
+    // if not found in gazebo path or resource has abs path then check local
+    // filesystem
+    if (!fileFound || fileName[0] == '/')
+    {
+      fileFound = common::exists(fileName);
+    }
+
+    // copy resource
+    // NOTE: if file is a mesh, e.g. box.dae, it could contain reference to
+    // to texture files in other directories. A hacky workaround is to copy
+    // entire model dir
+    if (fileFound)
+    {
+      // HACK! copy entire model dir if mesh
+      size_t meshIdx = fileName.find("/meshes/");
+      if (meshIdx != std::string::npos)
+      {
+        auto modelPath =
+            boost::filesystem::path(fileName.substr(0, meshIdx));
+        srcPath = srcPath / modelPath;
+        boost::filesystem::path destPath =
+          this->dataPtr->logCompletePath / modelPath;
+        boost::system::error_code errorCode;
+        boost::filesystem::create_directories(destPath, errorCode);
+        if (errorCode != boost::system::errc::success ||
+            !gazebo::common::copyDir(srcPath, destPath))
+        {
+          gzerr << "Failed to copy model from '" << srcPath.string()
+                 << "' to '" << destPath.string() << "'" << std::endl;
+          saveError = true;
+        }
+      }
+      // else copy only the specified file
+      else
+      {
+        srcPath = srcPath / fileName;
+        boost::filesystem::path destPath =
+          this->dataPtr->logCompletePath / fileName;
+        boost::system::error_code errorCode;
+        boost::filesystem::create_directories(
+            destPath.parent_path(), errorCode);
+        if (errorCode == boost::system::errc::success)
+          boost::filesystem::copy_file(srcPath, destPath, errorCode);
+        else
+        {
+          gzerr << "Failed to copy file from '" << srcPath.string()
+                 << "' to '" << destPath.string() << "'" << std::endl;
+          saveError = true;
+        }
+      }
+    }
+    else
+    {
+      gzerr << "File: " << file << " not found!" << std::endl;
+      saveError = true;
+    }
+  }
+
+  return !saveError;
 }
 
 //////////////////////////////////////////////////
@@ -635,12 +757,6 @@ void LogRecord::Write(const bool /*_force*/)
   {
     this->dataPtr->updateIter->second->Write();
   }
-}
-
-//////////////////////////////////////////////////
-common::Time LogRecord::GetRunTime() const
-{
-  return this->RunTime();
 }
 
 //////////////////////////////////////////////////
@@ -969,12 +1085,6 @@ void LogRecord::Cleanup()
 bool LogRecord::IsReadyToStart() const
 {
   return this->dataPtr->readyToStart;
-}
-
-//////////////////////////////////////////////////
-unsigned int LogRecord::GetBufferSize() const
-{
-  return this->BufferSize();
 }
 
 //////////////////////////////////////////////////

@@ -14,24 +14,14 @@
  * limitations under the License.
  *
 */
-/* Desc: A joint state
- * Author: Nate Koenig
- */
-
-#ifndef _JOINTSTATE_HH_
-#define _JOINTSTATE_HH_
-
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
+#ifndef GAZEBO_PHYSICS_JOINTSTATE_HH_
+#define GAZEBO_PHYSICS_JOINTSTATE_HH_
 
 #include <vector>
 #include <string>
+#include <ignition/math/Angle.hh>
 
 #include "gazebo/physics/State.hh"
-#include "gazebo/math/Pose.hh"
 #include "gazebo/util/system.hh"
 
 namespace gazebo
@@ -84,15 +74,25 @@ namespace gazebo
       /// \return The number of angles.
       public: unsigned int GetAngleCount() const;
 
-      /// \brief Get the joint angle.
-      /// \param[in] _axis The axis index.
-      /// \return Angle of the axis.
-      /// \throw common::Exception When _axis is invalid.
-      public: math::Angle GetAngle(unsigned int _axis) const;
+      /// \brief Get the joint position.
+      ///
+      /// For rotational axes, the value is in radians. For prismatic axes,
+      /// it is in meters.
+      ///
+      /// It returns ignition::math::NAN_D in case the position can't be
+      /// obtained. For instance, if the index is invalid.
+      ///
+      /// \param[in] _index Index of the axis, defaults to 0.
+      /// \return Position of the axis.
+      public: double Position(const unsigned int _axis = 0) const;
 
-      /// \brief Get the angles.
-      /// \return Vector of angles.
-      public: const std::vector<math::Angle> &GetAngles() const;
+      /// \brief Get the joint positions.
+      ///
+      /// For rotational axes, the value is in radians. For prismatic axes,
+      /// it is in meters.
+      ///
+      /// \return Vector of joint positions.
+      public: const std::vector<double> &Positions() const;
 
       /// \brief Return true if the values in the state are zero.
       /// \return True if the values in the state are zero.
@@ -124,21 +124,25 @@ namespace gazebo
       public: inline friend std::ostream &operator<<(std::ostream &_out,
                   const gazebo::physics::JointState &_state)
       {
-        _out << "<joint name='" << _state.GetName() << "'>";
-
-        int i = 0;
-        for (std::vector<math::Angle>::const_iterator iter =
-            _state.angles.begin(); iter != _state.angles.end(); ++iter)
+        if (_state.GetAngleCount() > 0)
         {
-          _out << "<angle axis='" << i << "'>" << (*iter) << "</angle>";
-        }
+          _out << "<joint name='" << _state.GetName() << "'>";
 
-        _out << "</joint>";
+          int i = 0;
+          for (std::vector<double>::const_iterator iter =
+              _state.positions.begin(); iter != _state.positions.end(); ++iter)
+          {
+            _out << "<angle axis='" << i << "'>" << (*iter) << "</angle>";
+            i++;
+          }
+
+          _out << "</joint>";
+        }
 
         return _out;
       }
 
-      private: std::vector<math::Angle> angles;
+      private: std::vector<double> positions;
     };
     /// \}
   }

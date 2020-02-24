@@ -14,13 +14,8 @@
  * limitations under the License.
  *
 */
-
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
+#include <gazebo/gui/GuiIface.hh>
+#include <gazebo/gui/MainWindow.hh>
 #include <gazebo/transport/Node.hh>
 #include "KeyboardGUIPlugin.hh"
 
@@ -56,8 +51,8 @@ KeyboardGUIPlugin::KeyboardGUIPlugin()
   mainWindow->installEventFilter(this);
 
   // Make this invisible
-  this->move(0, 0);
-  this->resize(0, 0);
+  this->move(-1, -1);
+  this->resize(1, 1);
 
   // Initialize transport.
   this->dataPtr->gzNode = transport::NodePtr(new transport::Node());

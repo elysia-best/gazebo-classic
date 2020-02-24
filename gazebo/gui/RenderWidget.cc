@@ -14,15 +14,10 @@
  * limitations under the License.
  *
  */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
-#include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 #include <iomanip>
+
+#include "gazebo/common/CommonIface.hh"
 
 #include "gazebo/rendering/RenderingIface.hh"
 #include "gazebo/rendering/Scene.hh"
@@ -46,7 +41,7 @@ RenderWidget::RenderWidget(QWidget *_parent)
   this->setObjectName("renderWidget");
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
-  this->mainFrame = new QFrame;
+  this->mainFrame = new QFrame(this);
   this->mainFrame->setFrameShape(QFrame::NoFrame);
   this->mainFrame->show();
 
@@ -57,11 +52,6 @@ RenderWidget::RenderWidget(QWidget *_parent)
 
   // GLWigdet
   this->glWidget = new GLWidget(this->mainFrame);
-
-  this->msgOverlayLabel = new QLabel(this->glWidget);
-  this->msgOverlayLabel->setStyleSheet(
-      "QLabel { background-color : white; color : gray; }");
-  this->msgOverlayLabel->setVisible(false);
 
   QHBoxLayout *bottomPanelLayout = new QHBoxLayout;
 
@@ -110,45 +100,34 @@ RenderWidget::RenderWidget(QWidget *_parent)
   this->connections.push_back(
       gui::Events::ConnectFollow(
         boost::bind(&RenderWidget::OnFollow, this, _1)));
+}
 
-  // Load all GUI Plugins
+/////////////////////////////////////////////////
+void RenderWidget::Init()
+{
+  // Load all GUI Plugins.
+  // This has to be done here instead of in the constructor because
+  // it has to be ensured that the main window already has been
+  // created, as some GUI plugins may need it (RenderWidget is
+  // created from gui::MainWindow constructor, therefore the main
+  // window won't yet be available).
+
   std::string filenames = getINIProperty<std::string>(
       "overlay_plugins.filenames", "");
-  std::vector<std::string> pluginFilenames;
 
   // Split the colon separated libraries
-  boost::split(pluginFilenames, filenames, boost::is_any_of(":"));
+  auto pluginFilenames = common::split(filenames, ":");
 
   // Load each plugin
-  for (std::vector<std::string>::iterator iter = pluginFilenames.begin();
-       iter != pluginFilenames.end(); ++iter)
-  {
-    // Make sure the string is not empty
-    if (!(*iter).empty())
-    {
-      // Try to create the plugin
-      gazebo::GUIPluginPtr plugin = gazebo::GUIPlugin::Create(*iter, *iter);
-
-      if (!plugin)
-      {
-        gzerr << "Unable to create gui overlay plugin with filename["
-          << *iter << "]\n";
-      }
-      else
-      {
-        gzlog << "Loaded GUI plugin[" << *iter << "]\n";
-
-        // Set the plugin's parent and store the plugin
-        plugin->setParent(this->glWidget);
-        this->plugins.push_back(plugin);
-      }
-    }
-  }
+  this->AddPlugins(pluginFilenames);
 }
 
 /////////////////////////////////////////////////
 RenderWidget::~RenderWidget()
 {
+  // clear the plugins before the widgets are deleted
+  this->plugins.clear();
+
   delete this->glWidget;
   this->glWidget = NULL;
 
@@ -214,6 +193,13 @@ void RenderWidget::CreateScene(const std::string &_name)
 /////////////////////////////////////////////////
 void RenderWidget::DisplayOverlayMsg(const std::string &_msg, int _duration)
 {
+  if (!this->msgOverlayLabel)
+  {
+    this->msgOverlayLabel = new QLabel(this->glWidget);
+    this->msgOverlayLabel->setStyleSheet(
+        "QLabel { background-color : white; color : gray; }");
+  }
+
   std::string msg = this->baseOverlayMsg.empty() ? _msg
       : this->baseOverlayMsg + "\n" + _msg;
   this->msgOverlayLabel->setText(tr(msg.c_str()));
@@ -288,14 +274,67 @@ void RenderWidget::OnFollow(const std::string &_modelName)
 }
 
 /////////////////////////////////////////////////
+void RenderWidget::AddPlugins(const std::vector<std::string> &_pluginFilenames)
+{
+  // Load each plugin
+  for (std::vector<std::string>::const_iterator iter = _pluginFilenames.begin();
+       iter != _pluginFilenames.end(); ++iter)
+  {
+    // Make sure the string is not empty
+    if ((*iter).empty()) continue;
+
+    // create an empty element as this function ignores SDF
+    sdf::ElementPtr elem(new sdf::Element());
+    this->AddPlugin(*iter, elem);
+  }
+}
+
+/////////////////////////////////////////////////
+bool RenderWidget::AddPlugin(const std::string &_filename,
+                             sdf::ElementPtr _elem)
+{
+  if (_filename.empty())
+  {
+    gzerr << "Unable to create gui overlay plugin from an empty file\n";
+    return false;
+  }
+
+  // Try to create the plugin
+  gazebo::GUIPluginPtr plugin = gazebo::GUIPlugin::Create(_filename, _filename);
+
+  if (!plugin)
+  {
+    gzerr << "Unable to create gui overlay plugin with filename["
+      << _filename << "]\n";
+    return false;
+  }
+
+  if (plugin->GetType() != gazebo::GUI_PLUGIN)
+  {
+    gzerr << "System is attempting to load "
+      << "a plugin, but detected an incorrect plugin type. "
+      << "Plugin filename[" << _filename << "].\n";
+    return false;
+  }
+
+  this->AddPlugin(plugin, _elem);
+
+  gzlog << "Loaded GUI plugin[" << _filename << "]\n";
+  return true;
+}
+
+
+
+/////////////////////////////////////////////////
 void RenderWidget::AddPlugin(GUIPluginPtr _plugin, sdf::ElementPtr _elem)
 {
   // Set the plugin's parent and store the plugin
   _plugin->setParent(this->glWidget);
   this->plugins.push_back(_plugin);
 
-  // Load the plugin.
-  _plugin->Load(_elem);
+  // Load the plugin, if the element is set
+  if (_elem)
+    _plugin->Load(_elem);
 
   _plugin->show();
 }

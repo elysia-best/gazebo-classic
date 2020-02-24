@@ -14,24 +14,14 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <string>
 #include <iostream>
 #include <functional>
 #include <boost/filesystem.hpp>
 #include <sys/types.h>
 
-#ifdef __APPLE__
-# include <QtCore/qglobal.h>
-#endif
-
 // Not Apple or Windows
-#if not defined( Q_OS_MAC) && not defined(_WIN32)
+#if not defined(__APPLE__) && not defined(_WIN32)
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
 # include <GL/glx.h>
@@ -118,7 +108,9 @@ void RenderEngine::Load()
     // Make the root
     try
     {
-      this->dataPtr->root = new Ogre::Root();
+      // empty strings for config filenames (plugins.cfg and ogre.cfg)
+      // so ogre doesn't try to look for them.
+      this->dataPtr->root = new Ogre::Root("", "");
     }
     catch(Ogre::Exception &e)
     {
@@ -261,12 +253,6 @@ ScenePtr RenderEngine::GetScene(unsigned int index)
 }
 
 //////////////////////////////////////////////////
-unsigned int RenderEngine::GetSceneCount() const
-{
-  return this->SceneCount();
-}
-
-//////////////////////////////////////////////////
 unsigned int RenderEngine::SceneCount() const
 {
   return this->dataPtr->scenes.size();
@@ -333,14 +319,15 @@ void RenderEngine::Init()
 //////////////////////////////////////////////////
 void RenderEngine::Fini()
 {
+  // TODO: this was causing a segfault on shutdown
+  // Windows are created on load so clear them even
+  // if render engine is not initialized
+  this->dataPtr->windowManager->Fini();
+
   if (!this->dataPtr->initialized)
     return;
 
   this->dataPtr->connections.clear();
-
-  // TODO: this was causing a segfault on shutdown
-  // Close all the windows first;
-  this->dataPtr->windowManager->Fini();
 
   RTShaderSystem::Instance()->Fini();
 
@@ -358,7 +345,6 @@ void RenderEngine::Fini()
   // TODO: this was causing a segfault. Need to debug, and put back in
   if (this->dataPtr->root)
   {
-    this->dataPtr->root->shutdown();
     /*const Ogre::Root::PluginInstanceList ll =
      this->dataPtr->root->getInstalledPlugins();
 
@@ -388,7 +374,7 @@ void RenderEngine::Fini()
   this->dataPtr->scenes.clear();
 
   // Not Apple or Windows
-# if not defined( Q_OS_MAC) && not defined(_WIN32)
+# if not defined(__APPLE__) && not defined(_WIN32)
   if (this->dummyDisplay)
   {
     glXDestroyContext(static_cast<Display*>(this->dummyDisplay),
@@ -426,17 +412,17 @@ void RenderEngine::LoadPlugins()
     std::vector<std::string>::iterator piter;
 
 #ifdef __APPLE__
-    std::string prefix = "lib";
     std::string extension = ".dylib";
+#elif defined(_WIN32)
+    std::string extension = ".dll";
 #else
-    std::string prefix = "";
     std::string extension = ".so";
 #endif
 
-    plugins.push_back(path+"/"+prefix+"RenderSystem_GL");
-    plugins.push_back(path+"/"+prefix+"Plugin_ParticleFX");
-    plugins.push_back(path+"/"+prefix+"Plugin_BSPSceneManager");
-    plugins.push_back(path+"/"+prefix+"Plugin_OctreeSceneManager");
+    plugins.push_back(path+"/RenderSystem_GL");
+    plugins.push_back(path+"/Plugin_ParticleFX");
+    plugins.push_back(path+"/Plugin_BSPSceneManager");
+    plugins.push_back(path+"/Plugin_OctreeSceneManager");
 
 #ifdef HAVE_OCULUS
     plugins.push_back(path+"/Plugin_CgProgramManager");
@@ -486,6 +472,7 @@ void RenderEngine::AddResourcePath(const std::string &_uri)
 
   try
   {
+    path = boost::filesystem::path(path).make_preferred().string();
     if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(
           path, "General"))
     {
@@ -513,6 +500,7 @@ void RenderEngine::AddResourcePath(const std::string &_uri)
           if (dIter->filename().extension() == ".material")
           {
             boost::filesystem::path fullPath = path / dIter->filename();
+            fullPath = fullPath.make_preferred();
 
             Ogre::DataStreamPtr stream =
               Ogre::ResourceGroupManager::getSingleton().openResource(
@@ -568,7 +556,6 @@ void RenderEngine::SetupResources()
 
   std::list<std::string> mediaDirs;
   mediaDirs.push_back("media");
-  mediaDirs.push_back("Media");
 
   for (iter = paths.begin(); iter != paths.end(); ++iter)
   {
@@ -591,10 +578,16 @@ void RenderEngine::SetupResources()
           std::make_pair(prefix, "General"));
       archNames.push_back(
           std::make_pair(prefix + "/skyx", "SkyX"));
+#if (OGRE_VERSION >= ((1 << 16) | (9 << 8) | 0) && !defined(__APPLE__))
+      archNames.push_back(
+          std::make_pair(prefix + "/rtshaderlib150", "General"));
+#endif
       archNames.push_back(
           std::make_pair(prefix + "/rtshaderlib", "General"));
+#if (OGRE_RESOURCEMANAGER_STRICT == 0)
       archNames.push_back(
           std::make_pair(prefix + "/materials/programs", "General"));
+#endif
       archNames.push_back(
           std::make_pair(prefix + "/materials/scripts", "General"));
       archNames.push_back(
@@ -615,20 +608,35 @@ void RenderEngine::SetupResources()
           std::make_pair(prefix + "/gui/layouts", "Layouts"));
       archNames.push_back(
           std::make_pair(prefix + "/gui/animations", "Animations"));
-    }
-
-    for (aiter = archNames.begin(); aiter != archNames.end(); ++aiter)
+#if (OGRE_RESOURCEMANAGER_STRICT != 0)
+    try
     {
-      try
-      {
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-            aiter->first, "FileSystem", aiter->second);
-      }
-      catch(Ogre::Exception &/*_e*/)
-      {
-        gzthrow("Unable to load Ogre Resources. Make sure the resources path "
-            "in the world file is set correctly.");
-      }
+      Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+          boost::filesystem::path(
+              prefix + "/materials/programs").make_preferred().string(),
+          "FileSystem", "General", true);
+    }
+    catch(Ogre::Exception &/*_e*/)
+    {
+      gzerr << "Unable to load Ogre Resources. Make sure the resources path "
+            << "in the world file is set correctly.";
+    }
+#endif
+    }
+  }
+
+  for (aiter = archNames.begin(); aiter != archNames.end(); ++aiter)
+  {
+    try
+    {
+      Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+          boost::filesystem::path(aiter->first).make_preferred().string(),
+          "FileSystem", aiter->second);
+    }
+    catch(Ogre::Exception &/*_e*/)
+    {
+      gzthrow("Unable to load Ogre Resources. Make sure the resources path "
+          "in the world file is set correctly.");
     }
   }
 }
@@ -719,7 +727,7 @@ bool RenderEngine::CreateContext()
 {
   bool result = true;
 
-#if defined Q_OS_MAC || _WIN32
+#if defined __APPLE__ || _WIN32
   this->dummyDisplay = 0;
 #else
   try
@@ -781,6 +789,12 @@ void RenderEngine::CheckSystemCapabilities()
   Ogre::RenderSystemCapabilities::ShaderProfiles::const_iterator iter;
 
   capabilities = this->dataPtr->root->getRenderSystem()->getCapabilities();
+  if (!capabilities)
+  {
+    gzerr << "Cannot get render system capabilities" << std::endl;
+    return;
+  }
+
   profiles = capabilities->getSupportedShaderProfiles();
 
   bool hasFragmentPrograms =
@@ -846,12 +860,6 @@ std::vector<unsigned int> RenderEngine::FSAALevels() const
 }
 
 #if (OGRE_VERSION >= ((1 << 16) | (9 << 8) | 0))
-/////////////////////////////////////////////////
-Ogre::OverlaySystem *RenderEngine::GetOverlaySystem() const
-{
-  return this->OverlaySystem();
-}
-
 /////////////////////////////////////////////////
 Ogre::OverlaySystem *RenderEngine::OverlaySystem() const
 {

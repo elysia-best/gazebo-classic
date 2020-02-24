@@ -14,12 +14,6 @@
  * limitations under the License.
  *
 */
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include <boost/algorithm/string.hpp>
 #include <sstream>
 #include "gazebo/msgs/msgs.hh"
@@ -62,12 +56,11 @@ void WirelessTransceiver::Load(const std::string &_worldName)
   Sensor::Load(_worldName);
 
   this->parentEntity = boost::dynamic_pointer_cast<physics::Link>(
-    this->world->GetEntity(this->ParentName()));
+    this->world->EntityByName(this->ParentName()));
 
-  GZ_ASSERT(this->parentEntity.lock() != NULL, "parentEntity is NULL");
+  GZ_ASSERT(this->parentEntity.lock() != nullptr, "parentEntity is null");
 
-  this->referencePose = this->pose +
-    this->parentEntity.lock()->GetWorldPose().Ign();
+  this->referencePose = this->pose + this->parentEntity.lock()->WorldPose();
 
   if (!this->sdf->HasElement("transceiver"))
   {
@@ -109,21 +102,9 @@ void WirelessTransceiver::Fini()
 }
 
 /////////////////////////////////////////////////
-double WirelessTransceiver::GetPower() const
-{
-  return this->Power();
-}
-
-/////////////////////////////////////////////////
 double WirelessTransceiver::Power() const
 {
   return this->power;
-}
-
-/////////////////////////////////////////////////
-double WirelessTransceiver::GetGain() const
-{
-  return this->Gain();
 }
 
 /////////////////////////////////////////////////

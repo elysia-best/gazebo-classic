@@ -15,7 +15,9 @@
  *
 */
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include "gazebo/test/ServerFixture.hh"
 
 using namespace gazebo;
@@ -172,7 +174,7 @@ TEST_F(TransportTest, DirectPublish)
   // Not nice to time check here but 10 seconds should be 'safe' to check
   // against
   int timeout = 1000;
-  while (not g_sceneMsg)
+  while (!g_sceneMsg)
   {
     common::Time::MSleep(10);
 
@@ -705,7 +707,7 @@ TEST_F(TransportTest, Errors)
   EXPECT_STREQ("/gazebo/default/world_stats", statsSub->GetTopic().c_str());
 
   // This generates a warning message
-  // EXPECT_THROW(testNode->Advertise<math::Vector3>("~/scene"),
+  // EXPECT_THROW(testNode->Advertise<ignition::math::Vector3d>("~/scene"),
   //             common::Exception);
 
   scenePub = testNode->Advertise<msgs::Scene>("~/scene");
@@ -760,6 +762,28 @@ TEST_F(TransportTest, Errors)
   scenePub.reset();
   statsSub.reset();
   testNode.reset();
+}
+
+/////////////////////////////////////////////////
+TEST_F(TransportTest, TryInit)
+{
+  // If the ConnectionManager has not been initialized, then TryInit() is
+  // certain to fail.
+  transport::NodePtr node = transport::NodePtr(new transport::Node);
+  EXPECT_FALSE(node->IsInitialized());
+  EXPECT_FALSE(node->TryInit(common::Time(0.01)));
+  EXPECT_FALSE(node->IsInitialized());
+
+  // Loading the server will initialize the ConnectionManager
+  this->Load("worlds/empty.world");
+
+  // The server will initialize some Nodes, so a namespace will be available now
+  EXPECT_FALSE(node->IsInitialized());
+  EXPECT_TRUE(node->TryInit(common::Time(0.01)));
+  EXPECT_TRUE(node->IsInitialized());
+
+  // The namespace of the Node should match the name of the world that we loaded
+  EXPECT_EQ(physics::get_world()->Name(), node->GetTopicNamespace());
 }
 
 /////////////////////////////////////////////////

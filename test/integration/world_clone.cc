@@ -27,10 +27,28 @@ class WorldClone : public ServerFixture
 bool worldCloned = false;
 
 /////////////////////////////////////////////////
+#ifdef _WIN32
+static int setenv(const char *envname, const char *envval, int overwrite)
+{
+  char *original = getenv(envname);
+  if (!original || !!overwrite)
+  {
+    std::string envstring = std::string(envname) + "=" + envval;
+    return _putenv(envstring.c_str());
+  }
+  return 0;
+}
+#endif
+
+/////////////////////////////////////////////////
 std::string custom_exec_str(std::string _cmd)
 {
   _cmd += " 2>&1";
+#ifdef _WIN32
+  FILE *pipe = _popen(_cmd.c_str(), "r");
+#else
   FILE *pipe = popen(_cmd.c_str(), "r");
+#endif
 
   if (!pipe)
     return "ERROR";
@@ -44,7 +62,11 @@ std::string custom_exec_str(std::string _cmd)
       result += buffer;
   }
 
+#ifdef _WIN32
+  _pclose(pipe);
+#else
   pclose(pipe);
+#endif
   return result;
 }
 
@@ -188,10 +210,10 @@ TEST_F(WorldClone, Clone)
 
   // Wait until the world is really cleared.
   retries = 0;
-  while (world->GetModelCount() != 0u && retries++ < 100)
+  while (world->ModelCount() != 0u && retries++ < 100)
     common::Time::MSleep(20);
 
-  ASSERT_EQ(world->GetModelCount(), 0u);
+  ASSERT_EQ(world->ModelCount(), 0u);
   common::Time::MSleep(500);
 
   // Check that the original world does not contain the camera topics.

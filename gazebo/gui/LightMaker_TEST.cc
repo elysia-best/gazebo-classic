@@ -30,7 +30,7 @@ void LightMaker_TEST::PointLight()
   this->resMaxPercentChange = 5.0;
   this->shareMaxPercentChange = 2.0;
 
-  this->Load("worlds/empty.world");
+  this->Load("worlds/empty.world", false, false, false);
 
   // Create the main window.
   gazebo::gui::MainWindow *mainWindow = new gazebo::gui::MainWindow();
@@ -46,9 +46,9 @@ void LightMaker_TEST::PointLight()
   QVERIFY(scene != NULL);
 
   // Check there's no light in the scene yet
-  gazebo::rendering::LightPtr light = scene->GetLight("__default__");
+  gazebo::rendering::LightPtr light = scene->LightByName("__default__");
   QVERIFY(light == NULL);
-  light = scene->GetLight("user_point_light_0");
+  light = scene->LightByName("user_point_light_0");
   QVERIFY(light == NULL);
 
   // Create a pointLight maker
@@ -60,7 +60,7 @@ void LightMaker_TEST::PointLight()
   pointLightMaker->Start();
 
   // Check there's a light in the scene -- this is the preview
-  light = scene->GetLight("__default__");
+  light = scene->LightByName("__default__");
   QVERIFY(light != NULL);
 
   // Check that the light appeared in the center of the screen
@@ -87,15 +87,15 @@ void LightMaker_TEST::PointLight()
   pointLightMaker->OnMouseRelease(mouseEvent);
 
   // Check there's no light in the scene -- the preview is gone
-  light = scene->GetLight("__default__");
+  light = scene->LightByName("__default__");
   QVERIFY(light == NULL);
-  light = scene->GetLight("user_point_light");
+  light = scene->LightByName("user_point_light");
   QVERIFY(light == NULL);
 
   this->ProcessEventsAndDraw(mainWindow);
 
   // Check there's a light in the scene -- this is the final pointLight
-  light = scene->GetLight("user_point_light_0");
+  light = scene->LightByName("user_point_light_0");
   QVERIFY(light != NULL);
 
   // Terminate
@@ -109,7 +109,7 @@ void LightMaker_TEST::CopyLight()
   this->resMaxPercentChange = 5.0;
   this->shareMaxPercentChange = 2.0;
 
-  this->Load("worlds/spotlight.world");
+  this->Load("worlds/spotlight.world", false, false, false);
 
   // Create the main window.
   gazebo::gui::MainWindow *mainWindow = new gazebo::gui::MainWindow();
@@ -125,11 +125,11 @@ void LightMaker_TEST::CopyLight()
   QVERIFY(scene != NULL);
 
   // Check there's a light but no clone in the scene yet
-  gazebo::rendering::LightPtr light = scene->GetLight("spotlight");
+  gazebo::rendering::LightPtr light = scene->LightByName("spotlight");
   QVERIFY(light != NULL);
-  light = scene->GetLight("spotlight_clone_tmp");
+  light = scene->LightByName("spotlight_clone_tmp");
   QVERIFY(light == NULL);
-  light = scene->GetLight("spotlight_clone");
+  light = scene->LightByName("spotlight_clone");
   QVERIFY(light == NULL);
 
   // Create a generic light maker
@@ -141,7 +141,7 @@ void LightMaker_TEST::CopyLight()
   lightMaker->Start();
 
   // Check there's a light in the scene -- this is the preview
-  light = scene->GetLight("spotlight_clone_tmp");
+  light = scene->LightByName("spotlight_clone_tmp");
   QVERIFY(light != NULL);
 
   // Check that the light appeared in the center of the screen
@@ -168,13 +168,13 @@ void LightMaker_TEST::CopyLight()
   lightMaker->OnMouseRelease(mouseEvent);
 
   // Check there's no light in the scene -- the preview is gone
-  light = scene->GetLight("spotlight_clone_tmp");
+  light = scene->LightByName("spotlight_clone_tmp");
   QVERIFY(light == NULL);
 
   this->ProcessEventsAndDraw(mainWindow);
 
   // Check there's a light in the scene -- this is the final light
-  light = scene->GetLight("spotlight_clone");
+  light = scene->LightByName("spotlight_clone");
   QVERIFY(light != NULL);
 
   // Terminate

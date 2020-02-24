@@ -15,12 +15,6 @@
  *
 */
 
-#ifdef _WIN32
-  // Ensure that Winsock2.h is included before Windows.h, which can get
-  // pulled in by anybody (e.g., Boost).
-  #include <Winsock2.h>
-#endif
-
 #include "gazebo/common/Console.hh"
 #include "gazebo/physics/Collision.hh"
 #include "gazebo/physics/Shape.hh"
@@ -37,8 +31,6 @@ Shape::Shape(CollisionPtr _p)
 
   if (_p)
     this->collisionParent = _p;
-
-  this->scale = math::Vector3::One;
 }
 
 //////////////////////////////////////////////////
@@ -49,7 +41,7 @@ Shape::~Shape()
 }
 
 //////////////////////////////////////////////////
-math::Vector3 Shape::GetScale() const
+ignition::math::Vector3d Shape::Scale() const
 {
   return this->scale;
 }
@@ -65,6 +57,8 @@ double Shape::ComputeVolume() const
   gzwarn << "ComputeVolume not fully implemented for this shape type, returning"
          << " bounding box approximation" << std::endl;
 
-  math::Vector3 size = this->collisionParent->GetBoundingBox().GetSize();
-  return size.x * size.y * size.z;
+  ignition::math::Vector3d size =
+    this->collisionParent->BoundingBox().Size();
+  return size.X() * size.Y() * size.Z();
 }
+

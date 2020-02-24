@@ -14,8 +14,8 @@
  * limitations under the License.
  *
 */
-#ifndef _GAZEBO_SKELETON_HH_
-#define _GAZEBO_SKELETON_HH_
+#ifndef GAZEBO_COMMON_SKELETON_HH_
+#define GAZEBO_COMMON_SKELETON_HH_
 
 #include <vector>
 #include <string>
@@ -24,7 +24,6 @@
 
 #include <ignition/math/Matrix4.hh>
 
-#include "gazebo/math/Matrix4.hh"
 #include "gazebo/common/CommonTypes.hh"
 #include "gazebo/util/system.hh"
 
@@ -57,7 +56,7 @@ namespace gazebo
 
       /// \brief Constructor
       /// \param[in] _root node
-      public: Skeleton(SkeletonNode *_root);
+      public: explicit Skeleton(SkeletonNode *_root);
 
       /// \brief Destructor
       public: virtual ~Skeleton();
@@ -70,14 +69,18 @@ namespace gazebo
       /// \return the root
       public: SkeletonNode* GetRootNode();
 
+      /// \brief Return the root
+      /// \return the root
+      public: const SkeletonNode* GetRootNode() const;
+
       /// \brief Find a node
       /// \param[in] _name the name of the node to look for
-      /// \return the node, or NULL if not found
+      /// \return the node, or nullptr if not found
       public: SkeletonNode* GetNodeByName(std::string _name);
 
       /// \brief Find node by index
       /// \param[in] _id the index
-      /// \return the node, or NULL if not found
+      /// \return the node, or nullptr if not found
       public: SkeletonNode* GetNodeById(std::string _id);
 
       /// \brief Find or create node with handle
@@ -112,7 +115,8 @@ namespace gazebo
       /// \brief Get a copy or the node dictionary
       public: NodeMap GetNodes();
 
-      /// \brief Resizes the raw node weight array
+      /// \brief Resizes the raw node weight array, this also clears all the
+      /// node weights assigned.
       /// \param[in] _vertices the new size
       public: void SetNumVertAttached(unsigned int _vertices);
 
@@ -141,7 +145,7 @@ namespace gazebo
 
       /// \brief Find animation
       /// \param[in] _i the animation index
-      /// \return the animation, or NULL if _i is out of bounds
+      /// \return the animation, or nullptr if _i is out of bounds
       public: SkeletonAnimation* GetAnimation(const unsigned int _i);
 
       /// \brief Add an animation. The skeleton does not take ownership of the
@@ -160,7 +164,8 @@ namespace gazebo
       protected: NodeMap nodes;
 
       /// \brief the bind pose skeletal transform
-      protected: ignition::math::Matrix4d bindShapeTransform;
+      protected: ignition::math::Matrix4d bindShapeTransform =
+        ignition::math::Matrix4d::Identity;
 
       /// \brief the node weight table
       protected: RawNodeWeights rawNW;
@@ -178,7 +183,7 @@ namespace gazebo
 
       /// \brief Constructor
       /// \param[in] _parent The parent node
-      public: SkeletonNode(SkeletonNode* _parent);
+      public: explicit SkeletonNode(SkeletonNode* _parent);
 
       /// \brief Constructor
       /// \param[in] _parent the parent node
@@ -196,8 +201,17 @@ namespace gazebo
       public: void SetName(std::string _name);
 
       /// \brief Returns the name
+      /// \remarks not normally needed but it is included to satisfy ABI
+      /// compatibility.
       /// \return the name
       public: std::string GetName();
+
+      /// \brief Returns the name
+      /// \remarks this should have been called `GetName` to be inline with
+      /// the non-const version, however, it is decided that it should be
+      /// called `Name` as `GetName` is being deprecated.
+      /// \return the name
+      public: std::string Name() const;
 
       /// \brief Change the id string
       /// \param[in] _id the new id string
@@ -272,12 +286,12 @@ namespace gazebo
 
       /// \brief Get child by name
       /// \param[in] _name the name of the child skeleton
-      /// \return the skeleton, or NULL if not found
+      /// \return the skeleton, or nullptr if not found
       public: SkeletonNode* GetChildByName(std::string _name);
 
       /// \brief Get child by string id
       /// \param[in] _id the string id
-      /// \return the child skeleton or NULL if not found
+      /// \return the child skeleton or nullptr if not found
       public: SkeletonNode* GetChildById(std::string _id);
 
       /// \brief Assign a handle number
@@ -296,6 +310,12 @@ namespace gazebo
       /// \brief Retrieve the inverse of the bind pose skeletal transform
       /// \return the transform
       public: ignition::math::Matrix4d InverseBindTransform();
+
+      /// \brief returns true if the node has inv bind transform.
+      /// \detail to keep ABI compatibility, it checks if the inv bind transform
+      /// is the default value of zero.
+      /// \return true if the node has inv bind transform
+      public: bool HasInvBindTransform();
 
       /// \brief Retrieve the model transform
       /// \return the transform
@@ -365,7 +385,7 @@ namespace gazebo
 
       /// \brief Constructor
       /// \param[in] _type the type of transform
-      public: NodeTransform(TransformType _type = MATRIX);
+      public: explicit NodeTransform(TransformType _type = MATRIX);
 
       /// \brief Constructor
       /// \param[in] _mat the matrix

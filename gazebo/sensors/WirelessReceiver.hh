@@ -36,7 +36,7 @@ namespace gazebo
 
     /// \class WirelessReceiver WirelessReceiver.hh sensors/sensors.hh
     /// \brief Sensor class for receiving wireless signals.
-    class GAZEBO_VISIBLE WirelessReceiver: public WirelessTransceiver
+    class GZ_SENSORS_VISIBLE WirelessReceiver: public WirelessTransceiver
     {
       /// \brief Constructor
       public: WirelessReceiver();
@@ -55,26 +55,11 @@ namespace gazebo
 
       /// \brief Returns the minimum frequency filtered (MHz).
       /// \return Reception frequency (MHz).
-      /// \deprecated See MinFreqFiltered()
-      public: double GetMinFreqFiltered() const GAZEBO_DEPRECATED(7.0);
-
-      /// \brief Returns the minimum frequency filtered (MHz).
-      /// \return Reception frequency (MHz).
       public: double MinFreqFiltered() const;
 
       /// \brief Returns the maximum frequency filtered (MHz).
       /// \return Reception frequency (MHz).
-      /// \deprecated See MaxFreqFiltered()
-      public: double GetMaxFreqFiltered() const GAZEBO_DEPRECATED(7.0);
-
-      /// \brief Returns the maximum frequency filtered (MHz).
-      /// \return Reception frequency (MHz).
       public: double MaxFreqFiltered() const;
-
-      /// \brief Returns the receiver sensitivity (dBm).
-      /// \return Receiver sensitivity (dBm).
-      /// \deprecated See Sensitivity()
-      public: double GetSensitivity() const GAZEBO_DEPRECATED(7.0);
 
       /// \brief Returns the receiver sensitivity (dBm).
       /// \return Receiver sensitivity (dBm).

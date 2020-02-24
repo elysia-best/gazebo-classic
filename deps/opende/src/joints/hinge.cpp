@@ -21,7 +21,7 @@
  *************************************************************************/
 
 
-#include <ode/misc.h>
+#include <gazebo/ode/misc.h>
 #include "config.h"
 #include "hinge.h"
 #include "joint_internal.h"
@@ -179,6 +179,12 @@ dxJointHinge::getInfo2( dxJoint::Info2 *info )
     limot.addLimot( this, info, 5, ax1, 1 );
 }
 
+
+void dJointSetHingeCumulativeAngle(dJointID joint, dReal angle)
+{
+  dAASSERT(joint);
+  static_cast<dxJointHinge*>(joint)->cumulative_angle = angle;
+}
 
 
 void dJointSetHingeAnchor( dJointID j, dReal x, dReal y, dReal z )

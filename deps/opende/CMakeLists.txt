@@ -20,8 +20,8 @@ link_directories(
 )
 
 if (HAVE_DART)
-  include_directories(${DARTCore_INCLUDE_DIRS})
-  link_directories(${DARTCore_LIBRARY_DIRS})
+  include_directories(${DART_INCLUDE_DIRS})
+  link_directories(${DART_LIBRARY_DIRS})
 endif()
 
 if (HAVE_BULLET)
@@ -234,29 +234,29 @@ src/joints/universal.cpp
 )
 
 set ( headers 
-include/ode/collision.h
-include/ode/collision_space.h
-include/ode/collision_trimesh.h
-include/ode/common.h
-include/ode/compatibility.h
-include/ode/contact.h
-include/ode/error.h
-include/ode/export-dif.h
-include/ode/h5dump.h
-include/ode/mass.h
-include/ode/matrix.h
-include/ode/memory.h
-include/ode/misc.h
-include/ode/objects.h
-include/ode/odeconfig.h
-include/ode/odecpp_collision.h
-include/ode/odecpp.h
-include/ode/ode.h
-include/ode/odeinit.h
-include/ode/odemath.h
-include/ode/odemath_legacy.h
-include/ode/rotation.h
-include/ode/timer.h
+include/gazebo/ode/collision.h
+include/gazebo/ode/collision_space.h
+include/gazebo/ode/collision_trimesh.h
+include/gazebo/ode/common.h
+include/gazebo/ode/compatibility.h
+include/gazebo/ode/contact.h
+include/gazebo/ode/error.h
+include/gazebo/ode/export-dif.h
+include/gazebo/ode/h5dump.h
+include/gazebo/ode/mass.h
+include/gazebo/ode/matrix.h
+include/gazebo/ode/memory.h
+include/gazebo/ode/misc.h
+include/gazebo/ode/objects.h
+include/gazebo/ode/odeconfig.h
+include/gazebo/ode/odecpp_collision.h
+include/gazebo/ode/odecpp.h
+include/gazebo/ode/ode.h
+include/gazebo/ode/odeinit.h
+include/gazebo/ode/odemath.h
+include/gazebo/ode/odemath_legacy.h
+include/gazebo/ode/rotation.h
+include/gazebo/ode/timer.h
 )
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -DdNODEBUG -DdDOUBLE -DHAVE_CONFIG_H -DPIC")
@@ -269,7 +269,9 @@ if (WIN32)
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWIN32 -DODE_DLL")
 endif()
 
-set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_LINK_FLAGS_${CMAKE_BUILD_TYPE}} -MF -MT -fno-strict-aliasing -DPIC ")
+if (NOT MSVC)
+  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_LINK_FLAGS_${CMAKE_BUILD_TYPE}} -MF -MT -fno-strict-aliasing -DPIC ")
+endif()
 
 if (WIN32)
   add_library(gazebo_ode SHARED ${sources})
@@ -284,8 +286,13 @@ target_link_libraries(gazebo_ode
   ${CCD_LIBRARIES}
   ${Boost_LIBRARIES})
 
+if (HAVE_DART)
+  target_link_libraries(gazebo_ode ${DART_LIBRARIES})
+endif()
+
 if (HDF5_FOUND AND HDF5_INSTRUMENT)
   message(STATUS "HDF5 Found and Instrument enabled")
+  include_directories(${HDF5_INCLUDE_DIRS})
   target_link_libraries(gazebo_ode ${HDF5_LIBRARIES})
 endif()
 

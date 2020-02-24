@@ -14,7 +14,9 @@
  * limitations under the License.
  *
 */
+
 #include <memory>
+#include <ignition/math/Color.hh>
 
 #include "gazebo/common/Console.hh"
 #include "gazebo/rendering/ogre_gazebo.h"
@@ -132,7 +134,10 @@ void SelectionBuffer::DeleteRTTBuffer()
   if (!this->dataPtr->texture.isNull() && this->dataPtr->texture->isLoaded())
     this->dataPtr->texture->unload();
   if (this->dataPtr->buffer)
+  {
     delete [] this->dataPtr->buffer;
+    this->dataPtr->buffer = nullptr;
+  }
   if (this->dataPtr->pixelBox)
     delete this->dataPtr->pixelBox;
 }
@@ -165,6 +170,7 @@ void SelectionBuffer::CreateRTTBuffer()
   this->dataPtr->renderTexture->setPriority(0);
   this->dataPtr->renderTexture->addViewport(this->dataPtr->selectionCamera);
   this->dataPtr->renderTexture->getViewport(0)->setOverlaysEnabled(false);
+  this->dataPtr->renderTexture->getViewport(0)->setShadowsEnabled(false);
   this->dataPtr->renderTexture->getViewport(0)->setClearEveryFrame(true);
   this->dataPtr->renderTexture->addListener(
       this->dataPtr->selectionTargetListener.get());
@@ -226,16 +232,16 @@ Ogre::Entity *SelectionBuffer::OnSelectionClick(int _x, int _y)
 
   size_t posInStream = 0;
 
-  common::Color::BGRA color(0);
+  ignition::math::Color::BGRA color(0);
   if (!this->dataPtr->buffer)
   {
     gzerr << "Selection buffer is null.\n";
     return nullptr;
   }
   memcpy(static_cast<void *>(&color), this->dataPtr->buffer + posInStream, 4);
-  common::Color cv;
+  ignition::math::Color cv;
   cv.SetFromARGB(color);
-  cv.a = 1.0;
+  cv.A(1.0);
   const std::string &entName =
     this->dataPtr->materialSwitchListener->GetEntityName(cv);
 

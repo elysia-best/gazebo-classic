@@ -33,6 +33,20 @@
 #include "gazebo/util/LogRecord.hh"
 
 /////////////////////////////////////////////////
+#ifdef _WIN32
+static int setenv(const char *envname, const char *envval, int overwrite)
+{
+  char *original = getenv(envname);
+  if (!original || !!overwrite)
+  {
+    std::string envstring = std::string(envname) + "=" + envval;
+    return _putenv(envstring.c_str());
+  }
+  return 0;
+}
+#endif
+
+/////////////////////////////////////////////////
 QTestFixture::QTestFixture()
   : server(NULL), serverThread(NULL),
     resMaxPercentChange(0), shareMaxPercentChange(0),
@@ -67,6 +81,15 @@ void QTestFixture::initTestCase()
 /////////////////////////////////////////////////
 void QTestFixture::init()
 {
+  // Set environment variable
+  char *env = getenv("IN_TESTSUITE");
+  QVERIFY(env == nullptr);
+
+  setenv("IN_TESTSUITE", "1", 1);
+
+  env = getenv("IN_TESTSUITE");
+  QVERIFY(env != nullptr);
+
   this->resMaxPercentChange = 3.0;
   this->shareMaxPercentChange = 1.0;
 
@@ -82,6 +105,10 @@ void QTestFixture::init()
 void QTestFixture::Load(const std::string &_worldFilename, bool _paused,
     bool _serverScene, bool _clientScene)
 {
+#if (OGRE_VERSION >= ((1 << 16) | (9 << 8) | 0)) && defined(__APPLE__)
+  this->resMaxPercentChange *= 2.0;
+#endif
+
   // Create, load, and run the server in its own thread
   this->serverThread = new boost::thread(
       boost::bind(&QTestFixture::RunServer, this,
@@ -106,7 +133,7 @@ void QTestFixture::Load(const std::string &_worldFilename, bool _paused,
   if (_clientScene)
   {
     gazebo::rendering::create_scene(
-        gazebo::physics::get_world()->GetName(), false);
+        gazebo::physics::get_world()->Name(), true);
   }
 }
 
@@ -121,8 +148,10 @@ void QTestFixture::RunServer(const std::string &_worldFilename,
   this->SetPause(_paused);
 
   if (_createScene)
+  {
     gazebo::rendering::create_scene(
-        gazebo::physics::get_world()->GetName(), false);
+        gazebo::physics::get_world()->Name(), false);
+  }
 
   this->server->Run();
 
@@ -165,7 +194,7 @@ void QTestFixture::cleanup()
   delete this->serverThread;
   this->serverThread = NULL;
 
-  gazebo::gui::stop();
+  gazebo::rendering::fini();
 
   double residentEnd, shareEnd;
   this->GetMemInfo(residentEnd, shareEnd);
@@ -182,6 +211,15 @@ void QTestFixture::cleanup()
   // Make sure the percent change values are reasonable.
   QVERIFY(resPercentChange < this->resMaxPercentChange);
   QVERIFY(sharePercentChange < this->shareMaxPercentChange);
+
+  // Unset environment variable
+  char *env = getenv("IN_TESTSUITE");
+  QVERIFY(env != nullptr);
+
+  unsetenv("IN_TESTSUITE");
+
+  env = getenv("IN_TESTSUITE");
+  QVERIFY(env == nullptr);
 }
 
 /////////////////////////////////////////////////
