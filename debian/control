@@ -5,7 +5,7 @@ Section: science
 Priority: optional
 Build-Depends: cmake,
                pkg-config,
-               debhelper (>= 11),
+               debhelper-compat (= 12),
                bash-completion,
                doxygen,
                doxygen-latex,
@@ -57,7 +57,7 @@ Build-Depends: cmake,
                libgdal-dev,
                ronn,
                libgtest-dev
-Standards-Version: 4.4.0
+Standards-Version: 4.5.0
 Vcs-Browser: https://salsa.debian.org/science-team/gazebo
 Vcs-Git: https://salsa.debian.org/science-team/gazebo.git
 Homepage: http://gazebosim.org/
