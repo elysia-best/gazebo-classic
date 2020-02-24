@@ -28,9 +28,5 @@ override_dh_auto_test:
 	# Tests needs an X server running and GPU acceleration
 	true
 
-# Upstream release page is generated dynamically taking long time
-get-orig-source:
-	uscan --timeout 500 --verbose --force-download --repack --compress xz
-
 %:
 	dh $@ --buildsystem=cmake --with bash-completion
