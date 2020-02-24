@@ -1,3 +1,10 @@
+gazebo (9.12.0-1) unstable; urgency=medium
+
+  * New upstream version 9.12.0
+  * Migrate to debhelper-compat 12 and latest Standards
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 24 Feb 2020 15:26:56 +0000
+
 gazebo (9.6.0-2) unstable; urgency=medium
 
   * Add explicit boost dependency and remove obsolete signals
