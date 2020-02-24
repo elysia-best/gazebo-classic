@@ -1,7 +1,6 @@
 0001-use-roboto-system-fonts.patch
 0002_use_system_gtest.patch
 0003-use-system-qtpropertybrowser.patch
-0004-pkgconfig-boost-pthread.patch
 0005-fix-problems-on-manpage.patch
 0008-arial-dejavu-fonts-removed-in-dfsg.patch
 0006-pkg_config-boost-private.patch
