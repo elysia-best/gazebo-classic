@@ -2,18 +2,10 @@
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-.PHONY: override_dh_auto_configure	\
-	override_dh_auto_build-indep	\
-	override_dh_install		\
-	override_dh_auto_test           \
-	get-orig-source
-
 override_dh_auto_configure:
 	dh_auto_configure -- \
-                -DUSE_EXTERNAL_TINYXML:BOOL=False \
                 -DUSE_HOST_CFLAGS:BOOL=False \
-                -DUSE_UPSTREAM_CFLAGS:BOOL=False \
-                -DCMAKE_BUILD_TYPE=RelWithDebInfo
+                -DUSE_UPSTREAM_CFLAGS:BOOL=False
 
 override_dh_auto_build-indep:
 	dh_auto_build -- doc # Generate Doxygen HTML documentation.
@@ -23,10 +15,11 @@ override_dh_install:
 
         # Get rid of fonts already packaged elsewhere.
 	rm -f debian/gazebo-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf
+	# Remove old script
+	rm -f debian/gazebo/usr/bin/gzprop
 
+# Tests needs an X server running and GPU acceleration
 override_dh_auto_test:
-	# Tests needs an X server running and GPU acceleration
-	true
 
 %:
 	dh $@ --buildsystem=cmake --with bash-completion
