@@ -1,0 +1,21 @@
+From: Jochen Sprickerhof <jspricke@debian.org>
+Date: Mon, 13 Apr 2020 15:37:55 +0200
+Subject: Bump std for make_unique in dart
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e93d65c..b135f3d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -261,7 +261,7 @@ endif()
+ 
+ # Visual Studio enables c++11 support by default
+ if (NOT MSVC)
+-  set(UNFILTERED_FLAGS "-std=c++11")
++  set(UNFILTERED_FLAGS "-std=c++14")
+ endif()
+ 
+ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VALID_CXX_FLAGS} ${UNFILTERED_FLAGS}")
