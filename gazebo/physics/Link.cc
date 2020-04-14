@@ -30,6 +30,7 @@
 #include "gazebo/common/Exception.hh"
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Battery.hh"
+#include "gazebo/common/SdfFrameSemantics.hh"
 
 #include "gazebo/physics/PhysicsIface.hh"
 #include "gazebo/physics/Light.hh"
@@ -113,6 +114,9 @@ class gazebo::physics::LinkPrivate
       /// playback.
       public: transport::SubscriberPtr audioContactsSub;
 #endif
+
+  /// \brief SDF Link DOM object
+  public: const sdf::Link *linkSDFDom = nullptr;
 };
 
 using namespace gazebo;
@@ -138,6 +142,16 @@ Link::~Link()
 //////////////////////////////////////////////////
 void Link::Load(sdf::ElementPtr _sdf)
 {
+  if (nullptr != this->GetModel())
+  {
+    auto *modelDom = this->GetModel()->GetSDFDom();
+    if (nullptr != modelDom)
+    {
+      this->dataPtr->linkSDFDom =
+        modelDom->LinkByName(_sdf->Get<std::string>("name"));
+    }
+  }
+
   Entity::Load(_sdf);
 
   // before loading child collision, we have to figure out if selfCollide is
@@ -292,14 +306,11 @@ void Link::Load(sdf::ElementPtr _sdf)
 //////////////////////////////////////////////////
 void Link::Init()
 {
-  this->linearAccel.Set(0, 0, 0);
-  this->angularAccel.Set(0, 0, 0);
-
   this->dataPtr->enabled = true;
 
   // Set Link pose before setting pose of child collisions
-  this->SetRelativePose(this->sdf->Get<ignition::math::Pose3d>("pose"));
-  this->SetInitialRelativePose(this->sdf->Get<ignition::math::Pose3d>("pose"));
+  this->SetRelativePose(this->SDFPoseRelativeToParent());
+  this->SetInitialRelativePose(this->SDFPoseRelativeToParent());
 
   // Call Init for child collisions, which whill set their pose
   Base_V::iterator iter;
@@ -728,24 +739,6 @@ CollisionPtr Link::GetCollision(unsigned int _index) const
 }
 
 //////////////////////////////////////////////////
-void Link::SetLinearAccel(const ignition::math::Vector3d &_accel)
-{
-  gzwarn << "Link::SetLinearAccel() is deprecated and has "
-         << "no effect. Use Link::SetForce() instead.\n";
-  this->SetEnabled(true);
-  this->linearAccel = _accel;
-}
-
-//////////////////////////////////////////////////
-void Link::SetAngularAccel(const ignition::math::Vector3d &_accel)
-{
-  gzwarn << "Link::SetAngularAccel() is deprecated and has "
-         << "no effect. Use Link::SetTorque() instead.\n";
-  this->SetEnabled(true);
-  this->angularAccel = _accel;
-}
-
-//////////////////////////////////////////////////
 ignition::math::Pose3d Link::WorldCoGPose() const
 {
   ignition::math::Pose3d pose = this->WorldPose();
@@ -826,9 +819,9 @@ ModelPtr Link::GetModel() const
 }
 
 //////////////////////////////////////////////////
-ignition::math::Box Link::BoundingBox() const
+ignition::math::AxisAlignedBox Link::BoundingBox() const
 {
-  ignition::math::Box box;
+  ignition::math::AxisAlignedBox box;
 
   box.Min().Set(ignition::math::MAX_D, ignition::math::MAX_D,
       ignition::math::MAX_D);
@@ -1531,7 +1524,16 @@ void Link::UpdateVisualMsg()
     while (visualElem)
     {
       msgs::Visual msg = msgs::VisualFromSDF(visualElem);
+      // The function `VisualFromSDF` does not support frame semantics so we
+      // need to update the pose of the msg object.
+      if (nullptr != this->dataPtr->linkSDFDom)
+      {
+        // TODO (addisu) Check the assumption that visualDom is always valid
+        auto *visualDom = this->dataPtr->linkSDFDom->VisualByName(msg.name());
 
+        msgs::Set(msg.mutable_pose(),
+                  common::resolveSdfPose(visualDom->SemanticPose()));
+      }
       bool newVis = true;
       std::string linkName = this->GetScopedName();
 
@@ -1923,6 +1925,7 @@ void Link::LoadLight(sdf::ElementPtr _sdf)
   LightPtr light(new physics::Light(shared_from_this()));
   light->SetStatic(true);
   light->ProcessMsg(msgs::LightFromSDF(_sdf));
+
   light->SetWorld(this->world);
   light->Load(_sdf);
   this->dataPtr->lights.push_back(light);
@@ -1936,4 +1939,20 @@ void Link::LoadLight(sdf::ElementPtr _sdf)
 const Link::Visuals_M &Link::Visuals() const
 {
   return this->visuals;
+}
+
+//////////////////////////////////////////////////
+const sdf::Link *Link::GetSDFDom() const
+{
+  return this->dataPtr->linkSDFDom;
+}
+
+//////////////////////////////////////////////////
+std::optional<sdf::SemanticPose> Link::SDFSemanticPose() const
+{
+  if (nullptr != this->dataPtr->linkSDFDom)
+  {
+    return this->dataPtr->linkSDFDom->SemanticPose();
+  }
+  return std::nullopt;
 }

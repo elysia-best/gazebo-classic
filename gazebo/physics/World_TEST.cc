@@ -45,6 +45,7 @@ TEST_F(WorldTest, UniqueModelName)
   msgs::Model msg;
   msg.set_name(modelName);
   msg.add_link();
+  msg.mutable_link(0)->set_name("l");
 
   std::string modelSDFStr(
     "<sdf version='" + std::string(SDF_VERSION) + "'>"
@@ -192,6 +193,27 @@ TEST_F(WorldTest, EditName)
 
     EXPECT_EQ(inertial->Mass(), 2.0);
   }
+}
+
+//////////////////////////////////////////////////
+TEST_F(WorldTest, Stop)
+{
+  // Load an empty world
+  this->Load("worlds/blank.world", true);
+
+  // Get world and check it's running
+  auto world = physics::get_world("default");
+  ASSERT_NE(nullptr, world);
+
+  EXPECT_TRUE(world->Running());
+
+  // Stop the world and see it stops running
+  world->Stop();
+  EXPECT_FALSE(world->Running());
+
+  // Run the world again
+  world->Run();
+  EXPECT_TRUE(world->Running());
 }
 
 //////////////////////////////////////////////////

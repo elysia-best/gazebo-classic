@@ -55,7 +55,7 @@ namespace gazebo
         public: virtual void Fini();
 
         // Documentation inherited.
-        public: double ApplyImpl(double _in);
+        public: double ApplyImpl(double _in, double _dt);
 
         /// \brief Accessor for mean.
         /// \return Mean of Gaussian noise.
@@ -69,8 +69,35 @@ namespace gazebo
         /// \return Bias on output.
         public: double GetBias() const;
 
+        /// \brief Accessor for dynamic bias process standard deviation.
+        /// \return Standard deviation of Gaussian noise driving bias walk
+        public: double GetDynamicBiasStdDev() const;
+
+        /// \brief Accessor for dynamic bias process correlation time (seconds).
+        /// \return Correlation time of Gaussian noise process driving bias walk
+        public: double GetDynamicBiasCorrelationTime() const;
+
+        /// \brief Set mean.
+        /// \param[in] _mean Mean of Gaussian noise.
+        public: void SetMean(const double _mean);
+
+        /// \brief Set stddev.
+        /// \param[in] _stddev Standard deviation of Gaussian noise.
+        public: void SetStdDev(const double _stddev);
+
+        /// \brief Set standard deviation of dynamic bias process.
+        /// \param[in] _stddev Standard deviation of bias noise process.
+        public: void SetDynamicBiasStdDev(const double _stddev);
+
+        /// \brief Set correlation time of dynamic bias process, in seconds.
+        /// \param[in] _stddev Standard deviation of bias noise process.
+        public: void SetDynamicBiasCorrelationTime(const double _stddev);
+
         /// Documentation inherited
         public: virtual void Print(std::ostream &_out) const;
+
+        /// \brief Sample the bias.
+        private: void SampleBias();
 
         /// \brief If type starts with GAUSSIAN, the mean of the distribution
         /// from which we sample when adding noise.
@@ -89,6 +116,22 @@ namespace gazebo
 
         /// \brief True if the type is GAUSSIAN_QUANTIZED
         protected: bool quantized;
+
+        /// \brief The mean of the Gaussian distribution from which bias values
+        /// are drawn.
+        private: double biasMean;
+
+        /// \brief The standard deviation of the Gaussian distribution from
+        /// which bias values are drawn.
+        private: double biasStdDev;
+
+        /// \brief If type starts with GAUSSIAN, the standard deviation of the
+        /// distribution from which the dynamic bias will be driven.
+        private: double dynamicBiasStdDev;
+
+        /// \biref If type starts with GAUSSIAN, the correlation time of the
+        /// process from which the dynamic bias will be driven.
+        private: double dynamicBiasCorrTime;
     };
 
     /// \class GaussianNoiseModel

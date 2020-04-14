@@ -17,6 +17,8 @@
 #include <boost/algorithm/string.hpp>
 #include <functional>
 
+#include <ignition/msgs/Utility.hh>
+
 #include "gazebo/common/Events.hh"
 #include "gazebo/common/Exception.hh"
 #include "gazebo/common/Image.hh"
@@ -190,6 +192,24 @@ void CameraSensor::Fini()
 }
 
 //////////////////////////////////////////////////
+void CameraSensor::SetActive(bool _value)
+{
+  Sensor::SetActive(_value);
+}
+
+//////////////////////////////////////////////////
+bool CameraSensor::NeedsUpdate()
+{
+  return Sensor::NeedsUpdate();
+}
+
+//////////////////////////////////////////////////
+void CameraSensor::Update(bool _force)
+{
+  Sensor::Update(_force);
+}
+
+//////////////////////////////////////////////////
 void CameraSensor::Render()
 {
   if (!this->camera || !this->IsActive() || !this->NeedsUpdate())
@@ -241,7 +261,7 @@ bool CameraSensor::UpdateImpl(const bool /*_force*/)
 
       msg.set_width(this->camera->ImageWidth());
       msg.set_height(this->camera->ImageHeight());
-      msg.set_pixel_format(common::Image::ConvertPixelFormat(
+      msg.set_pixel_format_type(ignition::msgs::ConvertPixelFormatType(
             this->camera->ImageFormat()));
 
       msg.set_step(this->camera->ImageWidth() *
@@ -336,5 +356,17 @@ bool CameraSensor::Rendered() const
 void CameraSensor::SetRendered(const bool _value)
 {
   this->dataPtr->rendered = _value;
+}
+
+//////////////////////////////////////////////////
+double CameraSensor::NextRequiredTimestamp() const
+{
+  return Sensor::NextRequiredTimestamp();
+}
+
+//////////////////////////////////////////////////
+void CameraSensor::ResetLastUpdateTime()
+{
+  Sensor::ResetLastUpdateTime();
 }
 

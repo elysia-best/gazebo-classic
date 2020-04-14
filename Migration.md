@@ -5,6 +5,154 @@ Deprecated code produces compile-time warnings. These warning serve as
 notification to users that their code should be upgraded. The next major
 release will remove the deprecated code.
 
+## Gazebo 10.x to 11.0
+
+### Build system
+
+New versions in mandatory dependencies: `ign-transport8`, `ign-msgs5`, `ign-math6`, `sdformat9`.
+New mandatory dependencies: `ign-fuel-tools4`, `ign-common3`, `ign-common3-graphics`, `ign-common3-profiler`.
+
+### Additions
+
+1. **gazebo/common/SdfFrameSemantics.hh**
+    + `ignition::math::Pose3d` resolveSdfPose(const sdf::SemanticPose &, const std::string &)
+    + `void` convertPosesToSdf16(const sdf::ElementPtr &)
+
+1. **gazebo/physics/Base.hh**
+    + public: `ignition::math::Pose3d` SDFPoseRelativeToParent() const
+    + public: virtual `std::optional<sdf::SemanticPose>` SDFSemanticPose() const
+
+1. **gazebo/physics/Collision.hh**
+    + public: virtual `std::optional<sdf::SemanticPose>` SDFSemanticPose() const override
+
+1. **gazebo/physics/Joint.hh**
+    + public: const `sdf::Joint *` GetSDFDom() const
+    + public: `ignition::math::Vector3d` ResolveAxisXyz(const unsigned int, const std::string &) const
+    + public: virtual `std::optional<sdf::SemanticPose>` SDFSemanticPose() const override
+
+1. **gazebo/physics/Light.hh**
+    + public: virtual `std::optional<sdf::SemanticPose>` SDFSemanticPose() const override
+
+1. **gazebo/physics/Link.hh**
+      public: const `sdf::Link` *GetSDFDom() const;
+    + public: virtual `std::optional<sdf::SemanticPose>` SDFSemanticPose() const override
+
+1. **gazebo/physics/Model.hh**
+    + public: const `sdf::Model *` GetSDFDom() const
+    + public: virtual `std::optional<sdf::SemanticPose>` SDFSemanticPose() const override
+
+1. **gazebo/physics/PhysicsEngine.hh**
+    + public: template <typename T>
+      static T any\_cast<T>(const boost::any &)
+
+1. **gazebo/physics/PhysicsTypes.hh**
+    + Defined function signature for API to update the poses of objects in a named scene
+    + using UpdateScenePosesFunc =
+      std::function<void(const std::string &, const msgs::PosesStamped &)>
+
+1. **gazebo/rendering/RenderingIface.hh**
+    + API for directly updating the poses of objects in a named scene
+    + void `update_scene_poses`(const std::string &, const msgs::PosesStamped &)
+
+1. **gazebo/rendering/Scene.hh**
+    + API for directly updating the poses of objects in a scene
+    + void UpdatePoses(const msgs::PosesStamped &)
+
+1. **gazebo/physics/World.hh**
+    + public: const `sdf::World` GetSDFDom() const
+
+### Modifications
+
+1. **gazebo/rendering/JointVisual.hh**
+    + ***Deprecation:*** ArrowVisualPtr CreateAxis(const ignition::math::Vector3d &_axis, const bool _useParentFrame, const msgs::Joint::Type &_type);
+    + ***Replacement:*** ArrowVisualPtr CreateAxis(const ignition::math::Vector3d &_axis, const std::string &_xyzExpressedIn, const msgs::Joint::Type &_type);
+    + ***Deprecation:*** void UpdateAxis(ArrowVisualPtr _arrowVisual, const ignition::math::Vector3d &_axis, const bool _useParentFrame, const msgs::Joint::Type &_type);
+    + ***Replacement:*** void UpdateAxis(ArrowVisualPtr _arrowVisual, const ignition::math::Vector3d &_axis, const std::string &_xyzExpressedIn, const msgs::Joint::Type &_type);
+
+1. All instances of `ignition::math::Box` in the API are changed to `ignition::math::AxisAlignedBox`
+   to match the changes in ignition-math6.
+
+1. **gazebo/physics/JointController.hh**
+   Use new optional fields in `ignition::msgs::JointCmd` and
+   `ignition::msgs::PID` since the ign-msgs5 proto file uses `proto3`,
+   which doesn't allow optional fields and breaks existing functionality.
+
+1. **gazebo/physics/PresetManager.hh**
+   The PresetManager stores data internally with a map of `boost::any` values
+   and with the switch to sdformat9, the value may be stored as a `std::any`
+   within a `boost::any`, making it more complex to cast to a specific type.
+   This happens because the PresetManager stores the output of
+   `sdf::Element::GetAny` as boost::any values in its parameterMap and
+   calls `PhysicsEngine::SetParam` with these values.
+   Prior to libsdformat9, the GetAny function returned `boost::any`, but it now
+   returns `std::any`. The `gazebo::physics::PhysicsEngine::any_cast` helper
+   is provided to first check if a `boost::any` value contains a std::any,
+   and if so, perform a `std::any_cast<T>`.
+   Otherwise, it returns `boost::any_cast<T>`.
+   This `any_cast` helper should be used with `boost::any` values provided by
+   `Preset::GetParam`, `PresetManager::GetProfileParam`, and
+   `PresetManager::GetCurrentProfileParam`.
+
+1. **gazebo/physics/PhysicsIface.hh**
+    + A `std::function` argument is added to the API's for initializing worlds.
+      This argument can be called to directly update the poses of
+      objects in a rendering Scene. See **PhysicsTypes.hh** for the
+      definition of `UpdateScenePosesFunc`.
+    + ***Deprecation:*** void `physics::init_world`(WorldPtr)
+    + ***Replacement:*** void `physics::init_world`(WorldPtr, UpdateScenePosesFunc)
+    + ***Deprecation:*** void `physics::init_worlds`()
+    + ***Replacement:*** void `physics::init_worlds`(UpdateScenePosesFunc)
+
+1. **gazebo/physics/World.hh**
+    + A `std::function` argument is added to the API's for initializing worlds.
+      This argument can be called to directly update the poses of
+      objects in a rendering Scene. See **PhysicsTypes.hh** for the
+      definition of `UpdateScenePosesFunc`.
+    + ***Deprecation:*** void World::Init()
+    + ***Replacement:*** void World::Init(UpdateScenePosesFunc)
+
+1. **gazebo/rendering/MarkerManager.cc**
+    The `/marker` ignition transport service allows specifying the `id` field
+    of a marker to be created. If the `id` field is not specified, a random,
+    valid `id` is generated as a convenience for the user.
+    Due to the upgrade to `ign-msgs5`, which uses `proto3` syntax, an `id`
+    of `0` is indistinguishable from an unset `id`.
+    As such, an `id` of `0` will now trigger a random `id` to be generated,
+    and non-zero `id` values should be used instead.
+
+### Deletions
+
+1. **gazebo/physics/Joint.hh**
+    + ***Removed:*** protected: bool axisParentModelFrame[]
+    + ***Replacement:*** protected: std::string axisExpressedIn[]
+
+## Gazebo 9.x to 10.x
+
+### Additions
+1. **gazebo/physics/dart/DARTLink.hh**
+    + public: void AddSlaveBodyNode(dart::dynamics::BodyNode *_dtBodyNode);
+    + public: bool RemoveSlaveBodyNode(dart::dynamics::BodyNode *_dtBodyNode);
+1. **gazebo/physics/dart/DARTJoint.hh**
+    + public: virtual void SetName(const std::string &_name);
+1. **gazebo/physics/dart/DARTPhysics.hh**
+    + public: std::string GetSolverType() const;
+    + public: void SetSolverType(const std::string &_type);
+
+### Modifications
+
+1. **gazebo/physics/Model.hh**
+    + Made `CreateJoint` virtual
+    + Made `RemoveJoint` virtual
+1. WindPlugin now requires setting `<force_approximation_scaling_factor>` to
+   enable mass based force approximation. Set to 1.0 for original behavior.
+1. **gazebo/transport/TransportIface.hh**
+    + ***Removed:*** boost::shared_ptr<msgs::Response> request(const std::string &_worldName, const std::string &_request, const std::string &_data = "");
+    + ***Replacement:*** boost::shared_ptr<msgs::Response> request(const std::string &_worldName, const std::string &_request, const std::string &_data = "", const common::Time &_timeout = -1);
+    + ***Note:*** Added extra argument `_timeout`
+1. **gazebo/gui/qt_test.h**
+    + ***Removed:*** The whole header file. Note that it also won't be included into `gazebo/gui/gui.hh`.
+    + ***Replacement:*** Include `<QtTest/QtTest>` instead.
+
 ## Gazebo 8.4 to 9.x
 
 ### Models with duplicate names will not be inserted

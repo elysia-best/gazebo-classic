@@ -28,9 +28,7 @@
 #include "gazebo/common/Console.hh"
 #include "gazebo/common/ModelDatabase.hh"
 
-#ifdef HAVE_IGNITION_FUEL_TOOLS
-  #include "gazebo/common/FuelModelDatabase.hh"
-#endif
+#include "gazebo/common/FuelModelDatabase.hh"
 
 #include "gazebo/rendering/RenderingIface.hh"
 #include "gazebo/rendering/Scene.hh"
@@ -243,10 +241,6 @@ void InsertModelWidget::Update()
 }
 
 /////////////////////////////////////////////////
-#ifndef HAVE_IGNITION_FUEL_TOOLS
-void InsertModelWidget::OnUpdateFuel(const std::string &/*_server*/)
-{
-#else
 void InsertModelWidget::OnUpdateFuel(const std::string &_server)
 {
   auto fuelItem = this->dataPtr->fuelDetails[_server].modelFuelItem;
@@ -287,7 +281,6 @@ void InsertModelWidget::OnUpdateFuel(const std::string &_server)
   }
 
   this->dataPtr->fuelDetails[_server].modelBuffer.clear();
-#endif
 }
 
 /////////////////////////////////////////////////
@@ -311,7 +304,6 @@ void InsertModelWidget::OnModelSelection(QTreeWidgetItem *_item,
     QApplication::setOverrideCursor(Qt::BusyCursor);
 
     std::string filename;
-#ifdef HAVE_IGNITION_FUEL_TOOLS
     bool fuelModelSelected = false;
 
     // Check if this is a model from an Ignition Fuel server.
@@ -329,7 +321,6 @@ void InsertModelWidget::OnModelSelection(QTreeWidgetItem *_item,
       filename = common::FuelModelDatabase::Instance()->ModelFile(path);
     }
     else
-#endif
       filename = common::ModelDatabase::Instance()->GetModelFile(path);
 
     gui::Events::createEntity("model", filename);
@@ -532,7 +523,6 @@ bool InsertModelWidget::IsPathAccessible(const boost::filesystem::path &_path)
 /////////////////////////////////////////////////
 void InsertModelWidget::InitializeFuelServers()
 {
-#ifdef HAVE_IGNITION_FUEL_TOOLS
   if (!usingFuel())
     return;
 
@@ -542,7 +532,7 @@ void InsertModelWidget::InitializeFuelServers()
   // Populate the list of Ignition Fuel servers.
   for (auto const &server : servers)
   {
-    std::string serverURL = server.URL();
+    std::string serverURL = server.Url().Str();
     this->dataPtr->fuelDetails[serverURL];
 
     // Create a top-level tree item for the models hosted in this Fuel server.
@@ -555,13 +545,11 @@ void InsertModelWidget::InitializeFuelServers()
     this->dataPtr->fileTreeWidget->addTopLevelItem(
         this->dataPtr->fuelDetails[serverURL].modelFuelItem);
   }
-#endif
 }
 
 /////////////////////////////////////////////////
 void InsertModelWidget::PopulateFuelServers()
 {
-#ifdef  HAVE_IGNITION_FUEL_TOOLS
   if (!usingFuel())
     return;
 
@@ -570,7 +558,7 @@ void InsertModelWidget::PopulateFuelServers()
 
   for (auto const &server : servers)
   {
-    std::string serverURL = server.URL();
+    std::string serverURL = server.Url().Str();
 
     // This lamda will be executed asynchronously when we get the list of models
     // from this Ignition Fuel Server.
@@ -589,5 +577,4 @@ void InsertModelWidget::PopulateFuelServers()
 
     common::FuelModelDatabase::Instance()->Models(server, f);
   }
-#endif
 }

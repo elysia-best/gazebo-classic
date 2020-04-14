@@ -18,6 +18,7 @@
 #include <functional>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/make_shared.hpp>
 #include <ignition/math/Color.hh>
 #include <ignition/math/Helpers.hh>
 
@@ -162,6 +163,9 @@ Scene::Scene(const std::string &_name, const bool _enableVisualizations,
         &Scene::OnPoseMsg, this);
   }
   else
+  // When ready to use the direct API for updating scene poses from server,
+  // uncomment the following line and delete the if and else directly above
+  // if (!_isServer)
   {
     this->dataPtr->poseSub = this->dataPtr->node->Subscribe("~/pose/info",
         &Scene::OnPoseMsg, this);
@@ -204,6 +208,8 @@ Scene::Scene(const std::string &_name, const bool _enableVisualizations,
 //////////////////////////////////////////////////
 void Scene::Clear()
 {
+  this->dataPtr->initialized = false;
+
   this->dataPtr->connections.clear();
 
   this->dataPtr->poseSub.reset();
@@ -295,8 +301,6 @@ void Scene::Clear()
   this->dataPtr->skyxController = nullptr;
 
   RTShaderSystem::Instance()->RemoveScene(this->Name());
-
-  this->dataPtr->initialized = false;
 }
 
 //////////////////////////////////////////////////
@@ -498,12 +502,6 @@ std::string Scene::Name() const
 }
 
 //////////////////////////////////////////////////
-void Scene::SetAmbientColor(const common::Color &_color)
-{
-  this->SetAmbientColor(_color.Ign());
-}
-
-//////////////////////////////////////////////////
 void Scene::SetAmbientColor(const ignition::math::Color &_color)
 {
   this->dataPtr->sdf->GetElement("ambient")->Set(_color);
@@ -520,12 +518,6 @@ void Scene::SetAmbientColor(const ignition::math::Color &_color)
 ignition::math::Color Scene::AmbientColor() const
 {
   return this->dataPtr->sdf->Get<ignition::math::Color>("ambient");
-}
-
-//////////////////////////////////////////////////
-void Scene::SetBackgroundColor(const common::Color &_color)
-{
-  this->SetBackgroundColor(_color.Ign());
 }
 
 //////////////////////////////////////////////////
@@ -552,13 +544,6 @@ void Scene::SetBackgroundColor(const ignition::math::Color &_color)
 ignition::math::Color Scene::BackgroundColor() const
 {
   return this->dataPtr->sdf->Get<ignition::math::Color>("background");
-}
-
-//////////////////////////////////////////////////
-void Scene::CreateGrid(const uint32_t _cellCount, const float _cellLength,
-                       const float /*_lineWidth*/, const common::Color &_color)
-{
-  this->CreateGrid(_cellCount, _cellLength, _color.Ign());
 }
 
 //////////////////////////////////////////////////
@@ -874,9 +859,9 @@ VisualPtr Scene::VisualAt(CameraPtr _camera,
         _mod = Ogre::any_cast<std::string>(
             closestEntity->getUserObjectBindings().getUserAny());
       }
-      catch(boost::bad_any_cast &e)
+      catch(Ogre::Exception &e)
       {
-        gzerr << "boost any_cast error:" << e.what() << "\n";
+        gzerr << "Ogre any_cast error:" << e.what() << "\n";
       }
     }
 
@@ -885,9 +870,9 @@ VisualPtr Scene::VisualAt(CameraPtr _camera,
       visual = this->GetVisual(Ogre::any_cast<std::string>(
             closestEntity->getUserObjectBindings().getUserAny()));
     }
-    catch(boost::bad_any_cast &e)
+    catch(Ogre::Exception &e)
     {
-      gzerr << "boost any_cast error:" << e.what() << "\n";
+      gzerr << "Ogre any_cast error:" << e.what() << "\n";
     }
   }
 
@@ -1039,9 +1024,9 @@ void Scene::VisualsBelowPoint(const ignition::math::Vector3d &_pt,
           if (v)
             _visuals.push_back(v);
         }
-        catch(boost::bad_any_cast &e)
+        catch(Ogre::Exception &e)
         {
-          gzerr << "boost any_cast error:" << e.what() << "\n";
+          gzerr << "Ogre any_cast error:" << e.what() << "\n";
         }
       }
     }
@@ -1063,9 +1048,9 @@ VisualPtr Scene::VisualAt(CameraPtr _camera,
       visual = this->GetVisual(Ogre::any_cast<std::string>(
             closestEntity->getUserObjectBindings().getUserAny()));
     }
-    catch(boost::bad_any_cast &e)
+    catch(Ogre::Exception &e)
     {
-      gzerr << "boost any_cast error:" << e.what() << "\n";
+      gzerr << "Ogre any_cast error:" << e.what() << "\n";
     }
   }
 
@@ -1365,14 +1350,6 @@ void Scene::DrawLine(const ignition::math::Vector3d &_start,
 
   if (!attached)
     sceneNode->attachObject(obj);
-}
-
-//////////////////////////////////////////////////
-void Scene::SetFog(const std::string &_type, const common::Color &_color,
-                   const double _density, const double _start,
-                   const double _end)
-{
-  this->SetFog(_type, _color.Ign(), _density, _start, _end);
 }
 
 //////////////////////////////////////////////////
@@ -2195,7 +2172,8 @@ bool Scene::ProcessSensorMsg(ConstSensorPtr &_msg)
   if (!this->dataPtr->enableVisualizations)
     return true;
 
-  if ((_msg->type() == "ray" || _msg->type() == "gpu_ray") && _msg->visualize()
+  if ((_msg->type() == "lidar" || _msg->type() == "gpu_lidar" ||
+       _msg->type() == "ray" || _msg->type() == "gpu_ray") && _msg->visualize()
       && !_msg->topic().empty())
   {
     std::string rayVisualName = _msg->parent() + "::" + _msg->name();
@@ -2902,6 +2880,17 @@ void Scene::OnPoseMsg(ConstPosesStampedPtr &_msg)
 }
 
 /////////////////////////////////////////////////
+void Scene::UpdatePoses(const msgs::PosesStamped &_msg)
+{
+  auto msgptr = boost::make_shared<const msgs::PosesStamped>(_msg);
+  this->OnPoseMsg(msgptr);
+
+  std::unique_lock<std::mutex> lck(this->dataPtr->newPoseMutex);
+  this->dataPtr->newPoseAvailable = true;
+  this->dataPtr->newPoseCondition.notify_all();
+}
+
+/////////////////////////////////////////////////
 void Scene::OnSkeletonPoseMsg(ConstPoseAnimationPtr &_msg)
 {
   std::lock_guard<std::recursive_mutex> lock(this->dataPtr->poseMsgMutex);
@@ -3177,8 +3166,14 @@ void Scene::SetShadowsEnabled(bool _value)
 #if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 8
     this->dataPtr->manager->setShadowTechnique(
         Ogre::SHADOWTYPE_TEXTURE_ADDITIVE);
+#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 11
+    this->dataPtr->manager->setShadowTextureCasterMaterial(
+        Ogre::MaterialManager::getSingleton().getByName(
+            "DeferredRendering/Shadows/RSMCaster_Spot"));
+#else
     this->dataPtr->manager->setShadowTextureCasterMaterial(
         "DeferredRendering/Shadows/RSMCaster_Spot");
+#endif
     this->dataPtr->manager->setShadowTextureCount(1);
     this->dataPtr->manager->setShadowFarDistance(150);
     // Use a value of "2" to use a different depth buffer pool and

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 
 if(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW)
@@ -9,8 +9,8 @@ project (Gazebo)
 string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 string (TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
 
-set (GAZEBO_MAJOR_VERSION 9)
-set (GAZEBO_MINOR_VERSION 12)
+set (GAZEBO_MAJOR_VERSION 11)
+set (GAZEBO_MINOR_VERSION 0)
 # The patch version may have been bumped for prerelease purposes; be sure to
 # check gazebo-release/ubuntu/debian/changelog@default to determine what the
 # next patch version should be for a regular release.
@@ -154,7 +154,13 @@ message (STATUS "----------------------------------------\n")
 # 2. In the generation of cmake/setup.sh from cmake/setup.sh.in
 set(GAZEBO_DEFAULT_MASTER_HOST localhost)
 set(GAZEBO_DEFAULT_MASTER_PORT 11345)
-set(GAZEBO_PLUGIN_PATH ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}/gazebo-${GAZEBO_MAJOR_VERSION}/plugins)
+set(GAZEBO_PLUGIN_LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}/gazebo-${GAZEBO_MAJOR_VERSION}/plugins)
+set(GAZEBO_PLUGIN_BIN_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_DIR}/gazebo-${GAZEBO_MAJOR_VERSION}/plugins)
+if(WIN32)
+  set(GAZEBO_PLUGIN_PATH ${GAZEBO_PLUGIN_BIN_INSTALL_DIR})
+else()
+  set(GAZEBO_PLUGIN_PATH ${GAZEBO_PLUGIN_LIB_INSTALL_DIR})
+endif()
 FILE(TO_NATIVE_PATH "${GAZEBO_PLUGIN_PATH}" GAZEBO_PLUGIN_PATH)
 set(GAZEBO_MODEL_PATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/gazebo-${GAZEBO_MAJOR_VERSION}/models)
 FILE(TO_NATIVE_PATH "${GAZEBO_MODEL_PATH}" GAZEBO_MODEL_PATH)
@@ -291,11 +297,11 @@ message (STATUS "----------------------------------------\n")
 #################################################
 # Print warnings and errors
 if ( build_warnings )
-  message(STATUS "BUILD WARNINGS")
+  message("-- BUILD WARNINGS")
   foreach (msg ${build_warnings})
-    message(STATUS ${msg})
+    message("-- ${msg}")
   endforeach ()
-  message(STATUS "END BUILD WARNINGS\n")
+  message("-- END BUILD WARNINGS\n")
 endif (build_warnings)
 
 ########### Add uninstall target ###############
@@ -307,11 +313,11 @@ add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
 
 if (build_errors)
-  message(STATUS "BUILD ERRORS: These must be resolved before compiling.")
+  message("-- BUILD ERRORS: These must be resolved before compiling.")
   foreach (msg ${build_errors})
-    message(STATUS ${msg})
+    message("-- ${msg}")
   endforeach ()
-  message(STATUS "END BUILD ERRORS\n")
+  message("-- END BUILD ERRORS\n")
   message (FATAL_ERROR "Errors encountered in build. Please see the BUILD ERRORS above.")
 else (build_errors)
 
