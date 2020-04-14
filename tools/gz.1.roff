@@ -6,9 +6,7 @@
 .SH "SYNPOSIS"
 \fBgz\fR \fIcommand\fR [option]\.\.\. [argument]\.\.\.
 .
-.UNINDENT
 .SH COMMANDS
-.UNINDENT
 .SS camera
 .sp
 .nf
@@ -25,7 +23,6 @@ A camera name is required.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -50,7 +47,6 @@ List all cameras
 .B \-f, \-\-follow\fR=\fIarg\fR
 .
 Model to follow.
-.UNINDENT
 .SS debug
 .sp
 .nf
@@ -65,7 +61,6 @@ return the completion list for a given command.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -78,7 +73,6 @@ Print this help message
 .B \-o, \-\-option\fR=\fIarg\fR
 .
 Show the command options.
-.UNINDENT
 .SS help
 .sp
 .nf
@@ -92,7 +86,6 @@ Output information about a gz command.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -101,7 +94,6 @@ Print extra information
 .B \-h, \-\-help
 .
 Print this help message
-.UNINDENT
 .SS joint
 .sp
 .nf
@@ -129,7 +121,6 @@ with --vel-p, --vel-i, --vel-d to specify the PID parameters.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -186,7 +177,6 @@ Velocity integral gain.
 .B \-\-vel\-d\fR=\fIarg\fR
 .
 Velocity differential gain.
-.UNINDENT
 .SS log
 .sp
 .nf
@@ -202,7 +192,6 @@ an active Gazebo server.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -259,7 +248,6 @@ Specify the encoding (txt, zlib, or bz2) for an output file. Valid in conjunctio
 .B \-\-filter\fR=\fIarg\fR
 .
 Filter output. Valid only with the echo, step, and output commands
-.UNINDENT
 .SS marker
 .sp
 .nf
@@ -342,7 +330,6 @@ $ gz marker -m 'action: ADD_MODIFY, type: SPHERE, id: 2, scale: {x:0.2, y:0.4, z
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -395,7 +382,6 @@ Get a list of the visual markers.
 .B \-y, \-\-layer\fR=\fIarg\fR
 .
 Add or move a marker to the specified layer.
-.UNINDENT
 .SS model
 .sp
 .nf
@@ -412,7 +398,6 @@ will be used.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -461,7 +446,6 @@ Output model pose as a space separated 6\-tuple: x y z roll pitch yaw.
 .B \-P, \-\-pose\-P arg pitch in radians.
 .TP
 .B \-Y, \-\-pose\-Y arg yaw in radians.
-.UNINDENT
 .SS physics
 .sp
 .nf
@@ -477,7 +461,6 @@ the first world found on the Gazebo master will be used.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -510,7 +493,6 @@ Target real\-time update rate.
 .B \-o, \-\-profile\fR=\fIarg\fR
 .
 Preset physics profile.
-.UNINDENT
 .SS sdf
 .sp
 .nf
@@ -526,7 +508,6 @@ SDF for use with other options.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -559,7 +540,6 @@ Version of SDF to use with other options.
 .B \-p, \-\-print\fR=\fIarg\fR
 .
 Print arg, useful for debugging and as a conversion tool.
-.UNINDENT
 .SS stats
 .sp
 .nf
@@ -575,7 +555,6 @@ the Gazebo master will be used.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -596,7 +575,6 @@ Duration (seconds) to run.
 .B \-p, \-\-plot
 .
 Output comma\-separated values, useful for processing and plotting.
-.UNINDENT
 .SS topic
 .sp
 .nf
@@ -613,7 +591,6 @@ the Gazebo master will be used.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
@@ -674,7 +651,6 @@ Message to send on topic. Applicable with publish and request
 .B \-f, \-\-file\fR=\fIarg\fR
 .
 Path to a file containing the message to send on topic. Applicable with publish and request
-.UNINDENT
 .SS world
 .sp
 .nf
@@ -690,7 +666,6 @@ the first world found on the Gazebo master will be used.
 
 .sp
 Options:
-.INDENT 0.0
 .TP
 .B \-\-verbose
 .
