@@ -7,10 +7,10 @@ Subject: Bump std for make_unique in dart
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e93d65c..b135f3d 100644
+index 4678692..20e86ce 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -261,7 +261,7 @@ endif()
+@@ -267,7 +267,7 @@ endif()
  
  # Visual Studio enables c++11 support by default
  if (NOT MSVC)

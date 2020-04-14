@@ -1,7 +1,18 @@
-Description: Use system packaged gtest
-Author: Jose Luis Rivero <jrivero@osrfoundation.org>
-Last-Update: 2016-10-26
+From: Jose Luis Rivero <jrivero@osrfoundation.org>
+Date: Tue, 14 Apr 2020 16:31:14 +0200
+Subject: Use system packaged gtest
 
+Last-Update: 2016-10-26
+---
+ cmake/FindGtest.cmake   | 40 ++++++++++++++++++++++++++++++++++++++++
+ cmake/GazeboUtils.cmake |  1 -
+ test/CMakeLists.txt     | 13 ++++++++-----
+ 3 files changed, 48 insertions(+), 6 deletions(-)
+ create mode 100644 cmake/FindGtest.cmake
+
+diff --git a/cmake/FindGtest.cmake b/cmake/FindGtest.cmake
+new file mode 100644
+index 0000000..a154a2c
 --- /dev/null
 +++ b/cmake/FindGtest.cmake
 @@ -0,0 +1,40 @@
@@ -45,12 +56,11 @@ Last-Update: 2016-10-26
 +if(GTEST_FOUND)
 +  message(STATUS "GTest found (include: ${GTEST_INCLUDE_DIRS}, src: ${GTEST_SRC_DIR})")
 +endif(GTEST_FOUND)
-
 diff --git a/cmake/GazeboUtils.cmake b/cmake/GazeboUtils.cmake
-index 974a6d2..764dd28 100644
+index 15138fe..c192fa6 100644
 --- a/cmake/GazeboUtils.cmake
 +++ b/cmake/GazeboUtils.cmake
-@@ -193,7 +193,6 @@ endmacro()
+@@ -203,7 +203,6 @@ endmacro()
  # This should be migrated to more fine control solution based on set_property APPEND
  # directories. It's present on cmake 2.8.8 while precise version is 2.8.7
  link_directories(${PROJECT_BINARY_DIR}/test)

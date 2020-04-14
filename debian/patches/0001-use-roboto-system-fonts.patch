@@ -1,10 +1,16 @@
-Description: Use system packaged roboto fonts
-Author: Jose Luis Rivero <jrivero@osrfoundation.org>
-Last-Update: 2019-02-26
+From: Jose Luis Rivero <jrivero@osrfoundation.org>
+Date: Tue, 14 Apr 2020 16:31:14 +0200
+Subject: Use system packaged roboto fonts
 
-diff -r 9887261d5b3b gazebo/gui/resources.qrc
---- a/gazebo/gui/resources.qrc	Tue Feb 13 01:55:43 2018 +0000
-+++ b/gazebo/gui/resources.qrc	Thu Feb 15 19:48:33 2018 +0000
+Last-Update: 2019-02-26
+---
+ gazebo/gui/resources.qrc | 25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/gazebo/gui/resources.qrc b/gazebo/gui/resources.qrc
+index 7a7a6da..934d1d6 100644
+--- a/gazebo/gui/resources.qrc
++++ b/gazebo/gui/resources.qrc
 @@ -102,18 +102,17 @@
    <file>images/avi.svg</file>
    <file>images/v4l.svg</file>

@@ -1,9 +1,14 @@
-Description: Remove unknown roff commands
-Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+From: Jose Luis Rivero <jrivero@osrfoundation.org>
+Date: Tue, 14 Apr 2020 16:31:14 +0200
+Subject: Remove unknown roff commands
+
 Forwarded: no
+---
+ tools/gz.1.roff | 25 -------------------------
+ 1 file changed, 25 deletions(-)
 
 diff --git a/tools/gz.1.roff b/tools/gz.1.roff
-index 5af9f47..499046b 100644
+index 1bb6107..6fff55a 100644
 --- a/tools/gz.1.roff
 +++ b/tools/gz.1.roff
 @@ -6,9 +6,7 @@
@@ -72,7 +77,7 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -190,7 +181,6 @@ Velocity integral gain.
+@@ -186,7 +177,6 @@ Velocity integral gain.
  .B \-\-vel\-d\fR=\fIarg\fR
  .
  Velocity differential gain.
@@ -80,7 +85,7 @@ index 5af9f47..499046b 100644
  .SS log
  .sp
  .nf
-@@ -206,7 +196,6 @@ an active Gazebo server.
+@@ -202,7 +192,6 @@ an active Gazebo server.
  
  .sp
  Options:
@@ -88,7 +93,7 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -263,7 +252,6 @@ Specify the encoding (txt, zlib, or bz2) for an output file. Valid in conjunctio
+@@ -259,7 +248,6 @@ Specify the encoding (txt, zlib, or bz2) for an output file. Valid in conjunctio
  .B \-\-filter\fR=\fIarg\fR
  .
  Filter output. Valid only with the echo, step, and output commands
@@ -96,7 +101,7 @@ index 5af9f47..499046b 100644
  .SS marker
  .sp
  .nf
-@@ -346,7 +334,6 @@ $ gz marker -m 'action: ADD_MODIFY, type: SPHERE, id: 2, scale: {x:0.2, y:0.4, z
+@@ -342,7 +330,6 @@ $ gz marker -m 'action: ADD_MODIFY, type: SPHERE, id: 2, scale: {x:0.2, y:0.4, z
  
  .sp
  Options:
@@ -104,7 +109,7 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -399,7 +386,6 @@ Get a list of the visual markers.
+@@ -395,7 +382,6 @@ Get a list of the visual markers.
  .B \-y, \-\-layer\fR=\fIarg\fR
  .
  Add or move a marker to the specified layer.
@@ -112,7 +117,7 @@ index 5af9f47..499046b 100644
  .SS model
  .sp
  .nf
-@@ -416,7 +402,6 @@ will be used.
+@@ -412,7 +398,6 @@ will be used.
  
  .sp
  Options:
@@ -120,7 +125,7 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -465,7 +450,6 @@ Output model pose as a space separated 6\-tuple: x y z roll pitch yaw.
+@@ -461,7 +446,6 @@ Output model pose as a space separated 6\-tuple: x y z roll pitch yaw.
  .B \-P, \-\-pose\-P arg pitch in radians.
  .TP
  .B \-Y, \-\-pose\-Y arg yaw in radians.
@@ -128,7 +133,7 @@ index 5af9f47..499046b 100644
  .SS physics
  .sp
  .nf
-@@ -481,7 +465,6 @@ the first world found on the Gazebo master will be used.
+@@ -477,7 +461,6 @@ the first world found on the Gazebo master will be used.
  
  .sp
  Options:
@@ -136,7 +141,7 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -514,7 +497,6 @@ Target real\-time update rate.
+@@ -510,7 +493,6 @@ Target real\-time update rate.
  .B \-o, \-\-profile\fR=\fIarg\fR
  .
  Preset physics profile.
@@ -144,7 +149,7 @@ index 5af9f47..499046b 100644
  .SS sdf
  .sp
  .nf
-@@ -530,7 +512,6 @@ SDF for use with other options.
+@@ -526,7 +508,6 @@ SDF for use with other options.
  
  .sp
  Options:
@@ -152,7 +157,7 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -563,7 +544,6 @@ Version of SDF to use with other options.
+@@ -559,7 +540,6 @@ Version of SDF to use with other options.
  .B \-p, \-\-print\fR=\fIarg\fR
  .
  Print arg, useful for debugging and as a conversion tool.
@@ -160,7 +165,7 @@ index 5af9f47..499046b 100644
  .SS stats
  .sp
  .nf
-@@ -579,7 +559,6 @@ the Gazebo master will be used.
+@@ -575,7 +555,6 @@ the Gazebo master will be used.
  
  .sp
  Options:
@@ -168,7 +173,7 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -600,7 +579,6 @@ Duration (seconds) to run.
+@@ -596,7 +575,6 @@ Duration (seconds) to run.
  .B \-p, \-\-plot
  .
  Output comma\-separated values, useful for processing and plotting.
@@ -176,7 +181,7 @@ index 5af9f47..499046b 100644
  .SS topic
  .sp
  .nf
-@@ -616,7 +594,6 @@ the Gazebo master will be used.
+@@ -613,7 +591,6 @@ the Gazebo master will be used.
  
  .sp
  Options:
@@ -184,15 +189,15 @@ index 5af9f47..499046b 100644
  .TP
  .B \-\-verbose
  .
-@@ -661,7 +638,6 @@ Output data from echo without formatting.
- .B \-d, \-\-duration\fR=\fIarg\fR
+@@ -674,7 +651,6 @@ Message to send on topic. Applicable with publish and request
+ .B \-f, \-\-file\fR=\fIarg\fR
  .
- Duration (seconds) to run. Applicable with echo, hz, and bw
+ Path to a file containing the message to send on topic. Applicable with publish and request
 -.UNINDENT
  .SS world
  .sp
  .nf
-@@ -677,7 +653,6 @@ the first world found on the Gazebo master will be used.
+@@ -690,7 +666,6 @@ the first world found on the Gazebo master will be used.
  
  .sp
  Options:

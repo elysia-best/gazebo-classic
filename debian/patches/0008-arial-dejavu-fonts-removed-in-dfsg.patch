@@ -1,8 +1,15 @@
-Description: do not try to install arial and DejaVuSans fonts. 
- The fonts were removed in the dfsg process and has been replaced using .links
- file. Remove cmake instruction about it.
-Author: Jose Luis Rivero <jrivero@osrfoundation.org>
+From: Jose Luis Rivero <jrivero@osrfoundation.org>
+Date: Tue, 14 Apr 2020 16:31:14 +0200
+Subject: do not try to install arial and DejaVuSans fonts.
+
 Forwarded: not-needed
+
+The fonts were removed in the dfsg process and has been replaced using .links
+file. Remove cmake instruction about it.
+---
+ media/fonts/CMakeLists.txt     | 3 +--
+ media/gui/fonts/CMakeLists.txt | 1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/media/fonts/CMakeLists.txt b/media/fonts/CMakeLists.txt
 index f974026..88e00ed 100644
