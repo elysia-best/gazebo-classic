@@ -1,12 +1,13 @@
+include (${gazebo_cmake_dir}/FindGtest.cmake)
+
 include_directories (
   ${ODE_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${OGRE_INCLUDE_DIRS}
   ${SDFormat_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  ${PROJECT_SOURCE_DIR}/test/gtest/include
-  ${PROJECT_SOURCE_DIR}/test/gtest
-  ${PROJECT_SOURCE_DIR}/test
+  ${GTEST_INCLUDE_DIRS}/gtest/
+  ${GTEST_SRC_DIR}
 )
 
 link_directories(
@@ -33,8 +34,8 @@ if (WIN32)
 else()
   # No static on UNIX to avoid problems on ARM platforms linking
   # with no fPIC
-  add_library(gtest gtest/src/gtest-all.cc)
-  add_library(gtest_main gtest/src/gtest_main.cc)
+  add_library(gtest ${GTEST_SRC_DIR}/src/gtest-all.cc)
+  add_library(gtest_main ${GTEST_SRC_DIR}/src/gtest_main.cc)
   target_link_libraries(gtest pthread)
 endif()
 
@@ -42,6 +43,8 @@ target_link_libraries(gtest_main gtest)
 execute_process(COMMAND cmake -E remove_directory ${CMAKE_BINARY_DIR}/test_results)
 execute_process(COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/test_results)
 include_directories(${GTEST_INCLUDE_DIRS})
+
+include_directories(${PROJECT_SOURCE_DIR}/test)
 
 add_subdirectory(plugins)
 
