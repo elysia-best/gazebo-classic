@@ -56,6 +56,8 @@
 #include "gazebo/physics/World.hh"
 #include "gazebo/physics/Base.hh"
 
+#include "gazebo/rendering/RenderingIface.hh"
+
 #include "gazebo/Master.hh"
 #include "gazebo/Server.hh"
 
@@ -495,7 +497,7 @@ bool Server::LoadImpl(sdf::ElementPtr _elem,
       << " seconds for namespaces. Giving up.\n";
   }
 
-  physics::init_worlds();
+  physics::init_worlds(rendering::update_scene_poses);
   this->dataPtr->stop = false;
 
   return true;
@@ -616,10 +618,8 @@ void Server::ProcessParams()
       params.path = iter->second;
       params.period = this->dataPtr->vm["record_period"].as<double>();
       params.filter = this->dataPtr->vm["record_filter"].as<std::string>();
-      // TODO Remove call to SetRecordResources function and update to use
-      // params.record_resources instead.
-      util::LogRecord::Instance()->SetRecordResources(
-          this->dataPtr->params.count("record_resources") > 0);
+      params.recordResources =
+          this->dataPtr->params.count("record_resources") > 0;
       util::LogRecord::Instance()->Start(params);
     }
   }

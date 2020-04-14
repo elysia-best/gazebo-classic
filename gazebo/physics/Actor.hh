@@ -19,6 +19,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include <ignition/math/Color.hh>
@@ -38,8 +39,11 @@ namespace gazebo
 
   namespace physics
   {
+    class ActorPrivate;
+
     /// \brief Information about a trajectory for an Actor.
     /// This doesn't contain the keyframes information, just duration.
+    /// Equivalent to ignition::common::TrajectoryInfo
     class GZ_PHYSICS_VISIBLE TrajectoryInfo
     {
       /// \brief Constructor.
@@ -87,6 +91,12 @@ namespace gazebo
       /// \brief Load the actor
       /// \param[in] _sdf SDF parameters
       public: void Load(sdf::ElementPtr _sdf);
+
+      /// \brief Align BVH to DAE skin
+      /// \param[in] _skel BVH skeleton
+      /// \param[in] _skelMap joint mapping between DAE skin and BVH skeleton
+      public: void AlignBvh(common::Skeleton *_skel,
+          const std::map<std::string, std::string> &_skelMap);
 
       /// \brief Initialize the actor
       public: virtual void Init();
@@ -375,6 +385,9 @@ namespace gazebo
       /// \brief Custom trajectory.
       /// Used to control an actor with a plugin.
       private: TrajectoryInfoPtr customTrajectoryInfo;
+
+      /// \brief Pointer to private data.
+      private: std::unique_ptr<ActorPrivate> dataPtr;
     };
     /// \}
   }

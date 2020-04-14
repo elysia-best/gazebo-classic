@@ -162,34 +162,7 @@ void JointSpawningTest::SpawnJointTypes(const std::string &_physicsEngine,
     }
   }
 
-  if (_physicsEngine == "dart")
-  {
-    // DART assumes that: (i) every link has its parent joint (ii) root link
-    // is the only link that doesn't have parent link.
-    // Child world link breaks dart for now. Do we need to support it?
-    gzerr << "Skip tests for child world link cases "
-          << "since DART does not allow joint with world as child. "
-          << "Please see issue #914. "
-          << "(https://bitbucket.org/osrf/gazebo/issue/914)"
-          << std::endl;
-  }
-  else
-  {
-    gzdbg << "SpawnJoint " << _jointType << " world parent" << std::endl;
-    physics::JointPtr joint = SpawnJoint(_jointType, true, false);
-    ASSERT_TRUE(joint != nullptr);
-    // Check parent link
-    physics::LinkPtr child = joint->GetChild();
-    physics::LinkPtr parent = joint->GetParent();
-    EXPECT_TRUE(child == nullptr);
-    ASSERT_TRUE(parent != nullptr);
-    EXPECT_EQ(parent->GetChildJoints().size(), 1u);
-    EXPECT_EQ(parent->GetParentJoints().size(), 0u);
-    for (unsigned int i = 0; i < joint->DOF(); ++i)
-    {
-      CheckJointProperties(i, joint);
-    }
-  }
+  // world as child of a joint is not supported in sdf 1.7
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -255,39 +228,14 @@ void JointSpawningTest::SpawnJointRotationalWorld(
   ASSERT_TRUE(physics != nullptr);
   EXPECT_EQ(physics->GetType(), _physicsEngine);
 
-  physics::JointPtr joint;
-  for (unsigned int i = 0; i < 2; ++i)
   {
-    bool worldChild = (i == 0);
-    bool worldParent = (i == 1);
-    std::string child = worldChild ? "world" : "child";
-    std::string parent = worldParent ? "world" : "parent";
-    gzdbg << "SpawnJoint " << _jointType << " "
-          << child << " "
-          << parent << std::endl;
+    gzdbg << "SpawnJoint " << _jointType << " child world" << std::endl;
 
-    if ((_physicsEngine == "dart" || _physicsEngine == "simbody")
-        && worldChild)
-    {
-      // These physics engines don't support world as a child link.
-      // simbody https://bitbucket.org/osrf/gazebo/issue/861
-      // dart https://bitbucket.org/osrf/gazebo/issue/914
-      gzerr << "Skip tests for child world link cases since "
-            << _physicsEngine
-            << " does not allow joint with world as child. "
-            << "Please see bitbucket issues #861, #914."
-            << std::endl;
-      continue;
-    }
-
-    joint = SpawnJoint(_jointType, worldChild, worldParent);
+    physics::JointPtr joint = SpawnJoint(_jointType, false, true);
     ASSERT_TRUE(joint != nullptr);
 
     physics::LinkPtr link;
-    if (!worldChild)
-      link = joint->GetChild();
-    else if (!worldParent)
-      link = joint->GetParent();
+    link = joint->GetChild();
     ASSERT_TRUE(link != nullptr);
 
     auto initialPose = link->WorldPose();
@@ -542,7 +490,7 @@ INSTANTIATE_TEST_CASE_P(TestRuns, JointSpawningTest_All,
                   , "fixed"
                   , "ball"
                   , "revolute2"
-                  , "gearbox")));
+                  , "gearbox")),);  // NOLINT
 
 // Skip prismatic, screw, and revolute2 because they allow translation
 INSTANTIATE_TEST_CASE_P(TestRuns, JointSpawningTest_Rotational,
@@ -550,7 +498,7 @@ INSTANTIATE_TEST_CASE_P(TestRuns, JointSpawningTest_Rotational,
   ::testing::Values("revolute"
                   , "universal"
                   , "fixed"
-                  , "ball")));
+                  , "ball")),);  // NOLINT
 
 // Skip prismatic, screw, and revolute2 because they allow translation
 INSTANTIATE_TEST_CASE_P(TestRuns, JointSpawningTest_RotationalWorld,
@@ -558,7 +506,7 @@ INSTANTIATE_TEST_CASE_P(TestRuns, JointSpawningTest_RotationalWorld,
   ::testing::Values("revolute"
                   , "universal"
                   , "fixed"
-                  , "ball")));
+                  , "ball")),);  // NOLINT
 
 int main(int argc, char **argv)
 {

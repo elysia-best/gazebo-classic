@@ -506,7 +506,8 @@ JointData *JointMaker::CreateJointLine(const std::string &_name,
   jointData->parent = _parent;
   jointData->line = jointLine;
   jointData->type = this->dataPtr->jointType;
-  jointData->line->setMaterial(this->jointMaterials[jointData->type]);
+  GZ_OGRE_SET_MATERIAL_BY_NAME(jointData->line,
+                               this->jointMaterials[jointData->type]);
 
   return jointData;
 }
@@ -1221,7 +1222,7 @@ void JointData::Update()
   // Line
   if (this->line)
   {
-    this->line->setMaterial(material);
+    GZ_OGRE_SET_MATERIAL_BY_NAME(this->line, material);
 
     // Parent - child
     if (this->child && this->jointVisual)
@@ -1352,7 +1353,14 @@ void JointData::UpdateMsg()
         }
         msgs::Set(axisMsg->mutable_xyz(), this->axes[i]);
       }
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
       axisMsg->set_use_parent_model_frame(false);
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
       axisMsg->set_limit_lower(-ignition::math::MAX_D);
       axisMsg->set_limit_upper(ignition::math::MAX_D);
       axisMsg->set_limit_effort(-1);

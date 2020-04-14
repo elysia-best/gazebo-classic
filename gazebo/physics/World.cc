@@ -36,10 +36,8 @@
 #include <ignition/msgs/plugin_v.pb.h>
 #include <ignition/msgs/stringmsg.pb.h>
 
-#ifdef HAVE_IGNITION_FUEL_TOOLS
-  #include <ignition/common/URI.hh>
-  #include "gazebo/common/FuelModelDatabase.hh"
-#endif
+#include <ignition/common/URI.hh>
+#include "gazebo/common/FuelModelDatabase.hh"
 
 #include "gazebo/transport/Node.hh"
 #include "gazebo/transport/TransportIface.hh"
@@ -151,6 +149,9 @@ World::World(const std::string &_name)
 
   this->dataPtr->prevStatTime = common::Time::GetWallTime();
   this->dataPtr->prevProcessMsgsTime = common::Time::GetWallTime();
+  this->dataPtr->logLastStatePlayedSimTime = common::Time(0);
+  this->dataPtr->logLastStatePlayedRealTime = common::Time(0);
+  this->dataPtr->logPlayRealTimeFactor = 0.0;
 
   this->dataPtr->connections.push_back(
      event::Events::ConnectStep(std::bind(&World::OnStep, this)));
@@ -160,9 +161,7 @@ World::World(const std::string &_name)
 
   // Make sure dbs are initialized
   common::ModelDatabase::Instance();
-#ifdef HAVE_IGNITION_FUEL_TOOLS
   common::FuelModelDatabase::Instance();
-#endif
 }
 
 //////////////////////////////////////////////////
@@ -176,6 +175,21 @@ void World::Load(sdf::ElementPtr _sdf)
 {
   this->dataPtr->loaded = false;
   this->dataPtr->sdf = _sdf;
+
+  // Create a DOM object to compute the resolved initial pose (with frame
+  // semantics)
+  ignition::math::SemanticVersion sdfOriginalVersion(_sdf->OriginalVersion());
+  if (sdfOriginalVersion >= ignition::math::SemanticVersion(1, 7))
+  {
+    this->dataPtr->worldSDFDom = std::make_unique<sdf::World>();
+    sdf::Errors errors = this->dataPtr->worldSDFDom->Load(_sdf);
+
+    // Print errors and load the parts that worked.
+    for (const auto &error : errors)
+    {
+      gzerr << error << "\n";
+    }
+  }
 
   if (this->dataPtr->sdf->Get<std::string>("name").empty())
     gzwarn << "create_world(world_name =["
@@ -358,6 +372,11 @@ const sdf::ElementPtr World::SDF()
   return this->dataPtr->sdf;
 }
 
+const sdf::World *World::GetSDFDom() const
+{
+  return this->dataPtr->worldSDFDom.get();
+}
+
 //////////////////////////////////////////////////
 void World::Save(const std::string &_filename)
 {
@@ -380,6 +399,18 @@ void World::Save(const std::string &_filename)
 //////////////////////////////////////////////////
 void World::Init()
 {
+  this->Init(nullptr);
+}
+
+//////////////////////////////////////////////////
+void World::Init(UpdateScenePosesFunc _func)
+{
+  if (nullptr == this->dataPtr->rootElement)
+  {
+    gzerr << "Null root element. Not initializing." << std::endl;
+    return;
+  }
+
   // Initialize all the entities (i.e. Model)
   for (unsigned int i = 0; i < this->dataPtr->rootElement->GetChildCount(); ++i)
     this->dataPtr->rootElement->GetChild(i)->Init();
@@ -435,6 +466,8 @@ void World::Init()
     }
   }
 
+  this->dataPtr->updateScenePoses = _func;
+
   this->dataPtr->initialized = true;
 
   // Mark the world initialization
@@ -476,12 +509,16 @@ void World::Stop()
 {
   this->dataPtr->stop = true;
 
-  if (this->dataPtr->thread)
+  // Make sure that the thread does not try to join with itself
+  if (this->dataPtr->thread &&
+     this->dataPtr->thread->get_id() != std::this_thread::get_id())
   {
     this->dataPtr->thread->join();
     delete this->dataPtr->thread;
     this->dataPtr->thread = nullptr;
   }
+
+  event::Events::stop();
 }
 
 //////////////////////////////////////////////////
@@ -562,10 +599,32 @@ void World::LogStep()
       {
         this->dataPtr->stepInc = 1;
 
-        this->dataPtr->logPlayStateSDF->ClearElements();
+        this->dataPtr->logPlayStateSDF->Clear();
         sdf::readString(data, this->dataPtr->logPlayStateSDF);
 
         this->dataPtr->logPlayState.Load(this->dataPtr->logPlayStateSDF);
+
+        // If it's the first step, we're going back in time or
+        // rt factor is close to zero, don't sleep.
+        if ((this->dataPtr->logPlayRealTimeFactor > 1e-5) &&
+            (this->dataPtr->logLastStatePlayedRealTime != common::Time(0)) &&
+            (this->dataPtr->logLastStatePlayedSimTime != common::Time(0)) &&
+            (this->dataPtr->logLastStatePlayedSimTime <
+               this->dataPtr->logPlayState.GetSimTime()))
+        {
+          common::Time timeUntilNextStep =
+              common::Time((this->dataPtr->logPlayState.GetSimTime()
+                           - this->dataPtr->logLastStatePlayedSimTime).Double()
+                           / this->dataPtr->logPlayRealTimeFactor);
+          common::Time realTimeOfNextStep =
+              this->dataPtr->logLastStatePlayedRealTime + timeUntilNextStep;
+          common::Time realTimeSleep =
+              realTimeOfNextStep - common::Time::GetWallTime();
+          if (realTimeSleep > common::Time(0))
+          {
+            common::Time::Sleep(realTimeSleep);
+          }
+        }
 
         // If the log file does not contain iterations we have to manually
         // increase the iteration counter in logPlayState.
@@ -575,6 +634,9 @@ void World::LogStep()
             this->dataPtr->iterations + 1);
         }
 
+        this->dataPtr->logLastStatePlayedRealTime = common::Time::GetWallTime();
+        this->dataPtr->logLastStatePlayedSimTime =
+            this->dataPtr->logPlayState.GetSimTime();
         this->SetState(this->dataPtr->logPlayState);
         this->Update();
       }
@@ -1499,6 +1561,11 @@ void World::ProcessPlaybackControlMsgs()
       this->SetPaused(true);
       // ToDo: Update iterations if the log doesn't have it.
     }
+
+    if (msg.has_rt_factor())
+    {
+      this->dataPtr->logPlayRealTimeFactor = msg.rt_factor();
+    }
   }
 
   this->dataPtr->playbackControlMsgs.clear();
@@ -1983,7 +2050,7 @@ void World::ProcessFactoryMsgs()
 
   for (auto const &factoryMsg : factoryMsgsCopy)
   {
-    this->dataPtr->factorySDF->Root()->ClearElements();
+    this->dataPtr->factorySDF->Clear();
 
     if (factoryMsg.has_sdf() && !factoryMsg.sdf().empty())
     {
@@ -1998,7 +2065,6 @@ void World::ProcessFactoryMsgs()
             !factoryMsg.sdf_filename().empty())
     {
       std::string filename;
-#ifdef HAVE_IGNITION_FUEL_TOOLS
       // If http(s), look at Fuel
       auto uri = ignition::common::URI(factoryMsg.sdf_filename());
       if (uri.Valid() && (uri.Scheme() == "https" || uri.Scheme() == "http"))
@@ -2008,7 +2074,6 @@ void World::ProcessFactoryMsgs()
       }
       // Otherwise, look at database
       else
-#endif
       {
         filename = common::ModelDatabase::Instance()->GetModelFile(
             factoryMsg.sdf_filename());
@@ -2225,7 +2290,7 @@ void World::SetState(const WorldState &_state)
   auto insertions = _state.Insertions();
   for (auto const &insertion : insertions)
   {
-    this->dataPtr->factorySDF->Root()->ClearElements();
+    this->dataPtr->factorySDF->Clear();
 
     std::stringstream sdfStr;
     sdfStr << "<sdf version='" << SDF_VERSION << "'>"
@@ -2585,6 +2650,9 @@ void World::ProcessMessages()
     std::lock_guard<std::recursive_mutex> lock(this->dataPtr->receiveMutex);
 
     if ((this->dataPtr->posePub && this->dataPtr->posePub->HasConnections()) ||
+      // When ready to use the direct API for updating scene poses from server,
+      // uncomment the following line:
+      // this->dataPtr->updateScenePoses ||
         (this->dataPtr->poseLocalPub &&
          this->dataPtr->poseLocalPub->HasConnections()))
     {
@@ -2649,7 +2717,16 @@ void World::ProcessMessages()
         // rendering sensors to time stamp their data
         this->dataPtr->poseLocalPub->Publish(msg);
       }
+
+      // When ready to use the direct API for updating scene poses from server,
+      // uncomment the following lines:
+      // // Execute callback to export Pose msg
+      // if (this->dataPtr->updateScenePoses)
+      // {
+      //   this->dataPtr->updateScenePoses(this->Name(), msg);
+      // }
     }
+
     this->dataPtr->publishModelPoses.clear();
     this->dataPtr->publishLightPoses.clear();
   }

@@ -67,27 +67,31 @@ namespace gazebo
 
       /// \brief Load the model.
       /// \param[in] _sdf SDF parameters to load from.
-      public: void Load(sdf::ElementPtr _sdf);
+      public: void Load(sdf::ElementPtr _sdf) override;
 
       /// \brief Load all the joints.
       public: void LoadJoints();
 
       /// \brief Initialize the model.
-      public: virtual void Init();
+      public: virtual void Init() override;
 
       /// \brief Update the model.
-      public: void Update();
+      public: void Update() override;
 
       /// \brief Finalize the model.
-      public: virtual void Fini();
+      public: virtual void Fini() override;
 
       /// \brief Update the parameters using new sdf values.
       /// \param[in] _sdf SDF values to update from.
-      public: virtual void UpdateParameters(sdf::ElementPtr _sdf);
+      public: virtual void UpdateParameters(sdf::ElementPtr _sdf) override;
 
       /// \brief Get the SDF values for the model.
       /// \return The SDF value for this model.
-      public: virtual const sdf::ElementPtr GetSDF();
+      public: virtual const sdf::ElementPtr GetSDF() override;
+
+      /// \brief Get the SDF DOM for the model.
+      /// \return The SDF DOM for this model.
+      public: const sdf::Model *GetSDFDom() const;
 
       /// \internal
       /// \brief Get the SDF element for the model, without all effects of
@@ -102,7 +106,7 @@ namespace gazebo
       using Base::RemoveChild;
 
       /// \brief Reset the model.
-      public: void Reset();
+      public: void Reset() override;
       using Entity::Reset;
 
       /// \brief Reset the velocity, acceleration, force and torque of
@@ -117,63 +121,58 @@ namespace gazebo
       /// \param[in] _vel The new angular velocity.
       public: void SetAngularVel(const ignition::math::Vector3d &_vel);
 
-      /// \brief Set the linear acceleration of the model, and all its
-      /// links.
-      /// \param[in] _vel The new linear acceleration.
-      /// \deprecated acceleration should be achieved by applying a force.
-      public: void SetLinearAccel(const ignition::math::Vector3d &_vel)
-              GAZEBO_DEPRECATED(9.0);
-
-      /// \brief Set the angular acceleration of the model, and all its
-      /// links.
-      /// \param[in] _vel The new angular acceleration
-      /// \deprecated acceleration should be achieved by applying a force.
-      public: void SetAngularAccel(const ignition::math::Vector3d &_vel)
-              GAZEBO_DEPRECATED(9.0);
-
       /// \brief Get the linear velocity of the entity.
       /// \return ignition::math::Vector3d, set to 0, 0, 0
       /// if the model has no body.
-      public: virtual ignition::math::Vector3d RelativeLinearVel() const;
+      public: virtual ignition::math::Vector3d RelativeLinearVel() const
+          override;
 
       /// \brief Get the linear velocity of the entity in the world frame.
       /// \return ignition::math::Vector3d, set to 0, 0, 0 if the model has
       /// no body.
-      public: virtual ignition::math::Vector3d WorldLinearVel() const;
+      public: virtual ignition::math::Vector3d WorldLinearVel() const
+          override;
 
       /// \brief Get the angular velocity of the entity.
       /// \return ignition::math::Vector3d, set to 0, 0, 0 if the model
       /// has no body.
-      public: virtual ignition::math::Vector3d RelativeAngularVel() const;
+      public: virtual ignition::math::Vector3d RelativeAngularVel() const
+          override;
 
       /// \brief Get the angular velocity of the entity in the world frame.
       /// \return ignition::math::Vector3, set to 0, 0, 0 if the model
       /// has no body.
-      public: virtual ignition::math::Vector3d WorldAngularVel() const;
+      public: virtual ignition::math::Vector3d WorldAngularVel() const
+          override;
 
       /// \brief Get the linear acceleration of the entity.
       /// \return ignition::math::Vector3d, set to 0, 0, 0 if the model
       /// has no body.
-      public: virtual ignition::math::Vector3d RelativeLinearAccel() const;
+      public: virtual ignition::math::Vector3d RelativeLinearAccel() const
+          override;
 
       /// \brief Get the linear acceleration of the entity in the world frame.
       /// \return ignition::math::Vector3d, set to 0, 0, 0 if the model has
       /// no body.
-      public: virtual ignition::math::Vector3d WorldLinearAccel() const;
+      public: virtual ignition::math::Vector3d WorldLinearAccel() const
+          override;
 
       /// \brief Get the angular acceleration of the entity.
       /// \return ignition::math::Vector3d, set to 0, 0, 0 if the model
       /// has no body.
-      public: virtual ignition::math::Vector3d RelativeAngularAccel() const;
+      public: virtual ignition::math::Vector3d RelativeAngularAccel() const
+          override;
 
       /// \brief Get the angular acceleration of the entity in the world frame.
       /// \return ignition::math::Vector3d, set to 0, 0, 0 if the model has
       /// no body.
-      public: virtual ignition::math::Vector3d WorldAngularAccel() const;
+      public: virtual ignition::math::Vector3d WorldAngularAccel() const
+          override;
 
       /// \brief Get the size of the bounding box.
       /// \return The bounding box.
-      public: virtual ignition::math::Box BoundingBox() const;
+      public: virtual ignition::math::AxisAlignedBox BoundingBox() const
+          override;
 
       /// \brief Get the number of joints.
       /// \return Get the number of joints.
@@ -272,7 +271,7 @@ namespace gazebo
                boost::function<void()> _onComplete = NULL);
 
       /// \brief Stop the current animations.
-      public: virtual void StopAnimation();
+      public: virtual void StopAnimation() override;
 
       /// \brief Attach a static model to this model
       ///
@@ -416,7 +415,7 @@ namespace gazebo
       ///         returns NULL JointPtr() if joint by name _name
       ///         already exists.
       /// \throws common::Exception When _type is not recognized
-      public: gazebo::physics::JointPtr CreateJoint(
+      public: virtual gazebo::physics::JointPtr CreateJoint(
         const std::string &_name, const std::string &_type,
         physics::LinkPtr _parent, physics::LinkPtr _child);
 
@@ -429,12 +428,13 @@ namespace gazebo
       ///         returns NULL JointPtr() if joint by name _name
       ///         already exists.
       /// \throws common::Exception When _type is not recognized
-      public: gazebo::physics::JointPtr CreateJoint(sdf::ElementPtr _sdf);
+      public: virtual gazebo::physics::JointPtr CreateJoint(
+        sdf::ElementPtr _sdf);
 
       /// \brief Remove a joint for this model
       /// \param[in] _name name of joint
       /// \return true if successful, false if not.
-      public: bool RemoveJoint(const std::string &_name);
+      public: virtual bool RemoveJoint(const std::string &_name);
 
       /// \brief Set whether wind affects this body.
       /// \param[in] _mode True to enable wind.
@@ -474,11 +474,14 @@ namespace gazebo
       public: void PluginInfo(const common::URI &_pluginUri,
           ignition::msgs::Plugin_V &_plugins, bool &_success);
 
+      // Documentation inherited.
+      public: std::optional<sdf::SemanticPose> SDFSemanticPose() const override;
+
       /// \brief Callback when the pose of the model has been changed.
-      protected: virtual void OnPoseChange();
+      protected: virtual void OnPoseChange() override;
 
       /// \brief Register items in the introspection service.
-      protected: virtual void RegisterIntrospectionItems();
+      protected: virtual void RegisterIntrospectionItems() override;
 
       /// \brief Load all the links.
       private: void LoadLinks();
@@ -548,6 +551,14 @@ namespace gazebo
 
       /// \brief Mutex to protect incoming message buffers.
       private: std::mutex receiveMutex;
+
+      /// \brief SDF Model DOM object created by loading a model isolated from
+      /// its world. This is used when a model is spawned without a world
+      /// containing it.
+      private: std::unique_ptr<sdf::Model> modelSDFDomIsolated;
+
+      /// \brief SDF Model DOM object
+      private: const sdf::Model *modelSDFDom = nullptr;
     };
     /// \}
   }

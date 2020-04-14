@@ -37,13 +37,13 @@ set (sources
   BVHLoader.cc
   ColladaExporter.cc
   ColladaLoader.cc
-  Color.cc
   CommonIface.cc
   Console.cc
   Dem.cc
   Event.cc
   Events.cc
   Exception.cc
+  FuelModelDatabase.cc
   HeightmapData.cc
   Image.cc
   ImageHeightmap.cc
@@ -59,6 +59,7 @@ set (sources
   MouseEvent.cc
   OBJLoader.cc
   PID.cc
+  SdfFrameSemantics.cc
   SemanticVersion.cc
   SkeletonAnimation.cc
   Skeleton.cc
@@ -94,13 +95,13 @@ set (headers
   ColladaLoader.hh
   CommonIface.hh
   CommonTypes.hh
-  Color.hh
   Console.hh
   Dem.hh
   EnumIface.hh
   Event.hh
   Events.hh
   Exception.hh
+  FuelModelDatabase.hh
   MovingWindowFilter.hh
   HeightmapData.hh
   Image.hh
@@ -117,6 +118,7 @@ set (headers
   OBJLoader.hh
   PID.hh
   Plugin.hh
+  SdfFrameSemantics.hh
   SemanticVersion.hh
   SkeletonAnimation.hh
   Skeleton.hh
@@ -131,6 +133,7 @@ set (headers
   URI.hh
   Video.hh
   VideoEncoder.hh
+  WeakBind.hh
   ffmpeg_inc.h
  )
 
@@ -139,13 +142,13 @@ set (gtest_sources
   Battery_TEST.cc
   ColladaExporter_TEST.cc
   ColladaLoader_TEST.cc
-  Color_TEST.cc
   CommonIface_TEST.cc
   Console_TEST.cc
   Dem_TEST.cc
   EnumIface_TEST.cc
   Exception_TEST.cc
   Event_TEST.cc
+  FuelModelDatabase_TEST.cc
   HeightmapData_TEST.cc
   Image_TEST.cc
   ImageHeightmap_TEST.cc
@@ -164,6 +167,7 @@ set (gtest_sources
   Time_TEST.cc
   URI_TEST.cc
   VideoEncoder_TEST.cc
+  WeakBind_TEST.cc
 )
 
 # Timer test fails on OSX
@@ -200,21 +204,6 @@ endif()
 
 set (headers_install ${headers})
 
-# Do not install fuel_tools headers.
-if (HAVE_IGNITION_FUEL_TOOLS)
-  set (headers ${headers}
-    FuelModelDatabase.hh
-  )
-
-  set (sources ${sources}
-    FuelModelDatabase.cc
-  )
-
-  set (gtest_sources ${gtest_sources}
-    FuelModelDatabase_TEST.cc
-  )
-endif()
-
 gz_build_tests(${gtest_sources} EXTRA_LIBS gazebo_common ${tinyxml_LIBRARIES})
 
 set (common_headers "")
@@ -246,43 +235,46 @@ target_compile_definitions(gazebo_common
 )
 
 target_link_libraries(gazebo_common
-  ${IGNITION-MATH_LIBRARIES}
-  ${libdl_library}
-  ${libtool_library}
-  ${Boost_LIBRARIES}
-  ${freeimage_LIBRARIES}
-  ${tinyxml_LIBRARIES}
-  ${libavcodec_LIBRARIES}
-  ${libavformat_LIBRARIES}
-  ${libavutil_LIBRARIES}
-  ${libavdevice_LIBRARIES}
-  ${CURL_LIBRARIES}
-  ${libswscale_LIBRARIES}
-  ${libtar_LIBRARIES}
-  ${TBB_LIBRARIES}
-  ${SDFormat_LIBRARIES}
-  ${IGNITION-FUEL_TOOLS_LIBRARIES}
+  PUBLIC
+    ${Boost_LIBRARIES}
+    ${CURL_LIBRARIES}
+    ${freeimage_LIBRARIES}
+    ignition-common3::graphics
+    ${IGNITION-FUEL_TOOLS_LIBRARIES}
+    ${IGNITION-MATH_LIBRARIES}
+    ${libdl_library}
+    ${libtar_LIBRARIES}
+    ${SDFormat_LIBRARIES}
+    ${tinyxml_LIBRARIES}
+  PRIVATE
+    ${libtool_library}
+    ${libavcodec_LIBRARIES}
+    ${libavformat_LIBRARIES}
+    ${libavutil_LIBRARIES}
+    ${libavdevice_LIBRARIES}
+    ${libswscale_LIBRARIES}
+    ${TBB_LIBRARIES}
 )
 
 if (UNIX)
-  target_link_libraries(gazebo_common pthread)
+  target_link_libraries(gazebo_common PRIVATE pthread)
 endif()
 
 if (UNIX AND NOT APPLE)
   # rt is used for clock_gettime, which is not available on apple or windows
-  target_link_libraries(gazebo_common rt)
+  target_link_libraries(gazebo_common PRIVATE rt)
 endif()
 
 if (HAVE_GTS)
-  target_link_libraries(gazebo_common ${gts_LIBRARIES})
+  target_link_libraries(gazebo_common PRIVATE ${gts_LIBRARIES})
 endif()
 
 if (HAVE_OPENAL)
-  target_link_libraries(gazebo_common ${OPENAL_LIBRARY})
+  target_link_libraries(gazebo_common PRIVATE ${OPENAL_LIBRARY})
 endif()
 
 if (HAVE_GDAL)
-  target_link_libraries(gazebo_common ${GDAL_LIBRARY})
+  target_link_libraries(gazebo_common PRIVATE ${GDAL_LIBRARY})
 endif()
 
 if (USE_PCH)

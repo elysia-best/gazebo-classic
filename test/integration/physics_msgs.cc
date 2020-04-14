@@ -839,7 +839,7 @@ void PhysicsMsgsTest::JointMsg(const std::string &_physicsEngine)
   EXPECT_EQ(physics->GetType(), _physicsEngine);
 
   std::ostringstream sdfStream;
-  sdfStream << "<sdf version='" << SDF_VERSION << "'>"
+  sdfStream << "<sdf version='1.6'>"
     << "<model name ='joint_msg_test'>"
     << "<link name ='link1'>"
     << "  <pose>0 0 0 0 0 0</pose>"
@@ -968,7 +968,14 @@ void PhysicsMsgsTest::JointMsg(const std::string &_physicsEngine)
     msgs::Axis axis1Msg = jointMsg.axis1();
     EXPECT_EQ(msgs::ConvertIgn(axis1Msg.xyz()),
         ignition::math::Vector3d(1, 0, 0));
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     EXPECT_EQ(axis1Msg.use_parent_model_frame(), false);
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
     EXPECT_DOUBLE_EQ(axis1Msg.limit_lower(), -1);
     EXPECT_DOUBLE_EQ(axis1Msg.limit_upper(), 1);
     EXPECT_DOUBLE_EQ(axis1Msg.limit_effort(), -1);
@@ -976,7 +983,9 @@ void PhysicsMsgsTest::JointMsg(const std::string &_physicsEngine)
     EXPECT_DOUBLE_EQ(axis1Msg.damping(), 0.2);
     // only ode and bullet return correct hinge friction param value
     if (_physicsEngine == "ode" || _physicsEngine == "bullet")
+    {
       EXPECT_FLOAT_EQ(axis1Msg.friction(), 0.1);
+    }
   }
 
   {
@@ -991,7 +1000,14 @@ void PhysicsMsgsTest::JointMsg(const std::string &_physicsEngine)
     msgs::Axis axis1Msg = jointMsg.axis1();
     EXPECT_EQ(msgs::ConvertIgn(axis1Msg.xyz()),
         ignition::math::Vector3d(0, 1, 0));
+#ifndef _WIN32
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     EXPECT_EQ(axis1Msg.use_parent_model_frame(), false);
+#ifndef _WIN32
+# pragma GCC diagnostic pop
+#endif
     EXPECT_DOUBLE_EQ(axis1Msg.limit_lower(), -2);
     EXPECT_DOUBLE_EQ(axis1Msg.limit_upper(), 2);
     EXPECT_DOUBLE_EQ(axis1Msg.limit_effort(), -0.7);
@@ -999,7 +1015,9 @@ void PhysicsMsgsTest::JointMsg(const std::string &_physicsEngine)
     EXPECT_DOUBLE_EQ(axis1Msg.damping(), 0.3);
     // only ode returns correct screw friction param value
     if (_physicsEngine == "ode")
+    {
       EXPECT_DOUBLE_EQ(axis1Msg.friction(), 0.2);
+    }
     msgs::Joint::Screw screwMsg = jointMsg.screw();
     EXPECT_DOUBLE_EQ(screwMsg.thread_pitch(), 2);
   }
@@ -1021,7 +1039,7 @@ void PhysicsMsgsTest::JointMsg(const std::string &_physicsEngine)
     msgs::Axis axis1Msg = jointMsg.axis1();
     EXPECT_EQ(msgs::ConvertIgn(axis1Msg.xyz()),
         ignition::math::Vector3d(1, 0, 0));
-    EXPECT_EQ(axis1Msg.use_parent_model_frame(), false);
+    EXPECT_TRUE(axis1Msg.xyz_expressed_in().empty());
     EXPECT_DOUBLE_EQ(axis1Msg.limit_lower(), -1e6);
     EXPECT_DOUBLE_EQ(axis1Msg.limit_upper(), 1e6);
     EXPECT_DOUBLE_EQ(axis1Msg.limit_effort(), -0.9);
@@ -1032,7 +1050,7 @@ void PhysicsMsgsTest::JointMsg(const std::string &_physicsEngine)
     msgs::Axis axis2Msg = jointMsg.axis2();
     EXPECT_EQ(msgs::ConvertIgn(axis2Msg.xyz()),
         ignition::math::Vector3d(0, 0, 1));
-    EXPECT_EQ(axis2Msg.use_parent_model_frame(), true);
+    EXPECT_EQ(axis2Msg.xyz_expressed_in(), "__model__");
     EXPECT_DOUBLE_EQ(axis2Msg.limit_lower(), -1e3);
     EXPECT_DOUBLE_EQ(axis2Msg.limit_upper(), 1e3);
     EXPECT_DOUBLE_EQ(axis2Msg.limit_effort(), -0.8);
@@ -1090,7 +1108,7 @@ TEST_P(PhysicsMsgsTest, JointMsg)
 }
 
 INSTANTIATE_TEST_CASE_P(PhysicsEngines, PhysicsMsgsTest,
-                        PHYSICS_ENGINE_VALUES);
+                        PHYSICS_ENGINE_VALUES,);  // NOLINT
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
