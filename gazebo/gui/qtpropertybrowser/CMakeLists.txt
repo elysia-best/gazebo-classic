@@ -2,39 +2,30 @@ include (${gazebo_cmake_dir}/GazeboUtils.cmake)
 add_definitions(${Qt5Core_DEFINITIONS})
 include_directories(${Qt5Core_INCLUDE_DIRS})
 
-set (sources qtpropertybrowser.cpp 
-             qtpropertymanager.cpp
-             qteditorfactory.cpp
-             qtvariantproperty.cpp
-             qttreepropertybrowser.cpp
-             qtbuttonpropertybrowser.cpp
-             qtgroupboxpropertybrowser.cpp
-             qtpropertybrowserutils.cpp
- ) 
-
-set (qt_headers qtpropertybrowser.h 
-                qtpropertymanager.h
-                qteditorfactory.h
-                qtvariantproperty.h
-                qttreepropertybrowser.h
-                qtbuttonpropertybrowser.h
-                qtgroupboxpropertybrowser.h
-                qtpropertybrowserutils_p.h
+set (qt_headers /usr/include/qtpropertybrowser/qtpropertybrowser.h
+                /usr/include/qtpropertybrowser/qtpropertymanager.h
+                /usr/include/qtpropertybrowser/qteditorfactory.h
+                /usr/include/qtpropertybrowser/qtvariantproperty.h
+                /usr/include/qtpropertybrowser/qttreepropertybrowser.h
+                /usr/include/qtpropertybrowser/qtbuttonpropertybrowser.h
+                /usr/include/qtpropertybrowser/qtgroupboxpropertybrowser.h
+                /usr/include/qtpropertybrowser/qtpropertybrowserutils_p.h
   )
 
 set (resources qtpropertybrowser.qrc)
 QT5_ADD_RESOURCES(resources_RCC ${resources})
 
-add_library(gzqtpropertybrowser STATIC ${sources} ${resources_RCC})
-set_target_properties(gzqtpropertybrowser PROPERTIES POSITION_INDEPENDENT_CODE ON)
+#add_library(gzqtpropertybrowser STATIC ${sources} ${resources_RCC})
+#set_target_properties(gzqtpropertybrowser PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 # Visual Studio enables c++11 support by default
-if (NOT MSVC)
-  if(CMAKE_VERSION VERSION_LESS 3.8.2)
-    target_compile_options(gzqtpropertybrowser PUBLIC -std=c++11)
-  else()
-    target_compile_features(gzqtpropertybrowser PUBLIC cxx_std_11)
-  endif()
-endif()
+#if (NOT MSVC)
+#  if(CMAKE_VERSION VERSION_LESS 3.8.2)
+#    target_compile_options(gzqtpropertybrowser PUBLIC -std=c++11)
+#  else()
+#    target_compile_features(gzqtpropertybrowser PUBLIC cxx_std_11)
+#  endif()
+#endif()
 #set(CMAKE_PACKAGE_QTGUI TRUE)
 #
 #add_definitions( ${QT_DEFINITIONS} )

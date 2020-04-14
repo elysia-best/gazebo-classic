@@ -202,7 +202,7 @@ target_link_libraries(gazebo_gui
   gazebo_transport
   gazebo_rendering
   gazebo_msgs
-  gzqtpropertybrowser
+  /usr/lib/libqtpropertybrowser.so.4
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
   ${ogre_libraries}

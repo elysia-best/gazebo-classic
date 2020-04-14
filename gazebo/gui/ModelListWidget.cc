@@ -36,8 +36,8 @@
 #include "gazebo/gui/ModelListWidget.hh"
 #include "gazebo/gui/ModelListWidgetPrivate.hh"
 #include "gazebo/gui/ModelRightMenu.hh"
-#include "gazebo/gui/qtpropertybrowser/qttreepropertybrowser.h"
-#include "gazebo/gui/qtpropertybrowser/qtvariantproperty.h"
+#include "qtpropertybrowser/qttreepropertybrowser.h"
+#include "qtpropertybrowser/qtvariantproperty.h"
 
 #include "gazebo/rendering/Grid.hh"
 #include "gazebo/rendering/Light.hh"
