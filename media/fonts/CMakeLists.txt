@@ -1,5 +1,4 @@
-SET (files arial.ttf
-           console.ttf
+SET (files console.ttf
            font_arial.png
            font_matisse_itc.png
            Gazebo.fontdef
