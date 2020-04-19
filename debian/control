@@ -88,6 +88,7 @@ Description: Open Source Robotics Simulator - Shared files
 Package: gazebo9-common
 Depends: gazebo-common, ${misc:Depends}
 Architecture: all
+Multi-Arch: foreign
 Section: oldlibs
 Description: transitional package
  This is a transitional package. It can safely be removed.
@@ -116,6 +117,7 @@ Description: Open Source Robotics Simulator - Binaries
 Package: gazebo9
 Depends: gazebo, ${misc:Depends}
 Architecture: all
+Multi-Arch: foreign
 Section: oldlibs
 Description: transitional package
  This is a transitional package. It can safely be removed.
@@ -210,6 +212,7 @@ Description: Open Source Robotics Simulator - base plug-ins
 Package: gazebo9-plugin-base
 Depends: gazebo-plugin-base, ${misc:Depends}
 Architecture: all
+Multi-Arch: foreign
 Section: oldlibs
 Description: transitional package
  This is a transitional package. It can safely be removed.
@@ -235,6 +238,7 @@ Description: Open Source Robotics Simulator - Documentation
 Package: gazebo9-doc
 Depends: gazebo-doc, ${misc:Depends}
 Architecture: all
+Multi-Arch: foreign
 Section: oldlibs
 Description: transitional package
  This is a transitional package. It can safely be removed.
