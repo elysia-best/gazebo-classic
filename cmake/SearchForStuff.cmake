@@ -616,6 +616,10 @@ endif()
 find_package(Qt5 COMPONENTS Core Widgets OpenGL Test REQUIRED)
 
 ########################################
+# Find tinyobjloader
+find_package(tinyobjloader REQUIRED)
+
+########################################
 # Find Boost, if not specified manually
 include(FindBoost)
 find_package(Boost ${MIN_BOOST_VERSION} REQUIRED thread system filesystem program_options regex iostreams date_time)

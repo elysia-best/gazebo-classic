@@ -247,6 +247,7 @@ target_link_libraries(gazebo_common
     ${libavdevice_LIBRARIES}
     ${libswscale_LIBRARIES}
     ${TBB_LIBRARIES}
+    tinyobjloader::tinyobjloader
 )
 
 if (UNIX)

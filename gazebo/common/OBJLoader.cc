@@ -24,8 +24,7 @@
 #include "gazebo/common/Mesh.hh"
 #include "gazebo/common/OBJLoader.hh"
 
-#define GAZEBO_TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include <tiny_obj_loader.h>
 
 namespace gazebo
 {
