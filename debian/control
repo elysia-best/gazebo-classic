@@ -59,7 +59,8 @@ Build-Depends: cmake,
                libdart-external-odelcpsolver-dev,
                ronn,
                xsltproc,
-               libgtest-dev
+               libgtest-dev,
+               libtinyobjloader-dev,
 Standards-Version: 4.5.0
 Rules-Requires-Root: no
 Vcs-Browser: https://salsa.debian.org/science-team/gazebo
