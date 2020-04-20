@@ -1,3 +1,12 @@
+gazebo (11.0.0+dfsg1-1) unstable; urgency=medium
+
+  * Team upload.
+  * Switch d/watch to github
+  * Use system tinyobjloader (Closes: #958332)
+  * New upstream version 11.0.0+dfsg1
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Mon, 20 Apr 2020 19:44:45 +0200
+
 gazebo (11.0.0+dfsg-3) unstable; urgency=medium
 
   * Team upload.
