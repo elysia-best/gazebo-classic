@@ -6,3 +6,4 @@
 0006-pkg_config-boost-private.patch
 0007-Bump-std-for-make_unique-in-dart.patch
 0008-Support-CMAKE_BUILD_TYPE-None.patch
+0009-Use-system-tinyobjloader.patch

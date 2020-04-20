@@ -1,0 +1,69 @@
+From: Jochen Sprickerhof <jspricke@debian.org>
+Date: Mon, 20 Apr 2020 19:17:54 +0200
+Subject: Use system tinyobjloader
+
+---
+ cmake/SearchForStuff.cmake   |  4 ++++
+ gazebo/common/CMakeLists.txt |  1 +
+ gazebo/common/OBJLoader.cc   | 11 ++++++++---
+ 3 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/cmake/SearchForStuff.cmake b/cmake/SearchForStuff.cmake
+index a2663ee..b258cb9 100644
+--- a/cmake/SearchForStuff.cmake
++++ b/cmake/SearchForStuff.cmake
+@@ -611,6 +611,10 @@ endif()
+ # Find QT
+ find_package(Qt5 COMPONENTS Core Widgets OpenGL Test REQUIRED)
+ 
++########################################
++# Find tinyobjloader
++find_package(tinyobjloader REQUIRED)
++
+ ########################################
+ # Find Boost, if not specified manually
+ include(FindBoost)
+diff --git a/gazebo/common/CMakeLists.txt b/gazebo/common/CMakeLists.txt
+index 680bbc0..4087524 100644
+--- a/gazebo/common/CMakeLists.txt
++++ b/gazebo/common/CMakeLists.txt
+@@ -254,6 +254,7 @@ target_link_libraries(gazebo_common
+     ${libavdevice_LIBRARIES}
+     ${libswscale_LIBRARIES}
+     ${TBB_LIBRARIES}
++    tinyobjloader::tinyobjloader
+ )
+ 
+ if (UNIX)
+diff --git a/gazebo/common/OBJLoader.cc b/gazebo/common/OBJLoader.cc
+index 314035f..f8485aa 100644
+--- a/gazebo/common/OBJLoader.cc
++++ b/gazebo/common/OBJLoader.cc
+@@ -24,8 +24,7 @@
+ #include "gazebo/common/Mesh.hh"
+ #include "gazebo/common/OBJLoader.hh"
+ 
+-#define GAZEBO_TINYOBJLOADER_IMPLEMENTATION
+-#include "tiny_obj_loader.h"
++#include <tiny_obj_loader.h>
+ 
+ namespace gazebo
+ {
+@@ -70,10 +69,16 @@ Mesh *OBJLoader::Load(const std::string &_filename)
+   // convert polygons to triangles
+   bool triangulate = true;
+ 
++  std::string warn;
+   std::string err;
+-  bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err,
++  bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,
+       _filename.c_str(), path.c_str(), triangulate);
+ 
++  if (!warn.empty())
++  {
++    gzwarn << warn << std::endl;
++  }
++
+   if (!err.empty())
+   {
+     gzerr << err << std::endl;
