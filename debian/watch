@@ -1,3 +1,5 @@
 version=4
-opts=repack,repacksuffix=+dfsg,dversionmangle=s/\.dfsg// \
- https://bitbucket.org/osrf/gazebo/downloads/?tab=tags .*/gazebo.*_(\d\S+)\.tar\.gz
+opts=filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%@PACKAGE@-$1.tar.gz%,\
+    dversionmangle=s/\+(debian|dfsg|ds|deb)\d*$//,repacksuffix=+dfsg \
+    https://github.com/osrf/gazebo/tags \
+		(?:.*?/)@PACKAGE@.*_(\d[\d.]*)\.tar\.gz
