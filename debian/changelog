@@ -1,3 +1,10 @@
+gazebo (11.0.0+dfsg1-2) unstable; urgency=medium
+
+  * Team upload.
+  * Add missing dependency
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Mon, 20 Apr 2020 21:49:14 +0200
+
 gazebo (11.0.0+dfsg1-1) unstable; urgency=medium
 
   * Team upload.
