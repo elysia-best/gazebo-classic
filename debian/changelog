@@ -1,3 +1,10 @@
+gazebo (11.0.0+dfsg1-3) unstable; urgency=medium
+
+  * Team upload.
+  * Update build dependency (Closes: #961561)
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Tue, 26 May 2020 19:15:48 +0200
+
 gazebo (11.0.0+dfsg1-2) unstable; urgency=medium
 
   * Team upload.
