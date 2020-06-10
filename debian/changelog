@@ -1,3 +1,11 @@
+gazebo (11.0.0+dfsg1-4) unstable; urgency=high
+
+  * Team upload.
+  * debian/control: Update package dependency for DejaVu fonts.
+    (Closes: #962570) 
+
+ -- Boyuan Yang <byang@debian.org>  Tue, 09 Jun 2020 20:46:51 -0400
+
 gazebo (11.0.0+dfsg1-3) unstable; urgency=medium
 
   * Team upload.
