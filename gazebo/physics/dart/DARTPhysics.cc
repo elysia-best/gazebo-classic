@@ -25,6 +25,8 @@
 #include <dart/collision/dart/dart.hpp>
 #include <dart/collision/fcl/fcl.hpp>
 
+#include <ignition/common/Profiler.hh>
+
 #include "gazebo/common/Assert.hh"
 #include "gazebo/common/Console.hh"
 #include "gazebo/common/Exception.hh"
@@ -125,6 +127,7 @@ void DARTPhysics::Reset()
 //////////////////////////////////////////////////
 void DARTPhysics::InitForThread()
 {
+  IGN_PROFILE_THREAD_NAME("DARTPhysics");
 }
 
 
@@ -411,6 +414,9 @@ static void RetrieveDARTCollisions(
 //////////////////////////////////////////////////
 void DARTPhysics::UpdateCollision()
 {
+  IGN_PROFILE("DARTPhysics::UpdateCollision");
+  IGN_PROFILE_BEGIN("UpdateCollision");
+
   if (!this->world->PhysicsEnabled())
   {
     dart::collision::CollisionResult localResult;
@@ -427,11 +433,15 @@ void DARTPhysics::UpdateCollision()
 
     RetrieveDARTCollisions(this, &localResult, this->GetContactManager());
   }
+  IGN_PROFILE_END();
 }
 
 //////////////////////////////////////////////////
 void DARTPhysics::UpdatePhysics()
 {
+  IGN_PROFILE("DARTPhysics::UpdatePhysics");
+  IGN_PROFILE_BEGIN("Update");
+
   // need to lock, otherwise might conflict with world resetting
   boost::recursive_mutex::scoped_lock lock(*this->physicsUpdateMutex);
 
@@ -466,6 +476,7 @@ void DARTPhysics::UpdatePhysics()
         this,
         &(this->dataPtr->dtWorld->getLastCollisionResult()),
         this->GetContactManager());
+  IGN_PROFILE_END();
 }
 
 //////////////////////////////////////////////////
@@ -597,7 +608,7 @@ void DARTPhysics::SetSolverType(const std::string &_type)
   if (_type == "dantzig")
   {
     // DART constraint solver refactored in 6.7, see issue 2605
-    // https://bitbucket.org/osrf/gazebo/issues/2605
+    // https://github.com/osrf/gazebo/issues/2605
 #if DART_MAJOR_MINOR_VERSION_AT_MOST(6, 6)
     this->dataPtr->dtWorld->getConstraintSolver()->setLCPSolver(
         dart::common::make_unique<dart::constraint::DantzigLCPSolver>(
@@ -616,7 +627,7 @@ void DARTPhysics::SetSolverType(const std::string &_type)
   else if (_type == "pgs")
   {
     // DART constraint solver refactored in 6.7, see issue 2605
-    // https://bitbucket.org/osrf/gazebo/issues/2605
+    // https://github.com/osrf/gazebo/issues/2605
 #if DART_MAJOR_MINOR_VERSION_AT_MOST(6, 6)
     this->dataPtr->dtWorld->getConstraintSolver()->setLCPSolver(
         dart::common::make_unique<dart::constraint::PGSLCPSolver>(
@@ -755,7 +766,7 @@ bool DARTPhysics::SetParam(const std::string &_key, const boost::any &_value)
         // ODE collision detectors have to be disabled because it causes
         // conflicts with the version of the internally compiled ODE library.
         // See also discussion in the PR:
-        // https://bitbucket.org/osrf/gazebo/pull-requests/2956/
+        // https://osrf-migration.github.io/gazebo-gh-pages/#!/osrf/gazebo/pull-requests/2956/
         //   dart-heightmap-with-bullet-and-ode/diff#comment-81389484
         gzerr << "The use of the ODE collision detector with DART is disabled "
             << "because it causes conflicts with the version of ODE used in "
@@ -880,4 +891,3 @@ DARTLinkPtr DARTPhysics::FindDARTLink(
 {
   return StaticFindDARTLink(this, _dtBodyNode);
 }
-

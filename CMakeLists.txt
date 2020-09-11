@@ -5,12 +5,16 @@ if(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0004 NEW)
 endif(COMMAND CMAKE_POLICY)
 
+if(POLICY CMP0100)
+  cmake_policy(SET CMP0100 NEW)
+endif()
+
 project (Gazebo)
 string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 string (TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
 
 set (GAZEBO_MAJOR_VERSION 11)
-set (GAZEBO_MINOR_VERSION 0)
+set (GAZEBO_MINOR_VERSION 1)
 # The patch version may have been bumped for prerelease purposes; be sure to
 # check gazebo-release/ubuntu/debian/changelog@default to determine what the
 # next patch version should be for a regular release.
@@ -33,13 +37,21 @@ if(NOT DEFINED BUILD_TESTING)
     set(BUILD_TESTING OFF)
 endif()
 
+option(ENABLE_PROFILER "Enable Ignition Profiler" FALSE)
+
+if(ENABLE_PROFILER)
+  add_definitions("-DIGN_PROFILER_ENABLE=1")
+else()
+  add_definitions("-DIGN_PROFILER_ENABLE=0")
+endif()
+
 #============================================================================
 # We turn off extensions because (1) we do not ever want to use non-standard
 # compiler extensions, and (2) this variable is on by default, causing cmake
 # to choose the flag -std=gnu++14 instead of -std=c++14 when the C++14
 # features are requested. Explicitly turning this flag off will force cmake to
 # choose -std=c++14.
-# See https://bitbucket.org/ignitionrobotics/ign-cmake/issues/13 for more info.
+# See https://github.com/ignitionrobotics/ign-cmake/issues/13 for more info.
 set(CMAKE_CXX_EXTENSIONS off)
 
 ########################################
@@ -245,7 +257,7 @@ endif()
 # Check if warning options are avaliable for the compiler and return WARNING_CXX_FLAGS variable
 if (MSVC)
   # Default Windows-MSVC.cmake sets MSVC warning flag to /W3. Add some extra warning excludes.
-  set(WARN_LEVEL "/wd4005 /wd4068 /wd4244 /wd4267 /wd4996")
+  set(WARN_LEVEL "/wd4005 /wd4068 /wd4244 /wd4251 /wd4267 /wd4275 /wd4996")
 else()
   set(WARN_LEVEL "-Wall")
 endif()
@@ -256,7 +268,11 @@ filter_valid_compiler_flags(${WARN_LEVEL}
 # Check and add visibility hidden by default. Only in UNIX
 # Windows and MacosX does not handled properly the hidden compilation
 if (UNIX AND NOT APPLE)
-  filter_valid_compiler_flags(-fvisibility=hidden -fvisibility-inlines-hidden)
+  if (ENABLE_PROFILER)
+    filter_valid_compiler_flags(-fvisibility-inlines-hidden)
+  else()
+    filter_valid_compiler_flags(-fvisibility=hidden -fvisibility-inlines-hidden)
+  endif()
 endif()
 
 if (MSVC)
@@ -393,6 +409,8 @@ else (build_errors)
     endif()
     # Remove the prefix lib (not always present, like in pthread)
     string (REPLACE "lib" "" bname "${bname}")
+    # Some boost versions add the Boost:: component to cmake, need to change that to boost_ prefix
+    string (REPLACE "Boost::" "boost_" bname "${bname}")
     set (Boost_PKGCONFIG_LIBS "${Boost_PKGCONFIG_LIBS} ${bname}")
   endforeach(b)
 

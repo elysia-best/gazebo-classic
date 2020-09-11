@@ -29,9 +29,122 @@
 #include "gazebo/rendering/Scene.hh"
 #include "gazebo/rendering/DepthCamera.hh"
 #include "gazebo/rendering/DepthCameraPrivate.hh"
+#include "gazebo/rendering/RTShaderSystem.hh"
 
 using namespace gazebo;
 using namespace rendering;
+
+namespace gazebo
+{
+  namespace rendering
+  {
+    /// \class ReflectanceMaterialSwitcher ReflectanceMaterialSwitcher.hh
+    /// \brief Material switcher for reflectance
+    class GZ_RENDERING_VISIBLE ReflectanceMaterialSwitcher
+    {
+      /// \brief Constructor
+      /// \param[in] _scene Pointer to get the visuals
+      /// \param[in] viewport will be updated to see the effect of
+      /// the material switch.
+      public: explicit ReflectanceMaterialSwitcher(
+                  ScenePtr _scene, Ogre::Viewport* _viewport);
+
+      /// \brief Destructor
+      public: ~ReflectanceMaterialSwitcher() = default;
+
+      /// \brief Set the material scheme that will be applied to the models
+      /// in the editor
+      /// \param[in] _scheme Name of material scheme
+      public: void SetMaterialScheme(const std::string &_scheme);
+
+      /// \brief Get the material scheme applied to the models in the editor
+      /// \return Name of material scheme
+      public: std::string MaterialScheme() const;
+
+      /// \brief Ogre render target listener that adds and removes the
+      /// material listener on every render event
+      private: ReflectanceRenderTargetListenerPtr renderTargetListener;
+
+      /// \brief Ogre material listener that will handle switching the
+      /// material scheme
+      private: ReflectanceMaterialListenerPtr materialListener;
+
+      /// \brief viewport pointer to reflectance
+      private: Ogre::Viewport* viewport;
+
+      /// \brief Name of the original material scheme
+      private: std::string originalMaterialScheme;
+
+      /// \brief Name of the material scheme being used.
+      private: std::string materialScheme;
+    };
+
+    /// \class ReflectanceRenderTargetListener
+    /// \brief Ogre render target listener.
+    class ReflectanceRenderTargetListener : public Ogre::RenderTargetListener
+    {
+      /// \brief Constructor
+      /// \param[in] _switcher Material listener that will be added to or
+      /// removed from Ogre material manager's list of listeners.
+      public: explicit ReflectanceRenderTargetListener(
+                          const ReflectanceMaterialListenerPtr &_switcher);
+
+      /// \brief Destructor
+      public: ~ReflectanceRenderTargetListener() = default;
+
+      /// \brief Ogre's pre-render update callback
+      /// \param[in] _evt Ogre render target event containing information about
+      /// the source render target.
+      public: virtual void preRenderTargetUpdate(
+                  const Ogre::RenderTargetEvent &_evt);
+
+      /// \brief Ogre's post-render update callback
+      /// \param[in] _evt Ogre render target event containing information about
+      /// the source render target.
+      public: virtual void postRenderTargetUpdate(
+                  const Ogre::RenderTargetEvent &_evt);
+
+      /// \brief Reflectance material listener pointer
+      private: ReflectanceMaterialListenerPtr materialListener;
+    };
+
+    /// \class ReflectanceMaterialListener ReflectanceMaterialListener.hh
+    /// \brief reflectance material listener.
+    class ReflectanceMaterialListener : public Ogre::MaterialManager::Listener
+    {
+      /// \brief Constructor
+      /// \param[in] _scene Pointer to get the visuals.
+      public: explicit ReflectanceMaterialListener(ScenePtr _scene);
+
+      /// \brief Destructor
+      public: ~ReflectanceMaterialListener() = default;
+
+      /// \brief Ogre callback that is used to specify the material to use when
+      /// the requested scheme is not found
+      /// \param[in] _schemeIndex Index of scheme requested
+      /// \param[in] _schemeName Name of scheme requested
+      /// \param[in] _originalMaterial Orignal material that does not contain
+      /// the requested scheme
+      /// \param[in] _lodIndex The material level-of-detail
+      /// \param[in] _rend Pointer to the Ogre::Renderable object requesting
+      /// the use of the techinique
+      /// \return The Ogre material technique to use when scheme is not found.
+      public: virtual Ogre::Technique *handleSchemeNotFound(
+                  uint16_t _schemeIndex, const Ogre::String &_schemeName,
+                  Ogre::Material *_originalMaterial, uint16_t _lodIndex,
+                  const Ogre::Renderable *_rend);
+
+      /// \brief Scene pointer
+      private: ScenePtr scene;
+
+      /// \brief Default reflectance material
+      private: Ogre::MaterialPtr reflectanceMaterial;
+
+      /// \brief Black material for objects with no reflectance map
+      private: Ogre::MaterialPtr blackMaterial;
+    };
+  }
+}
 
 //////////////////////////////////////////////////
 DepthCamera::DepthCamera(const std::string &_namePrefix, ScenePtr _scene,
@@ -39,13 +152,9 @@ DepthCamera::DepthCamera(const std::string &_namePrefix, ScenePtr _scene,
   : Camera(_namePrefix, _scene, _autoRender),
     dataPtr(new DepthCameraPrivate)
 {
-  this->depthTarget = NULL;
-  this->dataPtr->depthBuffer = NULL;
-  this->dataPtr->depthMaterial = NULL;
-  this->dataPtr->pcdTarget = NULL;
-  this->dataPtr->pcdBuffer = NULL;
-  this->dataPtr->pcdMaterial = NULL;
   this->dataPtr->outputPoints = false;
+  this->dataPtr->outputReflectance = false;
+  this->dataPtr->outputNormals = false;
 }
 
 //////////////////////////////////////////////////
@@ -53,6 +162,12 @@ DepthCamera::~DepthCamera()
 {
   if (this->dataPtr->depthBuffer)
     delete [] this->dataPtr->depthBuffer;
+
+  if (this->dataPtr->reflectanceBuffer)
+    delete [] this->dataPtr->reflectanceBuffer;
+
+  if (this->dataPtr->normalsBuffer)
+    delete [] this->dataPtr->normalsBuffer;
 
   if (this->dataPtr->pcdBuffer)
     delete [] this->dataPtr->pcdBuffer;
@@ -62,9 +177,14 @@ DepthCamera::~DepthCamera()
 void DepthCamera::Load(sdf::ElementPtr _sdf)
 {
   Camera::Load(_sdf);
-  this->dataPtr->outputPoints =
-    (_sdf->GetElement("depth_camera")->Get<std::string>("output")
-    == "points");
+  std::string outputs = _sdf->GetElement("depth_camera")->
+                              Get<std::string>("output");
+  std::size_t found = outputs.find("points");
+  this->dataPtr->outputPoints =  found != std::string::npos;
+  found = outputs.find("reflectance");
+  this->dataPtr->outputReflectance =  found != std::string::npos;
+  found = outputs.find("normals");
+  this->dataPtr->outputNormals =  found != std::string::npos;
 }
 
 //////////////////////////////////////////////////
@@ -82,6 +202,20 @@ void DepthCamera::Init()
 //////////////////////////////////////////////////
 void DepthCamera::Fini()
 {
+  if (this->dataPtr->reflectanceViewport && this->scene)
+    RTShaderSystem::DetachViewport(this->dataPtr->reflectanceViewport,
+                                   this->scene);
+
+  if (this->dataPtr->reflectanceTarget)
+    this->dataPtr->reflectanceTarget->removeAllViewports();
+  this->dataPtr->reflectanceTarget = nullptr;
+
+  if (this->dataPtr->reflectanceTextures)
+    Ogre::TextureManager::getSingleton()
+          .remove(this->dataPtr->reflectanceTextures->getName());
+  this->dataPtr->reflectanceTextures = nullptr;
+
+  this->dataPtr->reflectanceMaterialSwitcher.reset();
   Camera::Fini();
 }
 
@@ -180,11 +314,93 @@ void DepthCamera::CreateDepthTexture(const std::string &_textureName)
 }
 
 //////////////////////////////////////////////////
+void DepthCamera::CreateReflectanceTexture(const std::string &_textureName)
+{
+  if (this->dataPtr->outputReflectance)
+  {
+    this->dataPtr->reflectanceTextures =
+      Ogre::TextureManager::getSingleton().createManual(
+      _textureName + "_reflectance",
+      "General",
+      Ogre::TEX_TYPE_2D,
+      this->ImageWidth(), this->ImageHeight(), 0,
+      Ogre::PF_FLOAT32_R,
+      Ogre::TU_RENDERTARGET).getPointer();
+
+    this->dataPtr->reflectanceTarget =
+        this->dataPtr->reflectanceTextures->getBuffer()->getRenderTarget();
+    this->dataPtr->reflectanceTarget->setAutoUpdated(false);
+
+    this->dataPtr->reflectanceViewport =
+        this->dataPtr->reflectanceTarget->addViewport(this->camera);
+    this->dataPtr->reflectanceViewport->setClearEveryFrame(true);
+
+    this->dataPtr->reflectanceViewport->setBackgroundColour(
+        Ogre::ColourValue(Ogre::ColourValue(0, 0, 0)));
+
+    this->dataPtr->reflectanceViewport->setOverlaysEnabled(false);
+    this->dataPtr->reflectanceViewport->setSkiesEnabled(false);
+    this->dataPtr->reflectanceViewport->setShadowsEnabled(false);
+    this->dataPtr->reflectanceViewport->setVisibilityMask(
+        GZ_VISIBILITY_ALL & ~(GZ_VISIBILITY_GUI | GZ_VISIBILITY_SELECTABLE));
+
+    this->dataPtr->reflectanceMaterialSwitcher.reset(
+        new ReflectanceMaterialSwitcher(this->scene,
+                                        this->dataPtr->reflectanceViewport));
+    this->dataPtr->reflectanceMaterialSwitcher->
+                   SetMaterialScheme("reflectance_map");
+  }
+}
+
+//////////////////////////////////////////////////
+void DepthCamera::CreateNormalsTexture(const std::string &_textureName)
+{
+  if (this->dataPtr->outputNormals)
+  {
+    this->dataPtr->normalsTextures =
+      Ogre::TextureManager::getSingleton().createManual(
+      _textureName + "_normals",
+      "General",
+      Ogre::TEX_TYPE_2D,
+      this->ImageWidth(), this->ImageHeight(), 0,
+      Ogre::PF_FLOAT32_RGBA,
+      Ogre::TU_RENDERTARGET).getPointer();
+
+    this->dataPtr->normalsTarget =
+        this->dataPtr->normalsTextures->getBuffer()->getRenderTarget();
+    this->dataPtr->normalsTarget->setAutoUpdated(false);
+
+    this->dataPtr->normalsViewport =
+        this->dataPtr->normalsTarget->addViewport(this->camera);
+    this->dataPtr->normalsViewport->setClearEveryFrame(true);
+
+    auto const &ignBG = this->scene->BackgroundColor();
+    this->dataPtr->normalsViewport->setBackgroundColour(
+        Conversions::Convert(ignBG));
+    this->dataPtr->normalsViewport->setOverlaysEnabled(false);
+    this->dataPtr->normalsViewport->setVisibilityMask(
+        GZ_VISIBILITY_ALL & ~(GZ_VISIBILITY_GUI | GZ_VISIBILITY_SELECTABLE));
+
+    this->dataPtr->normalsMaterial = (Ogre::Material*)(
+    Ogre::MaterialManager::getSingleton().getByName("Gazebo/XYZNormals").get());
+
+    this->dataPtr->normalsMaterial->getTechnique(0)->getPass(0)->
+        createTextureUnitState(_textureName + "_normals");
+
+    this->dataPtr->normalsMaterial->load();
+  }
+}
+
+//////////////////////////////////////////////////
 void DepthCamera::PostRender()
 {
   this->depthTarget->swapBuffers();
   if (this->dataPtr->outputPoints)
     this->dataPtr->pcdTarget->swapBuffers();
+  if (this->dataPtr->outputReflectance)
+    this->dataPtr->reflectanceTarget->swapBuffers();
+  if (this->dataPtr->outputNormals)
+    this->dataPtr->normalsTarget->swapBuffers();
 
   if (this->newData && this->captureData)
   {
@@ -239,8 +455,56 @@ void DepthCamera::PostRender()
       this->dataPtr->newRGBPointCloud(
           this->dataPtr->pcdBuffer, width, height, 1, "RGBPOINTS");
     }
-  }
 
+    if (this->dataPtr->outputReflectance)
+    {
+     Ogre::HardwarePixelBufferSharedPtr reflectancePixelBuffer;
+
+     reflectancePixelBuffer = this->dataPtr->reflectanceTextures->getBuffer();
+
+     // Blit the depth buffer if needed
+     if (!this->dataPtr->reflectanceBuffer)
+       this->dataPtr->reflectanceBuffer = new float[width * height * 1];
+
+     memset(this->dataPtr->reflectanceBuffer, 0, width * height * 1);
+
+     Ogre::Box reflectance_src_box(0, 0, width, height);
+     Ogre::PixelBox reflectance_dst_box(width, height,
+         1, Ogre::PF_FLOAT32_R, this->dataPtr->reflectanceBuffer);
+
+     reflectancePixelBuffer->lock(Ogre::HardwarePixelBuffer::HBL_NORMAL);
+     reflectancePixelBuffer->blitToMemory(reflectance_src_box,
+                                          reflectance_dst_box);
+     reflectancePixelBuffer->unlock();
+
+     this->dataPtr->newReflectanceFrame(
+         this->dataPtr->reflectanceBuffer, width, height, 1, "REFLECTANCE");
+    }
+
+    if (this->dataPtr->outputNormals)
+    {
+      Ogre::HardwarePixelBufferSharedPtr normalsPixelBuffer;
+
+      normalsPixelBuffer = this->dataPtr->normalsTextures->getBuffer();
+
+      // Blit the depth buffer if needed
+      if (!this->dataPtr->normalsBuffer)
+        this->dataPtr->normalsBuffer = new float[width * height * 4];
+
+      memset(this->dataPtr->normalsBuffer, 0, width * height * 4);
+
+      Ogre::Box normals_src_box(0, 0, width, height);
+      Ogre::PixelBox normals_dst_box(width, height,
+          1, Ogre::PF_FLOAT32_RGBA, this->dataPtr->normalsBuffer);
+
+      normalsPixelBuffer->lock(Ogre::HardwarePixelBuffer::HBL_NORMAL);
+      normalsPixelBuffer->blitToMemory(normals_src_box, normals_dst_box);
+      normalsPixelBuffer->unlock();
+
+      this->dataPtr->newNormalsPointCloud(
+          this->dataPtr->normalsBuffer, width, height, 1, "NORMALS");
+    }
+  }
   // also new image frame for camera texture
   Camera::PostRender();
 
@@ -252,7 +516,7 @@ void DepthCamera::UpdateRenderTarget(Ogre::RenderTarget *_target,
           Ogre::Material *_material, const std::string &_matName)
 {
   Ogre::RenderSystem *renderSys;
-  Ogre::Viewport *vp = NULL;
+  Ogre::Viewport *vp = nullptr;
   Ogre::SceneManager *sceneMgr = this->scene->OgreSceneManager();
   Ogre::Pass *pass;
 
@@ -271,8 +535,11 @@ void DepthCamera::UpdateRenderTarget(Ogre::RenderTarget *_target,
   vp = _target->getViewport(0);
 
   // return farClip in case no renderable object is inside frustrum
-  vp->setBackgroundColour(Ogre::ColourValue(this->FarClip(),
-      this->FarClip(), this->FarClip()));
+  if (_target == this->dataPtr->normalsTarget)
+    vp->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
+  else
+    vp->setBackgroundColour(Ogre::ColourValue(this->FarClip(),
+        this->FarClip(), this->FarClip()));
 
   Ogre::CompositorManager::getSingleton().setCompositorEnabled(
                                                 vp, _matName, true);
@@ -365,6 +632,25 @@ void DepthCamera::RenderImpl()
     sceneMgr->_suppressRenderStateChanges(false);
     sceneMgr->setShadowTechnique(shadowTech);
   }
+
+  if (this->dataPtr->outputReflectance)
+  {
+    this->dataPtr->reflectanceTarget->update(false);
+  }
+
+  if (this->dataPtr->outputNormals)
+  {
+    sceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
+    sceneMgr->_suppressRenderStateChanges(true);
+
+    this->UpdateRenderTarget(this->dataPtr->normalsTarget,
+                  this->dataPtr->normalsMaterial, "Gazebo/XYZNormals");
+
+    this->dataPtr->normalsTarget->update(false);
+
+    sceneMgr->_suppressRenderStateChanges(false);
+    sceneMgr->setShadowTechnique(shadowTech);
+  }
 }
 
 //////////////////////////////////////////////////
@@ -413,4 +699,209 @@ event::ConnectionPtr DepthCamera::ConnectNewRGBPointCloud(
     const std::string &)>  _subscriber)
 {
   return this->dataPtr->newRGBPointCloud.Connect(_subscriber);
+}
+
+//////////////////////////////////////////////////
+event::ConnectionPtr DepthCamera::ConnectNewReflectanceFrame(
+    std::function<void (const float*, unsigned int, unsigned int, unsigned int,
+    const std::string &)>  _subscriber)
+{
+  return this->dataPtr->newReflectanceFrame.Connect(_subscriber);
+}
+
+//////////////////////////////////////////////////
+event::ConnectionPtr DepthCamera::ConnectNewNormalsPointCloud(
+    std::function<void (const float *, unsigned int, unsigned int, unsigned int,
+    const std::string &)>  _subscriber)
+{
+  return this->dataPtr->newNormalsPointCloud.Connect(_subscriber);
+}
+
+/////////////////////////////////////////////////
+ReflectanceMaterialSwitcher::ReflectanceMaterialSwitcher(
+  ScenePtr _scene, Ogre::Viewport* _viewport)
+{
+  this->viewport = _viewport;
+  this->materialScheme = "";
+
+  if (!this->viewport)
+  {
+    gzerr << "Cannot create a material switcher for the reflectance material. "
+          << "viewport is nullptr" << std::endl;
+    return;
+  }
+
+  this->materialListener.reset(new ReflectanceMaterialListener(_scene));
+  this->renderTargetListener.reset(new ReflectanceRenderTargetListener(
+      this->materialListener));
+}
+
+/////////////////////////////////////////////////
+void ReflectanceMaterialSwitcher::SetMaterialScheme(const std::string &_scheme)
+{
+  if (!this->viewport)
+    return;
+
+  this->materialScheme = _scheme;
+  if (_scheme.empty())
+  {
+    this->viewport->setMaterialScheme(
+        this->originalMaterialScheme);
+    this->viewport->getTarget()->removeListener(
+        this->renderTargetListener.get());
+  }
+  else
+  {
+    this->originalMaterialScheme =
+        this->viewport->getMaterialScheme();
+
+    this->viewport->setMaterialScheme(_scheme);
+    this->viewport->getTarget()->addListener(
+        this->renderTargetListener.get());
+  }
+}
+
+/////////////////////////////////////////////////
+std::string ReflectanceMaterialSwitcher::MaterialScheme() const
+{
+  return this->materialScheme;
+}
+
+//////////////////////////////////////////////////
+ReflectanceRenderTargetListener::ReflectanceRenderTargetListener(
+  const ReflectanceMaterialListenerPtr &_switcher)
+  :materialListener(_switcher)
+{
+}
+
+//////////////////////////////////////////////////
+void ReflectanceRenderTargetListener::preRenderTargetUpdate(
+  const Ogre::RenderTargetEvent &/*_evt*/)
+{
+  Ogre::MaterialManager::getSingleton().addListener(
+      this->materialListener.get());
+}
+
+//////////////////////////////////////////////////
+void ReflectanceRenderTargetListener::postRenderTargetUpdate(
+  const Ogre::RenderTargetEvent & /*_evt*/)
+{
+  Ogre::MaterialManager::getSingleton().removeListener(
+      this->materialListener.get());
+}
+
+/////////////////////////////////////////////////
+ReflectanceMaterialListener::ReflectanceMaterialListener(ScenePtr _scene)
+:scene(_scene)
+{
+  // load the reflectance and black material
+  std::string material = "Gazebo/Reflectance";
+  Ogre::MaterialManager::getSingleton().load(material,
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  this->reflectanceMaterial =
+      Ogre::MaterialManager::getSingleton().getByName(material);
+
+  material = "Gazebo/Black";
+  Ogre::MaterialManager::getSingleton().load(material,
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  this->blackMaterial =
+      Ogre::MaterialManager::getSingleton().getByName("Gazebo/Black");
+}
+
+/////////////////////////////////////////////////
+Ogre::Technique *ReflectanceMaterialListener::handleSchemeNotFound(
+    uint16_t /*_schemeIndex*/, const Ogre::String & _schemeName,
+    Ogre::Material *_originalMaterial, uint16_t /*_lodIndex*/,
+    const Ogre::Renderable *_rend)
+{
+  if (_schemeName != "reflectance_map")
+    return _originalMaterial->getBestTechnique();
+
+  if (_rend && typeid(*_rend) == typeid(Ogre::SubEntity))
+  {
+    std::string material = "";
+    std::string reflectanceMap = "";
+
+    const Ogre::SubEntity *subEntity =
+      static_cast<const Ogre::SubEntity *>(_rend);
+
+    if (!subEntity)
+    {
+      gzerr << "Unable to get an Ogre sub-entity in reflectance "
+          << "material listener" << std::endl;
+      return nullptr;
+    }
+
+    // use the original material for gui visuals
+    if (!(subEntity->getParent()->getVisibilityFlags() &
+        (GZ_VISIBILITY_ALL &  ~(GZ_VISIBILITY_GUI | GZ_VISIBILITY_SELECTABLE))))
+    {
+      Ogre::Technique *originalTechnique = _originalMaterial->getTechnique(0);
+      if (originalTechnique)
+        return originalTechnique;
+    }
+    else
+    {
+      Ogre::Entity *entity = subEntity->getParent();
+      if (!entity)
+      {
+        gzerr << "Unable to get an Ogre entity in reflectance material listener"
+            << std::endl;
+        return nullptr;
+      }
+
+      if (entity->getUserObjectBindings().getUserAny().isEmpty())
+        return nullptr;
+
+      std::string userAny = "";
+      try
+      {
+        userAny = Ogre::any_cast<std::string>(
+            entity->getUserObjectBindings().getUserAny());
+      }
+      catch(Ogre::Exception &e)
+      {
+        gzerr << "Unable to cast Ogre user data in reflectance "
+            << "material listener" << std::endl;
+        return nullptr;
+      }
+
+      rendering::VisualPtr visual = scene->GetVisual(userAny);
+
+      if (!visual)
+        return nullptr;
+
+      Ogre::MaterialPtr mat;
+      const Ogre::Any reflectanceMapAny = visual->GetSceneNode()->
+          getUserObjectBindings().getUserAny("reflectance_map");
+      if (!reflectanceMapAny.isEmpty())
+      {
+        reflectanceMap = Ogre::any_cast<std::string>(reflectanceMapAny);
+
+        // clone the material for each unique reflectance map
+        std::string materialUnique = "Gazebo/Reflectance_" + reflectanceMap;
+        mat = Ogre::MaterialManager::getSingleton().getByName(materialUnique);
+        if (mat.isNull())
+        {
+          mat = this->reflectanceMaterial->clone(materialUnique);
+          Ogre::Technique *technique = mat->getTechnique(0);
+          if (!reflectanceMap.empty())
+          {
+            Ogre::TextureUnitState *tus = technique->getPass(0)->
+                getTextureUnitState(0);
+            tus->setTextureName(reflectanceMap);
+          }
+        }
+      }
+      else
+      {
+        mat = this->blackMaterial;
+      }
+      GZ_ASSERT(!mat.isNull(), "Reflectance material is null");
+      Ogre::Technique *technique = mat->getTechnique(0);
+
+      return technique;
+    }
+  }
+  return nullptr;
 }
