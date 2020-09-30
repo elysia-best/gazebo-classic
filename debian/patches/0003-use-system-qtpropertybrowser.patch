@@ -10,7 +10,7 @@ Last-Update: 2018-02-15
  3 files changed, 13 insertions(+), 23 deletions(-)
 
 diff --git a/gazebo/gui/CMakeLists.txt b/gazebo/gui/CMakeLists.txt
-index 81e6576..02a022f 100644
+index 81e6576e..02a022f1 100644
 --- a/gazebo/gui/CMakeLists.txt
 +++ b/gazebo/gui/CMakeLists.txt
 @@ -202,7 +202,7 @@ target_link_libraries(gazebo_gui
@@ -23,7 +23,7 @@ index 81e6576..02a022f 100644
    ${Qt5Widgets_LIBRARIES}
    ${ogre_libraries}
 diff --git a/gazebo/gui/ModelListWidget.cc b/gazebo/gui/ModelListWidget.cc
-index cd06963..fc8b7db 100644
+index cd069634..fc8b7db5 100644
 --- a/gazebo/gui/ModelListWidget.cc
 +++ b/gazebo/gui/ModelListWidget.cc
 @@ -36,8 +36,8 @@
@@ -38,10 +38,10 @@ index cd06963..fc8b7db 100644
  #include "gazebo/rendering/Grid.hh"
  #include "gazebo/rendering/Light.hh"
 diff --git a/gazebo/gui/qtpropertybrowser/CMakeLists.txt b/gazebo/gui/qtpropertybrowser/CMakeLists.txt
-index 0096e67..91fd6d0 100644
+index 6c03b84b..c7144c24 100644
 --- a/gazebo/gui/qtpropertybrowser/CMakeLists.txt
 +++ b/gazebo/gui/qtpropertybrowser/CMakeLists.txt
-@@ -2,31 +2,21 @@ include (${gazebo_cmake_dir}/GazeboUtils.cmake)
+@@ -2,31 +2,22 @@ include (${gazebo_cmake_dir}/GazeboUtils.cmake)
  add_definitions(${Qt5Core_DEFINITIONS})
  include_directories(${Qt5Core_INCLUDE_DIRS})
  
@@ -80,6 +80,7 @@ index 0096e67..91fd6d0 100644
 -set_target_properties(gzqtpropertybrowser PROPERTIES POSITION_INDEPENDENT_CODE ON)
 +#add_library(gzqtpropertybrowser STATIC ${sources} ${resources_RCC})
 +#set_target_properties(gzqtpropertybrowser PROPERTIES POSITION_INDEPENDENT_CODE ON)
- #set(CMAKE_PACKAGE_QTGUI TRUE)
- #
- #add_definitions( ${QT_DEFINITIONS} )
++
+ # Visual Studio enables c++11 support by default
+ if (NOT MSVC)
+   if(CMAKE_VERSION VERSION_LESS 3.8.2)
