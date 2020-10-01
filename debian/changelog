@@ -1,3 +1,9 @@
+gazebo (11.1.0+dfsg-2) unstable; urgency=medium
+
+  * Fix qtpropertybrowser patch
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 01 Oct 2020 09:15:49 +0000
+
 gazebo (11.1.0+dfsg-1) unstable; urgency=medium
 
   * New upstream version 11.1.0
