@@ -1,3 +1,9 @@
+gazebo (11.1.0+dfsg-3) unstable; urgency=medium
+
+  * No static plugins anymore to install
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 01 Oct 2020 11:34:40 +0000
+
 gazebo (11.1.0+dfsg-2) unstable; urgency=medium
 
   * Fix qtpropertybrowser patch
