@@ -1,3 +1,10 @@
+gazebo (11.1.0+dfsg-5) unstable; urgency=medium
+
+  * Team upload.
+  * libgazebo-dev Depends on Protobuf API version (Closes: #985660)
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Sun, 21 Mar 2021 22:21:29 +0100
+
 gazebo (11.1.0+dfsg-4) unstable; urgency=medium
 
   * Team upload.
