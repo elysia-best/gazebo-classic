@@ -1,3 +1,10 @@
+gazebo (11.1.0+dfsg-4) unstable; urgency=medium
+
+  * Team upload.
+  * Add patch for Boost 1.74 (Closes: #975268)
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Thu, 19 Nov 2020 20:57:57 +0100
+
 gazebo (11.1.0+dfsg-3) unstable; urgency=medium
 
   * No static plugins anymore to install
