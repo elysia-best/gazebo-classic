@@ -2,6 +2,11 @@
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
+# see #985660
+# extract the protobuf API version package and add it to d/control
+# Needed because protobuf generated headers are only compatible with that version
+protobufapi := $(shell dpkg-query -W -f '$${Provides}' libprotobuf-dev | grep -o 'protobuf-api-[^ ]*')
+
 override_dh_auto_configure:
 	dh_auto_configure -- \
                 -DUSE_HOST_CFLAGS:BOOL=False \
@@ -17,6 +22,9 @@ override_dh_install:
 	rm -f debian/gazebo-common/usr/share/gazebo-*/media/gui/fonts/DejaVuSans.ttf
 	# Remove old script
 	rm -f debian/gazebo/usr/bin/gzprop
+
+execute_before_dh_gencontrol:
+	echo 'protobuf:API=$(protobufapi)' >> debian/libgazebo-dev.substvars
 
 # Tests needs an X server running and GPU acceleration
 override_dh_auto_test:

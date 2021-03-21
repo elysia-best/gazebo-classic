@@ -172,7 +172,8 @@ Depends: libtbb-dev,
          libgazebo11 (= ${binary:Version}),
          gazebo-common (= ${source:Version}),
          gazebo-plugin-base (= ${binary:Version}),
-         ${misc:Depends}
+         ${misc:Depends},
+         ${protobuf:API},
 Breaks: libgazebo7-dev, libgazebo9-dev (<< 11.0.0+dfsg-1~)
 Replaces: libgazebo7-dev, libgazebo9-dev (<< 11.0.0+dfsg-1~)
 Description: Open Source Robotics Simulator - Development Files
