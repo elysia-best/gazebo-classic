@@ -1,2 +1,3 @@
 Tests: build
 Depends: @, pkg-config, build-essential
+Restrictions: superficial
