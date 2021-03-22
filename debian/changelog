@@ -1,3 +1,10 @@
+gazebo (11.1.0+dfsg-6) unstable; urgency=medium
+
+  * Team upload.
+  * Mark test superficial
+
+ -- Jochen Sprickerhof <jspricke@debian.org>  Mon, 22 Mar 2021 22:21:38 +0100
+
 gazebo (11.1.0+dfsg-5) unstable; urgency=medium
 
   * Team upload.
