@@ -2,7 +2,7 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: gazebo
 Upstream-Contact: gazebo@osrfoundation.org
 Source: http://gazebosim.org/
-Files-Excluded: NEWS media/fonts/arial.ttf media/gui/fonts/DejaVuSans.ttf gazebo/gui/fonts test/gtest configure.bat .hg* deps/tinyxml2 deps/win deps/libccd deps/fcl deps/ann deps/parallel_quickstep  gazebo/gui/qtpropertybrowser/*.cpp  gazebo/gui/qtpropertybrowser/*.h examples/stand_alone/test_fixture/gtest deps/tinyobjloader/tiny_obj_loader.h
+Files-Excluded: NEWS media/fonts/arial.ttf media/gui/fonts/DejaVuSans.ttf gazebo/gui/fonts test/gtest configure.bat .hg* deps/tinyxml2 deps/win deps/libccd deps/fcl deps/ann deps/parallel_quickstep  gazebo/gui/qtpropertybrowser/*.cpp  gazebo/gui/qtpropertybrowser/*.h examples/stand_alone/test_fixture/gtest deps/tinyobjloader/tiny_obj_loader.h .github win_addpath.bat
 
 Files: *
 Copyright: 2017, Google, Inc
