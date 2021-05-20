@@ -873,7 +873,8 @@ namespace gazebo
         msgs::Set(result.mutable_scale(),
             _sdf->Get<ignition::math::Vector3d>("scale"));
 
-        result.set_filename(_sdf->Get<std::string>("uri"));
+        result.set_filename(common::asFullPath(_sdf->Get<std::string>("uri"),
+            _sdf->FilePath()));
 
         if (_sdf->HasElement("submesh"))
         {
@@ -1806,12 +1807,12 @@ namespace gazebo
       if (_sdf->HasElement("topic"))
         result.set_topic(_sdf->Get<std::string>("topic"));
 
-      if (type == "camera")
+      if (type == "camera" || type == "depth")
       {
         result.mutable_camera()->CopyFrom(
             msgs::CameraSensorFromSDF(_sdf->GetElement("camera")));
       }
-      else if (type == "ray")
+      else if (type == "ray" || type == "gpu_ray")
       {
         result.mutable_ray()->CopyFrom(msgs::RaySensorFromSDF(
             _sdf->GetElement("ray")));
