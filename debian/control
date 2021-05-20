@@ -5,7 +5,7 @@ Section: science
 Priority: optional
 Build-Depends: cmake,
                pkg-config,
-               debhelper-compat (= 12),
+               debhelper-compat (= 13),
                bash-completion,
                doxygen,
                doxygen-latex,
@@ -61,7 +61,7 @@ Build-Depends: cmake,
                xsltproc,
                libgtest-dev,
                libtinyobjloader-dev,
-Standards-Version: 4.5.0
+Standards-Version: 4.5.1
 Rules-Requires-Root: no
 Vcs-Browser: https://salsa.debian.org/science-team/gazebo
 Vcs-Git: https://salsa.debian.org/science-team/gazebo.git
