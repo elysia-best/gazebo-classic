@@ -10,32 +10,22 @@ Signed-off-by: Steve Peters <scpeters@openrobotics.org>
  plugins/SimpleTrackedVehiclePlugin.cc | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/plugins/SimpleTrackedVehiclePlugin.cc b/plugins/SimpleTrackedVehiclePlugin.cc
-index 3be4776..c5a22b0 100644
 --- a/plugins/SimpleTrackedVehiclePlugin.cc
 +++ b/plugins/SimpleTrackedVehiclePlugin.cc
-@@ -18,6 +18,8 @@
- #include <functional>
- #include <vector>
+@@ -20,6 +20,8 @@
+ 
+ #include <boost/version.hpp>
  
 +#include <boost/version.hpp>
 +
  #include <ignition/common/Profiler.hh>
  #include <ignition/math/Vector3.hh>
  #include <ignition/math/Pose3.hh>
-@@ -30,6 +32,7 @@
- 
- #include "plugins/SimpleTrackedVehiclePlugin.hh"
- 
-+#if BOOST_VERSION < 107400
- namespace std {
- template<class T>
- class hash<boost::shared_ptr<T>> {
-@@ -38,6 +41,7 @@ class hash<boost::shared_ptr<T>> {
-   }
- };
+@@ -51,6 +53,7 @@
+ /// Gazebo 9. It should be deleted starting with Gazebo 10.
+ unordered_map<LinkPtr, unordered_map<Tracks, Link_V> > globalTracks;
  }
 +#endif
  
- namespace gazebo
- {
+ using namespace gazebo;
+ 

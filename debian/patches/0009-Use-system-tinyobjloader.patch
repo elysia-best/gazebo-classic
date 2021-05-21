@@ -8,26 +8,22 @@ Subject: Use system tinyobjloader
  gazebo/common/OBJLoader.cc   | 11 ++++++++---
  3 files changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/cmake/SearchForStuff.cmake b/cmake/SearchForStuff.cmake
-index a2663ee..b258cb9 100644
 --- a/cmake/SearchForStuff.cmake
 +++ b/cmake/SearchForStuff.cmake
-@@ -611,6 +611,10 @@ endif()
- # Find QT
+@@ -621,6 +621,10 @@
  find_package(Qt5 COMPONENTS Core Widgets OpenGL Test REQUIRED)
  
-+########################################
+ ########################################
 +# Find tinyobjloader
 +find_package(tinyobjloader REQUIRED)
 +
- ########################################
++########################################
  # Find Boost, if not specified manually
  include(FindBoost)
-diff --git a/gazebo/common/CMakeLists.txt b/gazebo/common/CMakeLists.txt
-index 680bbc0..4087524 100644
+ find_package(Boost ${MIN_BOOST_VERSION} REQUIRED thread system filesystem program_options regex iostreams date_time)
 --- a/gazebo/common/CMakeLists.txt
 +++ b/gazebo/common/CMakeLists.txt
-@@ -254,6 +254,7 @@ target_link_libraries(gazebo_common
+@@ -255,6 +255,7 @@
      ${libavdevice_LIBRARIES}
      ${libswscale_LIBRARIES}
      ${TBB_LIBRARIES}
@@ -35,8 +31,6 @@ index 680bbc0..4087524 100644
  )
  
  if (UNIX)
-diff --git a/gazebo/common/OBJLoader.cc b/gazebo/common/OBJLoader.cc
-index 314035f..f8485aa 100644
 --- a/gazebo/common/OBJLoader.cc
 +++ b/gazebo/common/OBJLoader.cc
 @@ -24,8 +24,7 @@
@@ -49,21 +43,3 @@ index 314035f..f8485aa 100644
  
  namespace gazebo
  {
-@@ -70,10 +69,16 @@ Mesh *OBJLoader::Load(const std::string &_filename)
-   // convert polygons to triangles
-   bool triangulate = true;
- 
-+  std::string warn;
-   std::string err;
--  bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err,
-+  bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,
-       _filename.c_str(), path.c_str(), triangulate);
- 
-+  if (!warn.empty())
-+  {
-+    gzwarn << warn << std::endl;
-+  }
-+
-   if (!err.empty())
-   {
-     gzerr << err << std::endl;
