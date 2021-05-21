@@ -6,16 +6,3 @@ Subject: Bump std for make_unique in dart
  CMakeLists.txt | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 4678692..20e86ce 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -267,7 +267,7 @@ endif()
- 
- # Visual Studio enables c++11 support by default
- if (NOT MSVC)
--  set(UNFILTERED_FLAGS "-std=c++11")
-+  set(UNFILTERED_FLAGS "-std=c++14")
- endif()
- 
- set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VALID_CXX_FLAGS} ${UNFILTERED_FLAGS}")
