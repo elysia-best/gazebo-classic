@@ -1,3 +1,14 @@
+gazebo (11.5.1+dfsg-1) unstable; urgency=medium
+
+  * Update debian/gitlab-ci.yml file
+  * Bump compat to 13 and standards to 4.5.1
+  * Exclude windows bat script and github actions code
+  * Refresh patches to the new version
+  * Remove patch merged upstream
+  * New upstream version 11.5.1+dfsg
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 21 May 2021 15:09:15 +0000
+
 gazebo (11.1.0+dfsg-6) unstable; urgency=medium
 
   * Team upload.
