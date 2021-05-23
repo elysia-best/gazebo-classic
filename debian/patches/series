@@ -6,4 +6,3 @@
 0006-pkg_config-boost-private.patch
 0008-Support-CMAKE_BUILD_TYPE-None.patch
 0009-Use-system-tinyobjloader.patch
-0010-SimpleTrackedVehiclePlugin-fix-for-boost-1.74-2862.patch
