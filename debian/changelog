@@ -1,4 +1,4 @@
-gazebo (11.5.1+dfsg-1) unstable; urgency=medium
+gazebo (11.5.1+dfsg-1) experimental; urgency=medium
 
   * Update debian/gitlab-ci.yml file
   * Bump compat to 13 and standards to 4.5.1
