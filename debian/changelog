@@ -1,3 +1,9 @@
+gazebo (11.5.1+dfsg-2) experimental; urgency=medium
+
+  * Include patch to make gazebo_test_fixture in ALL cmake target
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Wed, 26 May 2021 17:10:47 +0000
+
 gazebo (11.5.1+dfsg-1) experimental; urgency=medium
 
   * Update debian/gitlab-ci.yml file
