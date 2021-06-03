@@ -1,3 +1,9 @@
+gazebo (11.5.1+dfsg-3) experimental; urgency=medium
+
+  * Include all target in build-indep to get examples and worlds installed for gazebo-common
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 03 Jun 2021 14:06:46 +0000
+
 gazebo (11.5.1+dfsg-2) experimental; urgency=medium
 
   * Include patch to make gazebo_test_fixture in ALL cmake target
