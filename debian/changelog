@@ -1,6 +1,7 @@
 gazebo (11.5.1+dfsg-3) experimental; urgency=medium
 
-  * Include all target in build-indep to get examples and worlds installed for gazebo-common
+  * Remove previous patch, not working
+  * Call default dh_auto_build in build-indep to get examples and worlds installed for gazebo-common
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 03 Jun 2021 14:06:46 +0000
 
