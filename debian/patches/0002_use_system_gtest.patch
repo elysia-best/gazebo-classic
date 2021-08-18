@@ -10,9 +10,6 @@ Last-Update: 2016-10-26
  3 files changed, 48 insertions(+), 6 deletions(-)
  create mode 100644 cmake/FindGtest.cmake
 
-diff --git a/cmake/FindGtest.cmake b/cmake/FindGtest.cmake
-new file mode 100644
-index 0000000..a154a2c
 --- /dev/null
 +++ b/cmake/FindGtest.cmake
 @@ -0,0 +1,40 @@
@@ -56,11 +53,9 @@ index 0000000..a154a2c
 +if(GTEST_FOUND)
 +  message(STATUS "GTest found (include: ${GTEST_INCLUDE_DIRS}, src: ${GTEST_SRC_DIR})")
 +endif(GTEST_FOUND)
-diff --git a/cmake/GazeboUtils.cmake b/cmake/GazeboUtils.cmake
-index 15138fe..c192fa6 100644
 --- a/cmake/GazeboUtils.cmake
 +++ b/cmake/GazeboUtils.cmake
-@@ -203,7 +203,6 @@ endmacro()
+@@ -219,7 +219,6 @@
  # This should be migrated to more fine control solution based on set_property APPEND
  # directories. It's present on cmake 2.8.8 while precise version is 2.8.7
  link_directories(${PROJECT_BINARY_DIR}/test)
@@ -68,8 +63,6 @@ index 15138fe..c192fa6 100644
  include (${gazebo_cmake_dir}/GazeboTestUtils.cmake)
  
  #################################################
-diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
-index 975bed1..3331607 100644
 --- a/test/CMakeLists.txt
 +++ b/test/CMakeLists.txt
 @@ -1,12 +1,13 @@
@@ -89,18 +82,18 @@ index 975bed1..3331607 100644
  )
  
  link_directories(
-@@ -24,8 +25,8 @@ endif()
- configure_file (test_config.h.in ${PROJECT_BINARY_DIR}/test_config.h)
+@@ -33,8 +34,8 @@
+ else()
+   # No static on UNIX to avoid problems on ARM platforms linking
+   # with no fPIC
+-  add_library(gtest gtest/src/gtest-all.cc)
+-  add_library(gtest_main gtest/src/gtest_main.cc)
++  add_library(gtest ${GTEST_SRC_DIR}/src/gtest-all.cc)
++  add_library(gtest_main ${GTEST_SRC_DIR}/src/gtest_main.cc)
+   target_link_libraries(gtest pthread)
+ endif()
  
- # Build gtest
--add_library(gtest STATIC gtest/src/gtest-all.cc)
--add_library(gtest_main STATIC gtest/src/gtest_main.cc)
-+add_library(gtest STATIC ${GTEST_SRC_DIR}/src/gtest-all.cc)
-+add_library(gtest_main STATIC ${GTEST_SRC_DIR}/src/gtest_main.cc)
- target_link_libraries(gtest_main gtest)
- set(GTEST_LIBRARY "${PROJECT_BINARY_DIR}/test/libgtest.a")
- set(GTEST_MAIN_LIBRARY "${PROJECT_BINARY_DIR}/test/libgtest_main.a")
-@@ -34,6 +35,8 @@ execute_process(COMMAND cmake -E remove_directory ${CMAKE_BINARY_DIR}/test_resul
+@@ -43,6 +44,8 @@
  execute_process(COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/test_results)
  include_directories(${GTEST_INCLUDE_DIRS})
  
