@@ -1,3 +1,11 @@
+gazebo (11.8.0+dfsg-1) unstable; urgency=medium
+
+  * Install setup.* since there is a bash file in latest
+  * New upstream version 11.8.0+dfsg
+  * Update gtest patch
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Wed, 18 Aug 2021 17:09:30 +0000
+
 gazebo (11.5.1+dfsg-3) experimental; urgency=medium
 
   * Remove previous patch, not working
