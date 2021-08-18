@@ -217,6 +217,18 @@ void World::Load(sdf::ElementPtr _sdf)
       msgs::SceneFromSDF(this->dataPtr->sdf->GetElement("scene")));
   this->dataPtr->sceneMsg.set_name(this->Name());
 
+  if (this->dataPtr->sdf->GetElement("scene")->
+      HasElement("ignition:shadow_caster_material_name"))
+  {
+    this->dataPtr->shadowCasterMaterialName =
+      this->dataPtr->sdf->GetElement("scene")->
+        Get<std::string>("ignition:shadow_caster_material_name");
+  }
+  else
+  {
+    this->dataPtr->shadowCasterMaterialName = "Gazebo/shadow_caster";
+  }
+
   // The period at which messages are processed
   this->dataPtr->processMsgsPeriod = common::Time(0, 200000000);
 
@@ -281,6 +293,14 @@ void World::Load(sdf::ElementPtr _sdf)
       &World::PluginInfoService, this))
   {
     gzerr << "Error advertising service [" << pluginInfoService << "]"
+        << std::endl;
+  }
+
+  std::string shadowCasterService("/shadow_caster_material_name");
+  if (!this->dataPtr->ignNode.Advertise(shadowCasterService,
+      &World::ShadowCasterService, this))
+  {
+    gzerr << "Error advertising service [" << shadowCasterService << "]"
         << std::endl;
   }
 
@@ -1152,7 +1172,7 @@ BasePtr World::BaseByName(const std::string &_name) const
 ModelPtr World::ModelById(unsigned int _id) const
 {
   return boost::dynamic_pointer_cast<Model>(
-      this->dataPtr->rootElement->GetById(_id));
+      this->dataPtr->rootElement->GetByIdRecursive(_id));
 }
 
 //////////////////////////////////////////////////
@@ -3336,4 +3356,11 @@ bool World::PluginInfoService(const ignition::msgs::StringMsg &_req,
       << std::endl;
 
   return false;
+}
+
+//////////////////////////////////////////////////
+bool World::ShadowCasterService(ignition::msgs::StringMsg &_res)
+{
+  _res.set_data(this->dataPtr->shadowCasterMaterialName.c_str());
+  return true;
 }
