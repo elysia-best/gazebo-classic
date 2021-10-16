@@ -1,3 +1,9 @@
+gazebo (11.8.1+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 11.8.1+dfsg
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Sat, 16 Oct 2021 11:52:54 +0000
+
 gazebo (11.8.0+dfsg-1) unstable; urgency=medium
 
   * Install setup.* since there is a bash file in latest
