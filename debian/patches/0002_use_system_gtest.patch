@@ -10,6 +10,9 @@ Last-Update: 2016-10-26
  3 files changed, 48 insertions(+), 6 deletions(-)
  create mode 100644 cmake/FindGtest.cmake
 
+diff --git a/cmake/FindGtest.cmake b/cmake/FindGtest.cmake
+new file mode 100644
+index 0000000..a154a2c
 --- /dev/null
 +++ b/cmake/FindGtest.cmake
 @@ -0,0 +1,40 @@
@@ -53,9 +56,11 @@ Last-Update: 2016-10-26
 +if(GTEST_FOUND)
 +  message(STATUS "GTest found (include: ${GTEST_INCLUDE_DIRS}, src: ${GTEST_SRC_DIR})")
 +endif(GTEST_FOUND)
+diff --git a/cmake/GazeboUtils.cmake b/cmake/GazeboUtils.cmake
+index 6842ae7..d3578a1 100644
 --- a/cmake/GazeboUtils.cmake
 +++ b/cmake/GazeboUtils.cmake
-@@ -219,7 +219,6 @@
+@@ -219,7 +219,6 @@ endmacro()
  # This should be migrated to more fine control solution based on set_property APPEND
  # directories. It's present on cmake 2.8.8 while precise version is 2.8.7
  link_directories(${PROJECT_BINARY_DIR}/test)
@@ -63,6 +68,8 @@ Last-Update: 2016-10-26
  include (${gazebo_cmake_dir}/GazeboTestUtils.cmake)
  
  #################################################
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index f9d9fd6..6ea90f5 100644
 --- a/test/CMakeLists.txt
 +++ b/test/CMakeLists.txt
 @@ -1,12 +1,13 @@
@@ -82,7 +89,7 @@ Last-Update: 2016-10-26
  )
  
  link_directories(
-@@ -33,8 +34,8 @@
+@@ -33,8 +34,8 @@ if (WIN32)
  else()
    # No static on UNIX to avoid problems on ARM platforms linking
    # with no fPIC
@@ -93,7 +100,7 @@ Last-Update: 2016-10-26
    target_link_libraries(gtest pthread)
  endif()
  
-@@ -43,6 +44,8 @@
+@@ -43,6 +44,8 @@ execute_process(COMMAND cmake -E remove_directory ${CMAKE_BINARY_DIR}/test_resul
  execute_process(COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/test_results)
  include_directories(${GTEST_INCLUDE_DIRS})
  

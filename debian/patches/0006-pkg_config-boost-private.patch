@@ -7,9 +7,11 @@ Last-Update: 2019-07-12
  cmake/pkgconfig/gazebo.in | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/cmake/pkgconfig/gazebo.in b/cmake/pkgconfig/gazebo.in
+index 091bbcb..5d73019 100644
 --- a/cmake/pkgconfig/gazebo.in
 +++ b/cmake/pkgconfig/gazebo.in
-@@ -6,5 +6,6 @@
+@@ -6,5 +6,6 @@ Name: gazebo
  Description: Gazebo Libraries
  Version: @GAZEBO_VERSION_FULL@
  Requires: sdformat9 protobuf @TBB_PKG_CONFIG@ ignition-math6 ignition-fuel_tools4 ignition-msgs5 ignition-transport8

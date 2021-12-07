@@ -5,12 +5,12 @@ Subject: Use system packaged qtpropertybrowser
 Last-Update: 2018-02-15
 ---
  gazebo/gui/CMakeLists.txt                   |  2 +-
- gazebo/gui/ModelListWidget.cc               |  4 ++--
- gazebo/gui/qtpropertybrowser/CMakeLists.txt | 30 ++++++++++-------------------
- 3 files changed, 13 insertions(+), 23 deletions(-)
+ gazebo/gui/ModelListWidget.cc               |  4 +--
+ gazebo/gui/qtpropertybrowser/CMakeLists.txt | 45 ++++++++++++-----------------
+ 3 files changed, 21 insertions(+), 30 deletions(-)
 
 diff --git a/gazebo/gui/CMakeLists.txt b/gazebo/gui/CMakeLists.txt
-index 81e6576e..02a022f1 100644
+index 81e6576..02a022f 100644
 --- a/gazebo/gui/CMakeLists.txt
 +++ b/gazebo/gui/CMakeLists.txt
 @@ -202,7 +202,7 @@ target_link_libraries(gazebo_gui
@@ -23,7 +23,7 @@ index 81e6576e..02a022f1 100644
    ${Qt5Widgets_LIBRARIES}
    ${ogre_libraries}
 diff --git a/gazebo/gui/ModelListWidget.cc b/gazebo/gui/ModelListWidget.cc
-index cd069634..fc8b7db5 100644
+index 1b6b849..ae99869 100644
 --- a/gazebo/gui/ModelListWidget.cc
 +++ b/gazebo/gui/ModelListWidget.cc
 @@ -36,8 +36,8 @@
@@ -38,7 +38,7 @@ index cd069634..fc8b7db5 100644
  #include "gazebo/rendering/Grid.hh"
  #include "gazebo/rendering/Light.hh"
 diff --git a/gazebo/gui/qtpropertybrowser/CMakeLists.txt b/gazebo/gui/qtpropertybrowser/CMakeLists.txt
-index 6c03b84b..3bef8857 100644
+index 6c03b84..3bef885 100644
 --- a/gazebo/gui/qtpropertybrowser/CMakeLists.txt
 +++ b/gazebo/gui/qtpropertybrowser/CMakeLists.txt
 @@ -2,39 +2,30 @@ include (${gazebo_cmake_dir}/GazeboUtils.cmake)

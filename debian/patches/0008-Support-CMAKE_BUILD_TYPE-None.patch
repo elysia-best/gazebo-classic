@@ -7,10 +7,10 @@ Subject: Support CMAKE_BUILD_TYPE None
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 20e86ce..3d21db8 100644
+index a92283c..229e859 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -214,7 +214,7 @@ elseif ("${CMAKE_BUILD_TYPE_UPPERCASE}" STREQUAL "COVERAGE")
+@@ -237,7 +237,7 @@ elseif ("${CMAKE_BUILD_TYPE_UPPERCASE}" STREQUAL "COVERAGE")
    include (${gazebo_cmake_dir}/CodeCoverage.cmake)
    setup_target_for_coverage(coverage coverage)
  else()

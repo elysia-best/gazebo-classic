@@ -3,27 +3,31 @@ Date: Mon, 20 Apr 2020 19:17:54 +0200
 Subject: Use system tinyobjloader
 
 ---
- cmake/SearchForStuff.cmake   |  4 ++++
- gazebo/common/CMakeLists.txt |  1 +
- gazebo/common/OBJLoader.cc   | 11 ++++++++---
- 3 files changed, 13 insertions(+), 3 deletions(-)
+ cmake/SearchForStuff.cmake   | 4 ++++
+ gazebo/common/CMakeLists.txt | 1 +
+ gazebo/common/OBJLoader.cc   | 3 +--
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/cmake/SearchForStuff.cmake b/cmake/SearchForStuff.cmake
+index 4085b5a..57013c2 100644
 --- a/cmake/SearchForStuff.cmake
 +++ b/cmake/SearchForStuff.cmake
-@@ -621,6 +621,10 @@
+@@ -615,6 +615,10 @@ endif()
+ # Find QT
  find_package(Qt5 COMPONENTS Core Widgets OpenGL Test REQUIRED)
  
- ########################################
++########################################
 +# Find tinyobjloader
 +find_package(tinyobjloader REQUIRED)
 +
-+########################################
+ ########################################
  # Find Boost, if not specified manually
  include(FindBoost)
- find_package(Boost ${MIN_BOOST_VERSION} REQUIRED thread system filesystem program_options regex iostreams date_time)
+diff --git a/gazebo/common/CMakeLists.txt b/gazebo/common/CMakeLists.txt
+index 13ce89f..8f0d956 100644
 --- a/gazebo/common/CMakeLists.txt
 +++ b/gazebo/common/CMakeLists.txt
-@@ -255,6 +255,7 @@
+@@ -247,6 +247,7 @@ target_link_libraries(gazebo_common
      ${libavdevice_LIBRARIES}
      ${libswscale_LIBRARIES}
      ${TBB_LIBRARIES}
@@ -31,6 +35,8 @@ Subject: Use system tinyobjloader
  )
  
  if (UNIX)
+diff --git a/gazebo/common/OBJLoader.cc b/gazebo/common/OBJLoader.cc
+index 7634567..f8485aa 100644
 --- a/gazebo/common/OBJLoader.cc
 +++ b/gazebo/common/OBJLoader.cc
 @@ -24,8 +24,7 @@
