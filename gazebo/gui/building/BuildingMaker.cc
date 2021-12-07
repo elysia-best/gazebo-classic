@@ -228,8 +228,10 @@ void BuildingMaker::DetachFromParent(const std::string &_child)
     parentManip.second.erase(std::remove(parentManip.second.begin(),
         parentManip.second.end(), _child), parentManip.second.end());
 
-    if (parentManip.second.empty())
+    if (parentManip.second.empty()) {
       this->DetachAllChildren(parentManip.first);
+      break;
+    }
   }
 }
 
@@ -695,7 +697,7 @@ void BuildingMaker::GenerateSDF()
   modelElem->GetElement("pose")->Set(modelOrigin);
 
   // loop through all model manips
-  for (const auto itemsIt : this->dataPtr->allItems)
+  for (const auto &itemsIt : this->dataPtr->allItems)
   {
     visualNameStream.str("");
     collisionNameStream.str("");

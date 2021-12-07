@@ -105,6 +105,10 @@ GLWidget::GLWidget(QWidget *_parent)
         std::bind(&GLWidget::OnManipMode, this, std::placeholders::_1)));
 
   this->dataPtr->connections.push_back(
+      gui::Events::ConnectSetRenderRate(
+      std::bind(&GLWidget::SetRenderRate, this, std::placeholders::_1)));
+
+  this->dataPtr->connections.push_back(
     event::Events::ConnectSetSelectedEntity(
       std::bind(&GLWidget::OnSetSelectedEntity, this, std::placeholders::_1,
         std::placeholders::_2)));
@@ -128,7 +132,7 @@ GLWidget::GLWidget(QWidget *_parent)
       &GLWidget::OnRequest, this);
 
   this->installEventFilter(this);
-  this->dataPtr->keyModifiers = 0;
+  this->dataPtr->keyModifiers = Qt::KeyboardModifiers();
 
   MouseEventHandler::Instance()->AddPressFilter("glwidget",
       std::bind(&GLWidget::OnMousePress, this, std::placeholders::_1));
@@ -656,7 +660,7 @@ void GLWidget::wheelEvent(QWheelEvent *_event)
   this->dataPtr->lastWheelEventTime = eventTime;
 
   int scrollY = 0;
-  int delta = _event->delta();
+  int delta = _event->angleDelta().y();
 
   if (delta > 0)
     scrollY = -1;
@@ -924,6 +928,15 @@ void GLWidget::ViewScene(rendering::ScenePtr _scene)
 }
 
 /////////////////////////////////////////////////
+void GLWidget::SetRenderRate(double _renderRate)
+{
+  this->dataPtr->userCamera->SetRenderRate(_renderRate);
+  QMetaObject::invokeMethod(this->dataPtr->updateTimer, "start", Q_ARG(int,
+      static_cast<int>(
+        std::round(1000.0 / _renderRate))));
+}
+
+/////////////////////////////////////////////////
 rendering::ScenePtr GLWidget::Scene() const
 {
   return this->dataPtr->scene;
@@ -936,7 +949,7 @@ void GLWidget::Clear()
   this->dataPtr->userCamera.reset();
   this->dataPtr->scene.reset();
   this->SetSelectedVisual(rendering::VisualPtr());
-  this->dataPtr->keyModifiers = 0;
+  this->dataPtr->keyModifiers = Qt::KeyboardModifiers();
 }
 
 //////////////////////////////////////////////////
