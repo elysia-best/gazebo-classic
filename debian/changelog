@@ -1,3 +1,11 @@
+gazebo (11.9.1+dfsg-3) experimental; urgency=medium
+
+  * Move ignition-transport, ignition-msgs and sdformat to new versioned
+    packages to facilitate transition from Gazebo11 to Ignition and
+    updates for Ignition libraries in unstable.
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 13 Dec 2021 20:21:19 +0000
+
 gazebo (11.9.1+dfsg-2) unstable; urgency=medium
 
   * Fix previous upload: use package names in unstable
