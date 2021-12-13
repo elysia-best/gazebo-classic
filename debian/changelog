@@ -1,7 +1,7 @@
-gazebo (11.9.1+dfsg-1) experimental; urgency=medium
+gazebo (11.9.1+dfsg-1) unstable; urgency=medium
 
   * New upstream version 11.9.1+dfsg
-  * Move ignition-msgs and sdformat to new versioned packages
+  * Move ignition-transport, ignition-msgs and sdformat to new versioned packages
   * Remove old transition gazebo9 packages
   * Rediff patches
 
