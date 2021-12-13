@@ -70,7 +70,6 @@ License: Apache-2
 
 Files: deps/opende/include/gazebo/ode/h5dump.h
        deps/opende/src/io.cpp
-       deps/opende/src/io.h
        deps/opende/src/ioh5.cpp
        deps/opende/src/ioh5.h
 Copyright: 2013, Claude Lacoursiere
