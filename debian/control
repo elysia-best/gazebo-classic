@@ -61,7 +61,7 @@ Build-Depends: cmake,
                xsltproc,
                libgtest-dev,
                libtinyobjloader-dev,
-Standards-Version: 4.5.1
+Standards-Version: 4.6.0
 Rules-Requires-Root: no
 Vcs-Browser: https://salsa.debian.org/science-team/gazebo
 Vcs-Git: https://salsa.debian.org/science-team/gazebo.git
