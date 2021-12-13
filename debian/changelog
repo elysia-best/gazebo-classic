@@ -5,6 +5,8 @@ gazebo (11.9.1+dfsg-1) unstable; urgency=medium
     packages
   * Remove old transition gazebo9 packages
   * Rediff patches
+  * Update copyright
+  * Update standards to 4.6.0
 
  -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 07 Dec 2021 23:07:02 +0000
 
