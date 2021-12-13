@@ -1,3 +1,11 @@
+gazebo (11.9.1+dfsg-2) unstable; urgency=medium
+
+  * Fix previous upload: use package names in unstable
+    since new versioned -dev packages for ignition and sdformat
+    are in experimental.
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 13 Dec 2021 20:15:16 +0000
+
 gazebo (11.9.1+dfsg-1) unstable; urgency=medium
 
   * New upstream version 11.9.1+dfsg
