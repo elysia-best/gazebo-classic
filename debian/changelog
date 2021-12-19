@@ -1,3 +1,9 @@
+gazebo (11.9.1+dfsg-4) experimental; urgency=medium
+
+  * Replace common and fuel-tools with versioned packages
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Sun, 19 Dec 2021 20:37:21 +0000
+
 gazebo (11.9.1+dfsg-3) experimental; urgency=medium
 
   * Move ignition-transport, ignition-msgs and sdformat to new versioned
