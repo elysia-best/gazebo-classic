@@ -1,3 +1,9 @@
+gazebo (11.9.1+dfsg-8) unstable; urgency=medium
+
+  * Move to unstable
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Sat, 29 Jan 2022 23:23:17 +0000
+
 gazebo (11.9.1+dfsg-7) experimental; urgency=medium
 
   * New dart 6.12.x needs convull-3d
