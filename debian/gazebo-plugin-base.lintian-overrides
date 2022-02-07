@@ -1,0 +1,6 @@
+# The plugin libLedPlugin is linked another plugin that is located in the
+# plugins directory. This fits into the exception clause at
+# https://lintian.debian.org/tags/custom-library-search-path "The only time a
+# binary or shared library in a Debian package should set RPATH or RUNPATH is if
+# it is linked to private shared libraries in the same package."
+gazebo-plugin-base: custom-library-search-path usr/lib/x86_64-linux-gnu/gazebo-11/plugins/libLedPlugin.so RUNPATH usr/lib/x86_64-linux-gnu/gazebo-11/plugins/
