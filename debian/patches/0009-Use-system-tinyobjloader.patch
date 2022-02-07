@@ -9,7 +9,7 @@ Subject: Use system tinyobjloader
  3 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/cmake/SearchForStuff.cmake b/cmake/SearchForStuff.cmake
-index 4085b5a..57013c2 100644
+index 9777a46..5087106 100644
 --- a/cmake/SearchForStuff.cmake
 +++ b/cmake/SearchForStuff.cmake
 @@ -615,6 +615,10 @@ endif()

@@ -7,7 +7,7 @@ Subject: Support CMAKE_BUILD_TYPE None
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a92283c..229e859 100644
+index e0d1280..ced8e31 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -237,7 +237,7 @@ elseif ("${CMAKE_BUILD_TYPE_UPPERCASE}" STREQUAL "COVERAGE")

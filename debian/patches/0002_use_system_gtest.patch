@@ -57,7 +57,7 @@ index 0000000..a154a2c
 +  message(STATUS "GTest found (include: ${GTEST_INCLUDE_DIRS}, src: ${GTEST_SRC_DIR})")
 +endif(GTEST_FOUND)
 diff --git a/cmake/GazeboUtils.cmake b/cmake/GazeboUtils.cmake
-index 6842ae7..d3578a1 100644
+index f1710e9..c18db7c 100644
 --- a/cmake/GazeboUtils.cmake
 +++ b/cmake/GazeboUtils.cmake
 @@ -219,7 +219,6 @@ endmacro()
