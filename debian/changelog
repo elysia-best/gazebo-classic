@@ -2,8 +2,10 @@ gazebo (11.10.1+dfsg-1) unstable; urgency=medium
 
   * New upstream version 11.10.1+dfsg
   * Rediff patches
+  * Valid lintian exception for plugin RPATH
+  * Remove gitlab-ci.yml file
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 07 Feb 2022 16:02:14 +0000
+-- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 07 Feb 2022 16:02:14 +0000
 
 gazebo (11.9.1+dfsg-8) unstable; urgency=medium
 
