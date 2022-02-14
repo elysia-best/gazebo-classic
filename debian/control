@@ -6,7 +6,7 @@ Priority: optional
 Build-Depends: cmake,
                pkg-config,
                debhelper-compat (= 13),
-               bash-completion,
+               dh-sequence-bash-completion,
                doxygen,
                doxygen-latex,
                texlive-fonts-recommended,

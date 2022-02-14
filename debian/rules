@@ -31,4 +31,4 @@ execute_before_dh_gencontrol:
 override_dh_auto_test:
 
 %:
-	dh $@ --buildsystem=cmake --with bash-completion
+	dh $@
