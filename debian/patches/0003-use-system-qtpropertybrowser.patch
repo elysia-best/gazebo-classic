@@ -2,28 +2,34 @@ From: Jose Luis Rivero <jrivero@osrfoundation.org>
 Date: Tue, 14 Apr 2020 16:31:14 +0200
 Subject: Use system packaged qtpropertybrowser
 
-Last-Update: 2018-02-15
+Last-Update: 2020-02-18
 ---
  gazebo/gui/CMakeLists.txt                   |  2 +-
  gazebo/gui/ModelListWidget.cc               |  4 +--
  gazebo/gui/qtpropertybrowser/CMakeLists.txt | 45 ++++++++++++-----------------
  3 files changed, 21 insertions(+), 30 deletions(-)
 
-diff --git a/gazebo/gui/CMakeLists.txt b/gazebo/gui/CMakeLists.txt
-index 81e6576..02a022f 100644
 --- a/gazebo/gui/CMakeLists.txt
 +++ b/gazebo/gui/CMakeLists.txt
-@@ -202,7 +202,7 @@ target_link_libraries(gazebo_gui
+@@ -196,13 +196,17 @@
+   PRIVATE BUILDING_DLL_GZ_GUI
+ )
+ 
++find_library(QTPROPERTYBROWSER_LIBRARY
++  NAMES qtpropertybrowser
++  REQUIRED)
++
+ target_link_libraries(gazebo_gui
+   libgazebo_client
+   gazebo_common
    gazebo_transport
    gazebo_rendering
    gazebo_msgs
 -  gzqtpropertybrowser
-+  /usr/lib/libqtpropertybrowser.so.4
++  ${QTPROPERTYBROWSER_LIBRARY}
    ${Qt5Core_LIBRARIES}
    ${Qt5Widgets_LIBRARIES}
    ${ogre_libraries}
-diff --git a/gazebo/gui/ModelListWidget.cc b/gazebo/gui/ModelListWidget.cc
-index 1b6b849..ae99869 100644
 --- a/gazebo/gui/ModelListWidget.cc
 +++ b/gazebo/gui/ModelListWidget.cc
 @@ -36,8 +36,8 @@
@@ -37,11 +43,9 @@ index 1b6b849..ae99869 100644
  
  #include "gazebo/rendering/Grid.hh"
  #include "gazebo/rendering/Light.hh"
-diff --git a/gazebo/gui/qtpropertybrowser/CMakeLists.txt b/gazebo/gui/qtpropertybrowser/CMakeLists.txt
-index 6c03b84..3bef885 100644
 --- a/gazebo/gui/qtpropertybrowser/CMakeLists.txt
 +++ b/gazebo/gui/qtpropertybrowser/CMakeLists.txt
-@@ -2,39 +2,30 @@ include (${gazebo_cmake_dir}/GazeboUtils.cmake)
+@@ -2,39 +2,30 @@
  add_definitions(${Qt5Core_DEFINITIONS})
  include_directories(${Qt5Core_INCLUDE_DIRS})
  
