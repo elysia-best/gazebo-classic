@@ -1,3 +1,13 @@
+gazebo (11.10.1+dfsg-2) unstable; urgency=medium
+
+  [ Jochen Sprickerhof ]
+  * Use dh-sequences
+
+  [ Jose Luis Rivero ]
+  * Update patch for camitk 5.x
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 18 Feb 2022 18:14:12 +0000
+
 gazebo (11.10.1+dfsg-1) unstable; urgency=medium
 
   * New upstream version 11.10.1+dfsg
