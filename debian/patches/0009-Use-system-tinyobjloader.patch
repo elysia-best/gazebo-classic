@@ -9,10 +9,10 @@ Subject: Use system tinyobjloader
  3 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/cmake/SearchForStuff.cmake b/cmake/SearchForStuff.cmake
-index 9777a46..5087106 100644
+index bef281b..9c54cfd 100644
 --- a/cmake/SearchForStuff.cmake
 +++ b/cmake/SearchForStuff.cmake
-@@ -615,6 +615,10 @@ endif()
+@@ -621,6 +621,10 @@ endif()
  # Find QT
  find_package(Qt5 COMPONENTS Core Widgets OpenGL Test REQUIRED)
  
