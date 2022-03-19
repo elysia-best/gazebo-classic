@@ -1,5 +1,64 @@
 ## Gazebo 11
 
+## Gazebo 11.10.2 (2022-03-19)
+
+1. Support plotting for entities with / in the name
+    * [Pull request #3187](https://github.com/osrf/gazebo/pull/3187)
+
+1. Replace deprecated tbb task for tbb >= 2021
+    * [Pull request #3174](https://github.com/osrf/gazebo/pull/3174)
+    * A contrubition from Alex Dewar and Silvio Traversaro
+    * [Pull request #3157](https://github.com/osrf/gazebo/pull/3157)
+
+1. Add CI for compiling gazebo with conda-forge dependencies
+    * [Pull request #3186](https://github.com/osrf/gazebo/pull/3186)
+    * A contrubition from Silvio Traversaro
+
+1. SearchForStuff: Do not pass /usr/lib to PATH in qwt's find_library
+    * [Pull request #3178](https://github.com/osrf/gazebo/pull/3178)
+    * A contrubition from Silvio Traversaro
+
+1. Scene: support deletion of Heightmap Visuals
+    * [Pull request #3171](https://github.com/osrf/gazebo/pull/3171)
+
+1. ODEJoint: don't SetStiffnessDamping for gearbox
+    * [Pull request #3169](https://github.com/osrf/gazebo/pull/3169)
+
+## Gazebo 11.10.1 (2022-01-19)
+
+1. Revert boost/bind.hpp changes in header files
+    * [Pull request #3160](https://github.com/osrf/gazebo/pull/3160)
+
+1. Fix duplicate vertex program name Ogre crash
+    * [Pull request #3161](https://github.com/osrf/gazebo/pull/3161)
+
+## Gazebo 11.10.0 (2022-01-12)
+
+1. Use boost/bind/bind.hpp to fix warnings on Arch Linux
+    * [Pull request #3156](https://github.com/osrf/gazebo/pull/3156)
+    * Inspired by a contribution from Alex Dewar <alex.dewar@gmx.co.uk>
+
+1. Fix focal builds: use python3 with check_test_ran.py
+    * [Pull request #3155](https://github.com/osrf/gazebo/pull/3155)
+
+1. Load model plugins even after sensor timeout
+    * [Pull request #3154](https://github.com/osrf/gazebo/pull/3154)
+
+1. CMake exports: remove -std=c++11 flag
+    * [Pull request #3050](https://github.com/osrf/gazebo/pull/3050)
+    * A contribution from Guilhem Saurel <guilhem.saurel@laas.fr>
+
+1. Create github action ci
+    * [Pull request #3049](https://github.com/osrf/gazebo/pull/3049)
+    * A contribution from Tal Regev <tal.regev@gmail.com>
+
+1. Fix Windows build when using vcpkg
+    * [Pull request #3132](https://github.com/osrf/gazebo/pull/3132)
+    * A contribution from Akash Munagala <akash.munagala@gmail.com>
+
+1. Point light shadows
+    * [Pull request #3051](https://github.com/osrf/gazebo/pull/3051)
+
 ## Gazebo 11.9.1 (2021-12-02)
 
 1. setup.sh: fix relocatability of `LD_LIBRARY_PATH`

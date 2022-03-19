@@ -301,7 +301,7 @@ if (PKG_CONFIG_FOUND)
 
   #################################################
   # Find TBB
-  pkg_check_modules(TBB tbb<2021)
+  pkg_check_modules(TBB tbb)
   set (TBB_PKG_CONFIG "tbb")
   if (NOT TBB_FOUND)
     message(STATUS "TBB not found, attempting to detect manually")
@@ -325,6 +325,12 @@ if (PKG_CONFIG_FOUND)
       endif(tbb_library)
     endif (NOT TBB_FOUND)
   endif (NOT TBB_FOUND)
+  set(HAVE_TBB_GREATER_OR_EQUAL_2021 OFF)
+  if (DEFINED TBB_VERSION AND NOT ${TBB_VERSION} STREQUAL "")
+    if (${TBB_VERSION} VERSION_GREATER_EQUAL "2021.0")
+      set(HAVE_TBB_GREATER_OR_EQUAL_2021 ON)
+    endif()
+  endif()
 
   #################################################
   # Find OGRE
@@ -676,6 +682,20 @@ else()
 endif()
 
 ########################################
+# Find python3, which is used by tools/check_test_ran.py
+if (${CMAKE_VERSION} VERSION_LESS 3.12)
+  find_package(PythonInterp 3)
+else()
+  find_package(Python3 COMPONENTS Interpreter)
+  if (Python3_FOUND)
+    set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+  endif()
+endif()
+if (NOT EXISTS ${PYTHON_EXECUTABLE})
+  BUILD_WARNING("python3 not found. The check_test_ran.py script will cause tests to fail.")
+endif()
+
+########################################
 # Find xsltproc, which is used by tools/check_test_ran.py
 find_program(XSLTPROC xsltproc)
 if (NOT EXISTS ${XSLTPROC})
@@ -831,7 +851,6 @@ find_path(QWT_INCLUDE_DIR NAMES qwt.h PATHS
 )
 
 find_library(QWT_LIBRARY NAMES qwt-qt5 qwt PATHS
-  /usr/lib
   /usr/local/lib
   /usr/local/lib/qwt.framework
   ${QWT_WIN_LIBRARY_DIR}

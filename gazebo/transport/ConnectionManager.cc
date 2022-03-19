@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 */
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include "gazebo/msgs/msgs.hh"
 #include "gazebo/common/Console.hh"
@@ -27,6 +27,7 @@
 using namespace gazebo;
 using namespace transport;
 
+#if TBB_VERSION_MAJOR < 2021
 /// TBB task to process nodes.
 class TopicManagerProcessTask : public tbb::task
 {
@@ -37,20 +38,30 @@ class TopicManagerProcessTask : public tbb::task
             return NULL;
           }
 };
+#endif
 
 /// TBB task to establish subscriber to publisher connection.
+#if TBB_VERSION_MAJOR < 2021
 class TopicManagerConnectionTask : public tbb::task
+#else
+class TopicManagerConnectionTask
+#endif
 {
   /// \brief Constructor.
   /// \param[in] _pub Publish message
   public: explicit TopicManagerConnectionTask(msgs::Publish _pub) : pub(_pub) {}
 
   /// Implements the necessary execute function
+#if TBB_VERSION_MAJOR < 2021
   public: tbb::task *execute()
           {
             TopicManager::Instance()->ConnectSubToPub(pub);
             return NULL;
           }
+#else
+  public: void operator()() const
+          { TopicManager::Instance()->ConnectSubToPub(pub); }
+#endif
 
   /// \brief Publish message
   private: msgs::Publish pub;
@@ -87,6 +98,7 @@ bool ConnectionManager::Init(const std::string &_masterHost,
   this->serverConn.reset(new Connection());
 
   // Create a new TCP server on a free port
+  using namespace boost::placeholders;
   this->serverConn->Listen(0,
       boost::bind(&ConnectionManager::OnAccept, this, _1));
 
@@ -272,11 +284,6 @@ void ConnectionManager::RunUpdate()
   if (this->masterConn)
     this->masterConn->ProcessWriteQueue();
 
-  // Use TBB to process nodes. Need more testing to see if this makes
-  // a difference.
-  // TopicManagerProcessTask *task = new(tbb::task::allocate_root())
-  //   TopicManagerProcessTask();
-  // tbb::task::enqueue(*task);
   boost::recursive_mutex::scoped_lock lock(this->connectionMutex);
 
   TopicManager::Instance()->ProcessNodes();
@@ -326,6 +333,7 @@ bool ConnectionManager::IsRunning() const
 //////////////////////////////////////////////////
 void ConnectionManager::OnMasterRead(const std::string &_data)
 {
+  using namespace boost::placeholders;
   if (this->masterConn && this->masterConn->IsOpen())
     this->masterConn->AsyncRead(
         boost::bind(&ConnectionManager::OnMasterRead, this, _1));
@@ -401,9 +409,13 @@ void ConnectionManager::ProcessMessage(const std::string &_data)
     if (pub.host() != this->serverConn->GetLocalAddress() ||
         pub.port() != this->serverConn->GetLocalPort())
     {
+#if TBB_VERSION_MAJOR < 2021
       TopicManagerConnectionTask *task = new(tbb::task::allocate_root())
       TopicManagerConnectionTask(pub);
       tbb::task::enqueue(*task);
+#else
+      this->taskGroup.run<TopicManagerConnectionTask>(pub);
+#endif
     }
   }
   // publisher_subscribe. This occurs when we try to subscribe to a topic, and
@@ -448,6 +460,7 @@ void ConnectionManager::ProcessMessage(const std::string &_data)
 //////////////////////////////////////////////////
 void ConnectionManager::OnAccept(ConnectionPtr _newConnection)
 {
+  using namespace boost::placeholders;
   _newConnection->AsyncRead(
       boost::bind(&ConnectionManager::OnRead, this, _newConnection, _1));
 
@@ -463,6 +476,7 @@ void ConnectionManager::OnRead(ConnectionPtr _connection,
   if (_data.empty())
   {
     gzerr << "Data was empty, try again\n";
+    using namespace boost::placeholders;
     _connection->AsyncRead(
         boost::bind(&ConnectionManager::OnRead, this, _connection, _1));
     return;
