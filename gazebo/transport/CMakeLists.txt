@@ -29,6 +29,9 @@ set (headers
   SubscribeOptions.hh
   Subscriber.hh
   SubscriptionTransport.hh
+  # don't include TaskGroup.hh in transport.hh
+  # append it to `headers` after transport.hh is configured
+  # TaskGroup.hh
   TopicManager.hh
   TransportIface.hh
   TransportTypes.hh
@@ -40,6 +43,7 @@ foreach (hdr ${headers})
 endforeach()
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/transport.hh.in
                 ${CMAKE_CURRENT_BINARY_DIR}/transport.hh )
+list(APPEND headers TaskGroup.hh)
 
 set_property(
   SOURCE TransportIface.cc
@@ -68,6 +72,12 @@ target_link_libraries(gazebo_transport
 )
 if (WIN32)
   target_link_libraries(gazebo_transport ws2_32 Iphlpapi)
+endif()
+
+if(${CMAKE_VERSION} VERSION_LESS "3.13.0")
+  link_directories(${TBB_LIBRARY_DIRS})
+else()
+  target_link_directories(gazebo_transport PUBLIC ${TBB_LIBRARY_DIRS})
 endif()
 
 if (USE_PCH)
