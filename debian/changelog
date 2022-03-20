@@ -1,3 +1,14 @@
+gazebo (11.10.2+dfsg-1) experimental; urgency=medium
+
+  * New upstream version 11.10.2+dfsg
+  * Rediff patches
+  * Use static manpages, Remove dependency on ronn
+    to avoid installing ruby.
+  * Target experimental to test tbb/onetbb transition #1007222
+    11.10.2 upstream source should be ready for it.
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Sat, 19 Mar 2022 19:58:37 +0000
+
 gazebo (11.10.1+dfsg-2) unstable; urgency=medium
 
   [ Jochen Sprickerhof ]
