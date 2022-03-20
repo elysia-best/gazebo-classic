@@ -1,0 +1,4 @@
+debian/manpages/gzclient.1
+debian/manpages/gazebo.1
+debian/manpages/gzserver.1
+debian/manpages/gzprop.1

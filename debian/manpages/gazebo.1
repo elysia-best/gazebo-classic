@@ -1,0 +1,76 @@
+.\" generated with Ronn-NG/v0.9.1
+.\" http://github.com/apjanke/ronn-ng/tree/0.9.1
+.TH "GAZEBO" "1" "March 2022" ""
+.SH "NAME"
+\fBgazebo\fR \- Run the Gazebo server and GUI\.
+.SH "SYNOPSIS"
+\fBgazebo\fR \fIoptions\fR \fIworld_file\fR
+.SH "DESCRIPTION"
+Gazebo server runs simulation and handles commandline options, starts a Master, runs World update and sensor generation loops\. This also starts the Gazebo GUI client in a separate process\.
+.SH "OPTIONS"
+.TP
+\-v, \-\-version
+Output version information\.
+.TP
+\-\-verbose
+Increase the messages written to the terminal\.
+.TP
+\-h, \-\-help
+Produce this help message\.
+.TP
+\-u, \-\-pause
+Start the server in a paused state\.
+.TP
+\-e, \-\-physics arg
+Specify a physics engine (ode|bullet|dart|simbody)\.
+.TP
+\-p, \-\-play arg
+Play a log file\.
+.TP
+\-r, \-\-record
+Record state data\.
+.TP
+\-\-record_encoding arg (=zlib)
+Compression encoding format for log data (zlib|bz2|txt)\.
+.TP
+\-\-record_path arg
+Absolute path in which to store state data\.
+.TP
+\-\-record_period arg (=\-1)
+Recording period (seconds)\.
+.TP
+\-\-record_filter arg
+Recording filter (supports wildcard and regular expression)\.
+.TP
+\-\-record_resources
+Recording with model meshes and materials\.
+.TP
+\-\-seed arg
+Start with a given random number seed\.
+.TP
+\-\-iters arg
+Number of iterations to simulate\.
+.TP
+\-\-minimal_comms
+Reduce the TCP/IP traffic output by gazebo\.
+.TP
+\-g, \-\-gui\-plugin arg
+Load a System plugin (deprecated)
+.TP
+\-\-gui\-client\-plugin arg
+Load a GUI plugin\.
+.TP
+\-s, \-\-server\-plugin arg
+Load a server plugin\.
+.TP
+\-o, \-\-profile arg
+Physics preset profile name from the options in the world file\.
+.TP
+\-\-lockstep
+Lockstep simulation so sensor update rates are respected\.
+.SH "AUTHOR"
+Open Source Robotics Foundation
+.SH "COPYRIGHT"
+Copyright (C) 2012 Open Source Robotics Foundation
+.P
+Licensed under the Apache License, Version 2\.0 (the "License"); you may not use this file except in compliance with the License\.

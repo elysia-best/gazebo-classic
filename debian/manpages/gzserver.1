@@ -1,0 +1,70 @@
+.\" generated with Ronn-NG/v0.9.1
+.\" http://github.com/apjanke/ronn-ng/tree/0.9.1
+.TH "GZSERVER" "1" "March 2022" ""
+.SH "NAME"
+\fBgzserver\fR \- Run the Gazebo server\.
+.SH "SYNOPSIS"
+\fBgzserver\fR \fIoptions\fR \fIworld_file\fR
+.SH "DESCRIPTION"
+Gazebo server runs simulation and handles commandline options, starts a Master, runs World update and sensor generation loops\.
+.SH "OPTIONS"
+.TP
+\-v, \-\-version
+Output version information\.
+.TP
+\-\-verbose
+Increase the messages written to the terminal\.
+.TP
+\-h, \-\-help
+Produce this help message\.
+.TP
+\-u, \-\-pause
+Start the server in a paused state\.
+.TP
+\-\-lockstep
+Lockstep simulation so sensor update rates are respected\.
+.TP
+\-e, \-\-physics arg
+Specify a physics engine (ode|bullet|dart|simbody)\.
+.TP
+\-p, \-\-play arg
+Play a log file\.
+.TP
+\-r, \-\-record
+Record state data\.
+.TP
+\-\-record_encoding arg (=zlib)
+Compression encoding format for log data (zlib|bz2|txt)\.
+.TP
+\-\-record_path arg
+Absolute path in which to store state data
+.TP
+\-\-record_period arg (=\-1)
+Recording period (seconds)\.
+.TP
+\-\-record_filter arg
+Recording filter (supports wildcard and regular expression)\.
+.TP
+\-\-record_resources
+Recording with model meshes and materials\.
+.TP
+\-\-seed arg
+Start with a given random number seed\.
+.TP
+\-\-iters arg
+Number of iterations to simulate\.
+.TP
+\-\-minimal_comms
+Reduce the TCP/IP traffic output by gzserver
+.TP
+\-s, \-\-server\-plugin arg
+Load a plugin\.
+.TP
+\-o, \-\-profile arg
+Physics preset profile name from the options in the world file\.
+.SH "AUTHOR"
+Open Source Robotics Foundation
+.SH "COPYRIGHT"
+Copyright (C) 2012 Open Source Robotics Foundation
+.P
+Licensed under the Apache License, Version 2\.0 (the "License"); you may not use this file except in compliance with the License\.
