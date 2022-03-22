@@ -9,3 +9,5 @@ Ogre.log
 *.orig
 *.gch
 *.pch
+.pc
+debian/files
